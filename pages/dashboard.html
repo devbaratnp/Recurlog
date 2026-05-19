@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Dashboard - ServCRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../assets/css/custom.css">
+  <script src="../assets/js/sidebar.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
+          fontFamily: { sans: ['Poppins', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+  <script>injectSidebar();</script>
+
+  <div class="page-content" id="page-content">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <div class="flex items-center gap-2 md:hidden">
+            <div class="w-7 h-7 bg-brand rounded-lg flex items-center justify-center">
+              <i data-lucide="wrench" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="font-bold text-navy text-sm">ServCRM</span>
+          </div>
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-500">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span id="current-date"></span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Notifications">
+            <i data-lucide="bell" class="w-5 h-5 text-gray-500"></i>
+            <span id="notification-badge" class="absolute top-0.5 right-0.5 bg-danger text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center hidden"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="p-4 md:p-6 max-w-6xl">
+      <h1 class="text-xl font-bold text-navy mb-5">Dashboard</h1>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="card p-4 border-l-4 border-l-brand">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Customers</p>
+              <p id="stat-customers" class="text-2xl font-bold text-navy mt-1">0</p>
+            </div>
+            <div class="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center">
+              <i data-lucide="users" class="w-5 h-5 text-brand"></i>
+            </div>
+          </div>
+        </div>
+        <div class="card p-4 border-l-4 border-l-amber">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Tasks Today</p>
+              <p id="stat-tasks-today" class="text-2xl font-bold text-navy mt-1">0</p>
+            </div>
+            <div class="w-10 h-10 bg-amber/10 rounded-lg flex items-center justify-center">
+              <i data-lucide="clipboard-list" class="w-5 h-5 text-amber"></i>
+            </div>
+          </div>
+        </div>
+        <div class="card p-4 border-l-4 border-l-danger">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Missed Tasks</p>
+              <p id="stat-missed" class="text-2xl font-bold text-navy mt-1">0</p>
+            </div>
+            <div class="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center">
+              <i data-lucide="alert-triangle" class="w-5 h-5 text-danger"></i>
+            </div>
+          </div>
+        </div>
+        <div class="card p-4 border-l-4 border-l-navy">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Active Staff</p>
+              <p id="stat-staff" class="text-2xl font-bold text-navy mt-1">0</p>
+            </div>
+            <div class="w-10 h-10 bg-navy/10 rounded-lg flex items-center justify-center">
+              <i data-lucide="briefcase" class="w-5 h-5 text-navy"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 card overflow-hidden">
+          <div class="card-header">
+            <h2 class="font-semibold text-navy">Today's Schedule</h2>
+          </div>
+          <div class="p-0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Customer</th>
+                  <th>Staff</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="today-tasks-body"></tbody>
+            </table>
+          </div>
+          <div id="today-empty" class="empty-state hidden">
+            <i data-lucide="clipboard-list"></i>
+            <p>No tasks scheduled for today.</p>
+          </div>
+        </div>
+
+        <div class="card overflow-hidden">
+          <div class="card-header">
+            <h2 class="font-semibold text-navy">Recent Activity</h2>
+          </div>
+          <div id="recent-activity" class="divide-y divide-gray-50"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav class="bottom-nav md:hidden">
+    <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 active">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Dashboard</span>
+    </a>
+    <a href="customers.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Customers</span>
+    </a>
+    <a href="tasks.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Tasks</span>
+    </a>
+    <a href="reports.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Reports</span>
+    </a>
+    <button onclick="showMoreModal()" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">More</span>
+    </button>
+  </nav>
+
+  <div id="more-modal" class="modal-overlay hidden" onclick="hideMoreModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h3 class="font-semibold text-navy text-lg mb-4">More</h3>
+      <div class="space-y-1">
+        <a href="staff.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]">
+          <i data-lucide="briefcase" class="w-5 h-5 text-gray-400"></i> Staff
+        </a>
+        <a href="notifications.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]">
+          <i data-lucide="bell" class="w-5 h-5 text-gray-400"></i> Notifications
+        </a>
+        <a href="settings.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]">
+          <i data-lucide="settings" class="w-5 h-5 text-gray-400"></i> Settings
+        </a>
+        <hr class="my-2 border-gray-100">
+        <button onclick="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-danger hover:bg-red-50 transition-colors w-full min-h-[44px]">
+          <i data-lucide="log-out" class="w-5 h-5"></i> Logout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showMoreModal() {
+      document.getElementById('more-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function hideMoreModal(e) {
+      if (e.target === e.currentTarget) {
+        document.getElementById('more-modal').classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var today = new Date();
+      var dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+      var el = document.getElementById('current-date');
+      if (el) el.textContent = dateStr;
+
+      var customers = window.getCustomers();
+      var staff = window.getStaff();
+      var allTasks = window.getTasks();
+      var todayISOStr = window.todayISO ? window.todayISO() : today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+      document.getElementById('stat-customers').textContent = customers.length;
+      var todayTasks = allTasks.filter(function (t) { return t.scheduledDate === todayISOStr; });
+      document.getElementById('stat-tasks-today').textContent = todayTasks.length;
+      var missedAll = allTasks.filter(function (t) { return t.status === 'missed'; });
+      document.getElementById('stat-missed').textContent = missedAll.length;
+      document.getElementById('stat-staff').textContent = staff.length;
+
+      var tbody = document.getElementById('today-tasks-body');
+      var empty = document.getElementById('today-empty');
+      if (todayTasks.length === 0) {
+        empty.classList.remove('hidden');
+      } else {
+        todayTasks.forEach(function (task) {
+          var customer = window.getCustomer(task.customerId);
+          var staffMember = window.getStaffMember(task.assignedTo);
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td data-label="Task" class="font-medium text-navy">' + (task.title || '\u2014') + '</td>' +
+            '<td data-label="Customer" class="text-gray-500">' + (customer ? customer.name : '\u2014') + '</td>' +
+            '<td data-label="Staff" class="text-gray-500">' + (staffMember ? staffMember.name : '\u2014') + '</td>' +
+            '<td data-label="Status">' + window.renderStatusPill(task.status) + '</td>' +
+            '<td data-label="Action">' +
+              (task.status === 'pending'
+                ? '<button onclick="completeTask(\'' + task.id + '\')" class="btn btn-sm btn-primary">Complete</button>'
+                : '<span class="text-xs text-gray-400">\u2014</span>') +
+            '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      lucide.createIcons();
+
+      var notifs = window.getNotifications();
+      var recentContainer = document.getElementById('recent-activity');
+      var recentItems = notifs.slice(0, 8);
+      var iconMap = { task_completed: 'check-circle', task_missed: 'alert-triangle', customer_added: 'user-plus', service_added: 'plus-circle' };
+      var colorMap = { task_completed: 'text-brand', task_missed: 'text-danger', customer_added: 'text-navy', service_added: 'text-amber' };
+      recentItems.forEach(function (n) {
+        var icon = iconMap[n.type] || 'info';
+        var color = colorMap[n.type] || 'text-gray-400';
+        var timeAgo = window.formatRelative ? window.formatRelative(n.createdAt) : '';
+        var div = document.createElement('div');
+        div.className = 'px-5 py-3 flex items-start gap-3';
+        div.innerHTML =
+          '<div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="' + icon + '" class="w-4 h-4 ' + color + '"></i></div>' +
+          '<div class="min-w-0"><p class="text-sm text-gray-600 leading-snug">' + (n.text || '') + '</p><p class="text-xs text-gray-400 mt-0.5">' + timeAgo + '</p></div>';
+        recentContainer.appendChild(div);
+      });
+
+      var unread = window.getUnreadCount ? window.getUnreadCount() : 0;
+      var badge = document.getElementById('notification-badge');
+      if (badge) {
+        if (unread > 0) {
+          badge.textContent = unread > 9 ? '9+' : unread;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      lucide.createIcons();
+    });
+  </script>
+  <script src="../assets/js/seed.js"></script>
+  <script src="../assets/js/router.js"></script>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

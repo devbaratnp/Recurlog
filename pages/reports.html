@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Reports - ServCRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../assets/css/custom.css">
+  <script src="../assets/js/sidebar.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
+          fontFamily: { sans: ['Poppins', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    .filter-tab { cursor: pointer; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen">
+  <script>injectSidebar();</script>
+
+  <div class="page-content">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <h1 class="page-title">Reports</h1>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-4 sm:p-6 space-y-6">
+      <section class="card p-5 fade-in" data-section="recurring">
+        <h2 class="text-lg font-bold text-navy mb-4">Recurring Tasks</h2>
+        <div class="flex flex-wrap gap-2 mb-4" data-filters="recurring">
+          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        </div>
+        <div id="recurring-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
+        <div class="mb-4" style="max-height:250px"><canvas id="chart-recurring"></canvas></div>
+        <div class="p-0">
+          <table class="data-table">
+            <thead><tr><th>Task Title</th><th>Customer</th><th>Staff</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="report-recurring-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card p-5 fade-in" data-section="onetime">
+        <h2 class="text-lg font-bold text-navy mb-4">One-Time Tasks</h2>
+        <div class="flex flex-wrap gap-2 mb-4" data-filters="onetime">
+          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        </div>
+        <div id="onetime-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
+        <div class="mb-4" style="max-height:250px"><canvas id="chart-onetime"></canvas></div>
+        <div class="p-0">
+          <table class="data-table">
+            <thead><tr><th>Task Title</th><th>Customer</th><th>Staff</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="report-onetime-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card p-5 fade-in" data-section="staff">
+        <h2 class="text-lg font-bold text-navy mb-4">Staff-Wise Report</h2>
+        <select id="report-staff-select" class="form-select mb-4 w-full sm:w-64"></select>
+        <div class="flex flex-wrap gap-2 mb-4" data-filters="staff">
+          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        </div>
+        <div id="staff-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
+        <div class="mb-4" style="max-height:250px"><canvas id="chart-staff"></canvas></div>
+        <div class="p-0">
+          <table class="data-table">
+            <thead><tr><th>Task Title</th><th>Customer</th><th>Staff</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="report-staff-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card p-5 fade-in" data-section="category">
+        <h2 class="text-lg font-bold text-navy mb-4">Category-Wise Report</h2>
+        <select id="report-category-select" class="form-select mb-4 w-full sm:w-64"></select>
+        <div class="flex flex-wrap gap-2 mb-4" data-filters="category">
+          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        </div>
+        <div id="category-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
+        <div class="mb-4" style="max-height:250px"><canvas id="chart-category"></canvas></div>
+        <div class="p-0">
+          <table class="data-table">
+            <thead><tr><th>Task Title</th><th>Customer</th><th>Staff</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="report-category-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <nav class="bottom-nav md:hidden">
+    <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Dashboard</span>
+    </a>
+    <a href="customers.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Customers</span>
+    </a>
+    <a href="tasks.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Tasks</span>
+    </a>
+    <a href="reports.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 active">
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Reports</span>
+    </a>
+    <button onclick="window.location.href='settings.html'" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">More</span>
+    </button>
+  </nav>
+
+  <script>
+    var charts = { recurring: null, onetime: null, staff: null, category: null };
+
+    function getCustomerName(id) {
+      var c = window.getCustomer(id);
+      return c ? c.name : 'Unknown';
+    }
+
+    function getStaffName(id) {
+      var s = window.getStaffMember(id);
+      return s ? s.name : 'Unknown';
+    }
+
+    function renderTableBody(tbodyId, tasks) {
+      var tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = tasks.map(function(t) {
+        return '<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">' +
+          '<td class="px-4 py-3 font-medium text-navy">' + t.title + '</td>' +
+          '<td class="px-4 py-3 text-gray-600">' + getCustomerName(t.customerId) + '</td>' +
+          '<td class="px-4 py-3 text-gray-600">' + getStaffName(t.assignedTo) + '</td>' +
+          '<td class="px-4 py-3 text-gray-600">' + window.formatDate(t.scheduledDate) + '</td>' +
+          '<td class="px-4 py-3">' + window.renderStatusPill(t.status) + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderStats(statsId, data) {
+      document.getElementById(statsId).innerHTML =
+        '<div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xs text-gray-500">Total</p><p class="text-lg font-bold text-navy">' + data.total + '</p></div>' +
+        '<div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xs text-gray-500">Completed%</p><p class="text-lg font-bold text-brand">' + data.completionRate + '%</p></div>' +
+        '<div class="bg-gray-50 rounded-lg p-3 text-center"><p class="text-xs text-gray-500">Missed</p><p class="text-lg font-bold text-danger">' + data.missed + '</p></div>';
+    }
+
+    function buildChart(canvasId, chartKey, reportData) {
+      var ctx = document.getElementById(canvasId).getContext('2d');
+      if (charts[chartKey]) { charts[chartKey].destroy(); }
+
+      var weeks = {};
+      reportData.tasks.forEach(function(t) {
+        if (!t.scheduledDate) return;
+        var d = new Date(t.scheduledDate + 'T00:00:00');
+        var ws = new Date(d);
+        ws.setDate(d.getDate() - d.getDay());
+        var key = ws.getFullYear() + '-' + String(ws.getMonth()+1).padStart(2,'0') + '-' + String(ws.getDate()).padStart(2,'0');
+        if (!weeks[key]) weeks[key] = { completed: 0 };
+        if (t.status === 'completed') weeks[key].completed++;
+      });
+
+      var sortedWeeks = Object.keys(weeks).sort().slice(-4);
+      var labels = sortedWeeks.map(function(w) { return window.formatDate(w); });
+      var completedData = sortedWeeks.map(function(w) { return weeks[w].completed; });
+
+      charts[chartKey] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Completed',
+            data: completedData,
+            backgroundColor: '#1DB954',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderSection(sectionKey, reportFn, filter, statsId, chartId, chartKey, tbodyId) {
+      var data = reportFn(filter);
+      renderStats(statsId, data);
+      renderTableBody(tbodyId, data.tasks);
+      buildChart(chartId, chartKey, data);
+    }
+
+    function renderStaffWise() {
+      var staffId = document.getElementById('report-staff-select').value;
+      if (!staffId) return;
+      var filter = document.querySelector('[data-filters="staff"] .bg-brand')?.getAttribute('data-filter') || 'all';
+      var data = window.getStaffWiseReport(staffId, filter);
+      renderStats('staff-stats', data);
+      renderTableBody('report-staff-body', data.tasks);
+      buildChart('chart-staff', 'staff', data);
+    }
+
+    function renderCategoryWise() {
+      var catId = document.getElementById('report-category-select').value;
+      if (!catId) return;
+      var filter = document.querySelector('[data-filters="category"] .bg-brand')?.getAttribute('data-filter') || 'all';
+      var data = window.getCategoryWiseReport(catId, filter);
+      renderStats('category-stats', data);
+      renderTableBody('report-category-body', data.tasks);
+      buildChart('chart-category', 'category', data);
+    }
+
+    function initReports() {
+      // Populate dropdowns
+      var staff = window.getStaff();
+      var staffSelect = document.getElementById('report-staff-select');
+      staffSelect.innerHTML = '<option value="">Select Staff</option>' + staff.map(function(s) { return '<option value="' + s.id + '">' + s.name + '</option>'; }).join('');
+
+      var cats = window.getCategories();
+      var catSelect = document.getElementById('report-category-select');
+      catSelect.innerHTML = '<option value="">Select Category</option>' + cats.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join('');
+
+      // Initial render
+      renderSection('recurring', window.getRecurringTasksReport, 'all', 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body');
+      renderSection('onetime', window.getOneTimeTasksReport, 'all', 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body');
+
+      // Filter tabs
+      document.querySelectorAll('.filter-tab').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var filter = this.getAttribute('data-filter');
+          var parent = this.closest('[data-filters]');
+          if (parent) {
+            parent.querySelectorAll('.filter-tab').forEach(function(t) { t.className = 'filter-tab px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200'; });
+            this.className = 'filter-tab px-3 py-1.5 text-xs font-medium rounded-full bg-brand text-white';
+            var section = parent.getAttribute('data-filters');
+            if (section === 'recurring') renderSection('recurring', window.getRecurringTasksReport, filter, 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body');
+            else if (section === 'onetime') renderSection('onetime', window.getOneTimeTasksReport, filter, 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body');
+            else if (section === 'staff') renderStaffWise();
+            else if (section === 'category') renderCategoryWise();
+          } else {
+            this.closest('[data-section]');
+          }
+        });
+      });
+
+      // Dropdown changes
+      document.getElementById('report-staff-select').addEventListener('change', function() {
+        var filter = document.querySelector('[data-filters="staff"] .bg-brand')?.getAttribute('data-filter') || 'all';
+        if (this.value) renderStaffWise();
+      });
+      document.getElementById('report-category-select').addEventListener('change', function() {
+        var filter = document.querySelector('[data-filters="category"] .bg-brand')?.getAttribute('data-filter') || 'all';
+        if (this.value) renderCategoryWise();
+      });
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    document.addEventListener('DOMContentLoaded', initReports);
+  </script>
+  <script src="../assets/js/seed.js"></script>
+  <script src="../assets/js/router.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

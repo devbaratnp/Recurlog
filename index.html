@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ServCRM - Field Service Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#1DB954',
+            navy: '#0B1E3D',
+            amber: '#F59E0B',
+            danger: '#EF4444'
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .spinner { border: 3px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; width: 32px; height: 32px; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-navy min-h-screen flex items-center justify-center">
+  <div class="text-center fade-in">
+    <div class="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-brand/25">
+      <i data-lucide="wrench" class="w-8 h-8 text-white"></i>
+    </div>
+    <h1 class="text-4xl font-extrabold text-white tracking-tight mb-2">ServCRM</h1>
+    <p class="text-white/60 text-lg font-medium mb-8">Field Service Management</p>
+    <div class="spinner mx-auto"></div>
+  </div>
+  <script>
+    setTimeout(function () {
+      window.location.href = 'pages/dashboard.html';
+    }, 1500);
+  </script>
+  <script src="assets/js/seed.js"></script>
+  <script src="assets/js/router.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

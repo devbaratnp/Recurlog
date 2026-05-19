@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Add Customer - Field Service CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../assets/css/custom.css" /><script src="../assets/js/sidebar.js"></script>
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <script>injectSidebar();</script>
+
+  <div class="page-content">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <a href="customers.html" class="p-2 -ml-1 text-gray-400 hover:text-navy transition-colors rounded-lg hover:bg-gray-100">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          </a>
+          <h1 class="page-title">Add Customer</h1>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-4 md:p-6 max-w-3xl mx-auto">
+
+      <p class="text-gray-500 text-sm mb-4">Register a new customer and their service details</p>
+
+      <div class="card p-5 sm:p-8 space-y-6">
+
+        <div>
+          <label for="cust-name" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer Name <span class="text-danger">*</span></label>
+          <input type="text" id="cust-name" placeholder="e.g. Sharma Family" class="form-input" />
+        </div>
+
+        <div>
+          <label for="cust-address" class="block text-sm font-semibold text-gray-700 mb-1.5">Address <span class="text-danger">*</span></label>
+          <input type="text" id="cust-address" placeholder="e.g. Adarsh Nagar, Birgunj" class="form-input" />
+        </div>
+
+        <div>
+          <label for="cust-contact" class="block text-sm font-semibold text-gray-700 mb-1.5">Contact Number <span class="text-danger">*</span></label>
+          <input type="text" id="cust-contact" value="+977-" placeholder="+977-98XXXXXXXX" class="form-input" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Service For <span class="text-danger">*</span></label>
+          <div class="flex flex-wrap gap-2" id="service-chips-container">
+            <button type="button" data-value="RO" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">RO</button>
+            <button type="button" data-value="TV" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">TV</button>
+            <button type="button" data-value="Refrigerator" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">Refrigerator</button>
+            <button type="button" data-value="AC" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">AC</button>
+            <button type="button" data-value="Washing Machine" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">Washing Machine</button>
+            <button type="button" data-value="Other" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">Other</button>
+          </div>
+          <input type="hidden" id="cust-services" value="" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Location Map</label>
+          <div id="map-container" class="map-grid rounded-xl overflow-hidden border border-gray-200 cursor-pointer" style="height:300px;background-color:#f8fafc;">
+            <div id="map-pin" class="map-pin" style="left:50%;top:50%;"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mt-3">
+            <div>
+              <label for="cust-lat" class="block text-xs font-medium text-gray-500 mb-1">Latitude</label>
+              <input type="text" id="cust-lat" readonly value="27.0000" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600" />
+            </div>
+            <div>
+              <label for="cust-lng" class="block text-xs font-medium text-gray-500 mb-1">Longitude</label>
+              <input type="text" id="cust-lng" readonly value="84.8700" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-6 flex gap-3">
+        <a href="customers.html" class="btn btn-md btn-secondary flex-1 md:flex-none">Cancel</a>
+        <button id="btn-save-customer" class="btn btn-md btn-primary flex-1 md:flex-none brand-glow">Save Customer</button>
+      </div>
+
+    </div>
+  </div>
+
+  <nav class="bottom-nav md:hidden">
+    <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Dashboard</span>
+    </a>
+    <a href="customers.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 active">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Customers</span>
+    </a>
+    <a href="tasks.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Tasks</span>
+    </a>
+    <a href="reports.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Reports</span>
+    </a>
+    <button onclick="window.location.href='settings.html'" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">More</span>
+    </button>
+  </nav>
+
+  <script src="../assets/js/seed.js"></script>
+  <script src="../assets/js/router.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    lucide.createIcons();
+
+    (function() {
+      var mapContainer = document.getElementById('map-container');
+      var mapPin = document.getElementById('map-pin');
+      var latInput = document.getElementById('cust-lat');
+      var lngInput = document.getElementById('cust-lng');
+
+      var defaultLat = 27.00;
+      var defaultLng = 84.87;
+      var latRange = 0.04;
+      var lngRange = 0.04;
+
+      function updatePinFromLatLng(lat, lng) {
+        var rect = mapContainer.getBoundingClientRect();
+        var latPct = ((lat - (defaultLat - latRange)) / (latRange * 2)) * 100;
+        var lngPct = ((lng - (defaultLng - lngRange)) / (lngRange * 2)) * 100;
+        latPct = Math.max(0, Math.min(100, latPct));
+        lngPct = Math.max(0, Math.min(100, lngPct));
+        mapPin.style.left = lngPct + '%';
+        mapPin.style.top = (100 - latPct) + '%';
+        latInput.value = lat.toFixed(4);
+        lngInput.value = lng.toFixed(4);
+      }
+
+      function updateLatLngFromClick(clientX, clientY) {
+        var rect = mapContainer.getBoundingClientRect();
+        var x = clientX - rect.left;
+        var y = clientY - rect.top;
+        var lngPct = x / rect.width;
+        var latPct = 1 - (y / rect.height);
+        var lat = (defaultLat - latRange) + latPct * (latRange * 2);
+        var lng = (defaultLng - lngRange) + lngPct * (lngRange * 2);
+        updatePinFromLatLng(lat, lng);
+      }
+
+      mapContainer.addEventListener('click', function(e) {
+        updateLatLngFromClick(e.clientX, e.clientY);
+      });
+
+      var isDragging = false;
+      mapPin.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        isDragging = true;
+        mapPin.style.cursor = 'grabbing';
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        updateLatLngFromClick(e.clientX, e.clientY);
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          mapPin.style.cursor = 'grab';
+        }
+      });
+
+      updatePinFromLatLng(defaultLat, defaultLng);
+
+      // ====== Service Chips ======
+      var selectedServices = [];
+      var hiddenInput = document.getElementById('cust-services');
+      var chips = document.querySelectorAll('.service-chip');
+
+      function updateHiddenInput() {
+        hiddenInput.value = selectedServices.join(',');
+      }
+
+      chips.forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          var val = this.getAttribute('data-value');
+          var idx = selectedServices.indexOf(val);
+          if (idx >= 0) {
+            selectedServices.splice(idx, 1);
+            this.classList.remove('bg-brand', 'text-white', 'border-brand');
+            this.classList.add('border-gray-200', 'text-gray-600');
+          } else {
+            selectedServices.push(val);
+            this.classList.remove('border-gray-200', 'text-gray-600');
+            this.classList.add('bg-brand', 'text-white', 'border-brand');
+          }
+          updateHiddenInput();
+        });
+      });
+
+      // ====== Save ======
+      document.getElementById('btn-save-customer').addEventListener('click', function() {
+        var name = document.getElementById('cust-name').value.trim();
+        var address = document.getElementById('cust-address').value.trim();
+        var contact = document.getElementById('cust-contact').value.trim();
+        var services = selectedServices;
+
+        if (!name) {
+          window.showToast('Please enter the customer name.', 'error');
+          document.getElementById('cust-name').focus();
+          return;
+        }
+        if (!address) {
+          window.showToast('Please enter the customer address.', 'error');
+          document.getElementById('cust-address').focus();
+          return;
+        }
+        if (!contact || contact === '+977-') {
+          window.showToast('Please enter a valid contact number.', 'error');
+          document.getElementById('cust-contact').focus();
+          return;
+        }
+        if (services.length === 0) {
+          window.showToast('Please select at least one service.', 'error');
+          return;
+        }
+
+        var customer = {
+          name: name,
+          address: address,
+          phone: contact,
+          servicesFor: services,
+          location: {
+            lat: parseFloat(latInput.value) || defaultLat,
+            lng: parseFloat(lngInput.value) || defaultLng
+          }
+        };
+
+        var saved = window.saveCustomer(customer);
+        window.showToast('Customer "' + saved.name + '" has been added successfully!', 'success');
+
+        setTimeout(function() {
+          window.location.href = 'customers.html';
+        }, 1200);
+      });
+
+    })();
+  </script>
+</body>
+</html>
