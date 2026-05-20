@@ -47,8 +47,23 @@
 
     <div class="p-4 md:p-6 lg:p-8 max-w-4xl mx-auto">
 
-      <!-- Tabs -->
-      <div class="flex rounded-lg bg-gray-100 p-1 mb-4 w-fit">
+      <!-- Drill-Down Filter Banner -->
+      <div id="filter-banner" class="filter-banner" style="display:none">
+        <div class="filter-banner-left">
+          <a href="dashboard.html" class="flex items-center gap-1.5 text-brand font-medium hover:underline">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+          </a>
+          <span class="text-gray-300">|</span>
+          <span class="font-medium">Showing:</span>
+          <span id="filter-label" class="font-semibold"></span>
+        </div>
+        <button class="filter-banner-clear" onclick="clearFilter()">
+          <i data-lucide="x" class="w-3 h-3"></i> Clear Filter
+        </button>
+      </div>
+
+      <!-- Tabs (hidden when filter is active) -->
+      <div id="task-tabs" class="flex rounded-lg bg-gray-100 p-1 mb-4 w-fit">
         <button class="tab-btn px-5 py-2 text-sm font-medium rounded-md transition-colors" data-tab="today">Today</button>
         <button class="tab-btn px-5 py-2 text-sm font-medium rounded-md transition-colors" data-tab="upcoming">Upcoming</button>
         <button class="tab-btn px-5 py-2 text-sm font-medium rounded-md transition-colors" data-tab="missed">Missed</button>
@@ -118,13 +133,17 @@
     // ========== STATE ==========
     var currentTab = 'today';
     var pendingCompleteTaskId = null;
+    var activeFilter = null;
 
     // ========== INIT ==========
     document.addEventListener('DOMContentLoaded', function () {
-      readHash();
-      setupTabs();
+      checkFilter();
+      if (!activeFilter) {
+        readHash();
+        setupTabs();
+      }
       setupSearch();
-      setupHashChange();
+      if (!activeFilter) setupHashChange();
       setupModalConfirm();
       renderTasks();
 
@@ -135,6 +154,33 @@
       var d = String(now.getDate()).padStart(2, '0');
       document.getElementById('modal-complete-date').value = y + '-' + m + '-' + d;
     });
+
+    // ========== DRILL-DOWN FILTER ==========
+    function checkFilter() {
+      try {
+        var stored = localStorage.getItem('fscrm_task_filter');
+        if (stored) {
+          activeFilter = JSON.parse(stored);
+          localStorage.removeItem('fscrm_task_filter');
+        }
+      } catch(e) {}
+      if (activeFilter) {
+        var banner = document.getElementById('filter-banner');
+        banner.style.display = 'flex';
+        document.getElementById('filter-label').textContent = activeFilter.label || 'Filtered Tasks';
+        document.getElementById('task-tabs').style.display = 'none';
+      }
+    }
+
+    function clearFilter() {
+      activeFilter = null;
+      var banner = document.getElementById('filter-banner');
+      banner.style.display = 'none';
+      document.getElementById('task-tabs').style.display = 'flex';
+      readHash();
+      setupHashChange();
+      renderTasks();
+    }
 
     // ========== HASH ROUTING ==========
     function readHash() {
@@ -187,20 +233,57 @@
     function getFilteredTasks() {
       var allTasks = window.getTasks();
       var today = window.todayISO();
+      var services = window.getServices();
+      var customers = window.getCustomers();
 
       var filtered;
-      switch (currentTab) {
-        case 'today':
-          filtered = allTasks.filter(function (t) { return t.scheduledDate === today; });
-          break;
-        case 'upcoming':
-          filtered = allTasks.filter(function (t) { return t.scheduledDate > today && t.status === 'pending'; });
-          break;
-        case 'missed':
-          filtered = allTasks.filter(function (t) { return t.status === 'missed'; });
-          break;
-        default:
-          filtered = allTasks.filter(function (t) { return t.scheduledDate === today; });
+
+      // Handle drill-down filter
+      if (activeFilter) {
+        filtered = allTasks;
+
+        // Filter by status
+        if (activeFilter.status === 'today') {
+          filtered = filtered.filter(function (t) { return t.scheduledDate === today; });
+        } else if (activeFilter.status === 'missed') {
+          filtered = filtered.filter(function (t) { return t.status === 'missed'; });
+        } else if (activeFilter.status === 'completed') {
+          filtered = filtered.filter(function (t) { return t.status === 'completed'; });
+        }
+
+        // Filter by type (one-time vs recurring)
+        if (activeFilter.type === 'one-time') {
+          var otServiceIds = services.filter(function(s) { return !s.isRecurring; }).map(function(s) { return s.id; });
+          filtered = filtered.filter(function(t) { return t.serviceId && otServiceIds.indexOf(t.serviceId) >= 0; });
+        } else if (activeFilter.type === 'recurring') {
+          var recServiceIds = services.filter(function(s) { return s.isRecurring; }).map(function(s) { return s.id; });
+          filtered = filtered.filter(function(t) { return t.serviceId && recServiceIds.indexOf(t.serviceId) >= 0; });
+        }
+
+        // Filter by area
+        if (activeFilter.type === 'area' && activeFilter.value) {
+          var areaCustomerIds = customers.filter(function(c) { return c.area === activeFilter.value; }).map(function(c) { return c.id; });
+          filtered = filtered.filter(function(t) { return areaCustomerIds.indexOf(t.customerId) >= 0; });
+        }
+
+        // Filter by staff
+        if (activeFilter.type === 'staff' && activeFilter.value) {
+          filtered = filtered.filter(function(t) { return String(t.assignedTo) === String(activeFilter.value); });
+        }
+      } else {
+        switch (currentTab) {
+          case 'today':
+            filtered = allTasks.filter(function (t) { return t.scheduledDate === today; });
+            break;
+          case 'upcoming':
+            filtered = allTasks.filter(function (t) { return t.scheduledDate > today && t.status === 'pending'; });
+            break;
+          case 'missed':
+            filtered = allTasks.filter(function (t) { return t.status === 'missed'; });
+            break;
+          default:
+            filtered = allTasks.filter(function (t) { return t.scheduledDate === today; });
+        }
       }
 
       // Search filter
@@ -278,16 +361,21 @@
     function createTaskCard(task) {
       var customer = window.getCustomer(task.customerId);
       var staff = window.getStaffMember(task.assignedTo);
+      var service = task.serviceId ? window.getService(task.serviceId) : null;
+      var problemText = service && service.problem ? service.problem : '';
 
       var div = document.createElement('div');
       div.className = 'bg-white rounded-xl border border-gray-200 p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow';
 
       var isPending = task.status === 'pending';
 
+      var problemHtml = problemText ? '<div class="text-xs text-gray-400 mt-1"><span class="font-medium text-gray-500">Problem:</span> ' + escapeHtml(problemText.substring(0, 80)) + (problemText.length > 80 ? '...' : '') + '</div>' : '';
+
       div.innerHTML =
         '<div class="flex items-start justify-between gap-4">' +
           '<div class="flex-1 min-w-0">' +
             '<h3 class="font-semibold text-gray-900 text-sm md:text-base truncate">' + escapeHtml(task.title) + '</h3>' +
+            problemHtml +
             '<div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs text-gray-500">' +
               '<span class="flex items-center gap-1.5"><i data-lucide="user" class="w-3.5 h-3.5"></i> ' + (customer ? escapeHtml(customer.name) : 'Unknown') + '</span>' +
               '<span class="flex items-center gap-1.5">' +

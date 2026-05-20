@@ -95,6 +95,23 @@
         </div>
       </section>
 
+      <!-- Manage Service Types -->
+      <section class="card overflow-hidden">
+        <div class="card-header">
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Manage Service Types</h3>
+        </div>
+        <div class="p-5">
+          <p class="text-sm text-gray-500 mb-3">Add or remove service types used in customer and job forms.</p>
+          <div class="flex gap-2 mb-4">
+            <input type="text" id="new-service-type" placeholder="e.g. Water Heater" class="form-input flex-1">
+            <button onclick="addServiceType()" class="btn btn-sm btn-primary whitespace-nowrap">
+              <i data-lucide="plus" class="w-4 h-4"></i> Add
+            </button>
+          </div>
+          <div id="service-types-list" class="space-y-2"></div>
+        </div>
+      </section>
+
       <section class="card overflow-hidden">
         <div class="card-header">
           <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Data</h3>
@@ -211,8 +228,59 @@
       window.logout();
     }
 
+    function renderServiceTypes() {
+      var list = document.getElementById('service-types-list');
+      var types = window.getServiceTypes();
+      list.innerHTML = '';
+      types.forEach(function(type, index) {
+        var div = document.createElement('div');
+        div.className = 'flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg';
+        div.innerHTML =
+          '<span class="text-sm font-medium text-gray-700">' + type + '</span>' +
+          '<button onclick="deleteServiceType(' + index + ')" class="p-1.5 text-gray-400 hover:text-danger rounded-lg hover:bg-red-50 transition-colors" ' + (types.length <= 2 ? 'disabled title="Cannot delete - minimum 2 types required"' : '') + '>' +
+            '<i data-lucide="trash-2" class="w-4 h-4"></i>' +
+          '</button>';
+        list.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+
+    window.addServiceType = function() {
+      var input = document.getElementById('new-service-type');
+      var name = input.value.trim();
+      if (!name) {
+        window.showToast('Please enter a service type name.', 'error');
+        return;
+      }
+      var types = window.getServiceTypes();
+      if (types.indexOf(name) >= 0) {
+        window.showToast('This service type already exists.', 'error');
+        return;
+      }
+      types.push(name);
+      window.storeServiceTypes(types);
+      input.value = '';
+      renderServiceTypes();
+      window.showToast('Service type "' + name + '" added.', 'success');
+    };
+
+    window.deleteServiceType = function(index) {
+      var types = window.getServiceTypes();
+      if (types.length <= 2) {
+        window.showToast('Cannot delete. At least 2 service types are required.', 'warning');
+        return;
+      }
+      var removed = types.splice(index, 1)[0];
+      window.storeServiceTypes(types);
+      renderServiceTypes();
+      window.showToast('Service type "' + removed + '" removed.', 'info');
+    };
+
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof lucide !== 'undefined') lucide.createIcons();
+      if (typeof lucide !== 'undefined') {
+        renderServiceTypes();
+        lucide.createIcons();
+      }
     });
   </script>
   <script src="../assets/js/seed.js"></script>

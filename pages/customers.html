@@ -62,6 +62,7 @@
               <tr>
                 <th>Name</th>
                 <th>Address</th>
+                <th>Area</th>
                 <th>Contact</th>
                 <th>Services</th>
                 <th class="text-right">Actions</th>
@@ -145,6 +146,7 @@
           return '<tr>' +
             '<td data-label="Name" class="font-medium text-gray-900">' + c.name + '</td>' +
             '<td data-label="Address" class="text-gray-600">' + c.address + '</td>' +
+            '<td data-label="Area" class="text-gray-600">' + (c.area || '\u2014') + '</td>' +
             '<td data-label="Contact" class="text-gray-600">' + c.phone + '</td>' +
             '<td data-label="Services"><div class="flex flex-wrap gap-1.5">' + chips + '</div></td>' +
             '<td data-label="" class="text-right">' +

@@ -59,20 +59,18 @@
         </div>
 
         <div>
+          <label for="cust-area" class="block text-sm font-semibold text-gray-700 mb-1.5">Area / Locality <span class="text-danger">*</span></label>
+          <input type="text" id="cust-area" placeholder="e.g. Adarsh Nagar, Ward No. 5" class="form-input" />
+        </div>
+
+        <div>
           <label for="cust-contact" class="block text-sm font-semibold text-gray-700 mb-1.5">Contact Number <span class="text-danger">*</span></label>
           <input type="text" id="cust-contact" value="+977-" placeholder="+977-98XXXXXXXX" class="form-input" />
         </div>
 
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">Service For <span class="text-danger">*</span></label>
-          <div class="flex flex-wrap gap-2" id="service-chips-container">
-            <button type="button" data-value="RO" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">RO</button>
-            <button type="button" data-value="TV" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">TV</button>
-            <button type="button" data-value="Refrigerator" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">Refrigerator</button>
-            <button type="button" data-value="AC" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">AC</button>
-            <button type="button" data-value="Washing Machine" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">Washing Machine</button>
-            <button type="button" data-value="Other" class="service-chip px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all">Other</button>
-          </div>
+          <div class="flex flex-wrap gap-2" id="service-chips-container"></div>
           <input type="hidden" id="cust-services" value="" />
         </div>
 
@@ -191,36 +189,49 @@
 
       updatePinFromLatLng(defaultLat, defaultLng);
 
-      // ====== Service Chips ======
+      // ====== Service Chips (dynamic) ======
       var selectedServices = [];
       var hiddenInput = document.getElementById('cust-services');
-      var chips = document.querySelectorAll('.service-chip');
+      var chipsContainer = document.getElementById('service-chips-container');
+
+      function renderServiceChips() {
+        var types = window.getServiceTypes();
+        chipsContainer.innerHTML = '';
+        types.forEach(function(type) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.setAttribute('data-value', type);
+          btn.className = 'px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand/50 hover:text-brand transition-all';
+          btn.textContent = type;
+          btn.addEventListener('click', function() {
+            var val = this.getAttribute('data-value');
+            var idx = selectedServices.indexOf(val);
+            if (idx >= 0) {
+              selectedServices.splice(idx, 1);
+              this.classList.remove('bg-brand', 'text-white', 'border-brand');
+              this.classList.add('border-gray-200', 'text-gray-600');
+            } else {
+              selectedServices.push(val);
+              this.classList.remove('border-gray-200', 'text-gray-600');
+              this.classList.add('bg-brand', 'text-white', 'border-brand');
+            }
+            updateHiddenInput();
+          });
+          chipsContainer.appendChild(btn);
+        });
+      }
 
       function updateHiddenInput() {
         hiddenInput.value = selectedServices.join(',');
       }
 
-      chips.forEach(function(chip) {
-        chip.addEventListener('click', function() {
-          var val = this.getAttribute('data-value');
-          var idx = selectedServices.indexOf(val);
-          if (idx >= 0) {
-            selectedServices.splice(idx, 1);
-            this.classList.remove('bg-brand', 'text-white', 'border-brand');
-            this.classList.add('border-gray-200', 'text-gray-600');
-          } else {
-            selectedServices.push(val);
-            this.classList.remove('border-gray-200', 'text-gray-600');
-            this.classList.add('bg-brand', 'text-white', 'border-brand');
-          }
-          updateHiddenInput();
-        });
-      });
+      renderServiceChips();
 
       // ====== Save ======
       document.getElementById('btn-save-customer').addEventListener('click', function() {
         var name = document.getElementById('cust-name').value.trim();
         var address = document.getElementById('cust-address').value.trim();
+        var area = document.getElementById('cust-area').value.trim();
         var contact = document.getElementById('cust-contact').value.trim();
         var services = selectedServices;
 
@@ -232,6 +243,11 @@
         if (!address) {
           window.showToast('Please enter the customer address.', 'error');
           document.getElementById('cust-address').focus();
+          return;
+        }
+        if (!area) {
+          window.showToast('Please enter the area / locality.', 'error');
+          document.getElementById('cust-area').focus();
           return;
         }
         if (!contact || contact === '+977-') {
@@ -247,6 +263,7 @@
         var customer = {
           name: name,
           address: address,
+          area: area,
           phone: contact,
           servicesFor: services,
           location: {
@@ -258,8 +275,10 @@
         var saved = window.saveCustomer(customer);
         window.showToast('Customer "' + saved.name + '" has been added successfully!', 'success');
 
+        localStorage.setItem('fscrm_currentCustomerId', String(saved.id));
+
         setTimeout(function() {
-          window.location.href = 'customers.html';
+          window.location.href = 'customer-detail.html';
         }, 1200);
       });
 

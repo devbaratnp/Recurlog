@@ -972,3 +972,145 @@ body.sidebar-open {
   margin-top: var(--space-1);
   font-weight: 400;
 }
+
+/* ===== FILTER BANNER ===== */
+.filter-banner {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: #1E40AF;
+  margin-bottom: var(--space-4);
+}
+
+.filter-banner .filter-banner-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-banner .filter-banner-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.filter-banner .filter-banner-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filter-banner .filter-banner-clear {
+  padding: 4px 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid #BFDBFE;
+  color: #1E40AF;
+  cursor: pointer;
+  transition: all 150ms;
+  white-space: nowrap;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-banner .filter-banner-clear:hover {
+  background: #DBEAFE;
+}
+
+/* ===== ORDER BADGES ===== */
+.badge-order-pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.badge-order-assigned {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+.badge-order-completed {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.badge-order-cancelled {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.badge-priority-urgent {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.badge-priority-normal {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+/* ===== QUICK ACTION BUTTONS ===== */
+.quick-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 150ms;
+  min-height: 48px;
+  box-shadow: 0 4px 14px 0 rgba(29, 185, 84, 0.3);
+}
+
+.quick-action-btn:hover {
+  background: var(--color-primary-dark);
+  box-shadow: 0 6px 20px rgba(29, 185, 84, 0.45);
+  transform: translateY(-1px);
+}
+
+.quick-action-btn:active {
+  transform: scale(0.97);
+}
+
+/* ===== STAT CARD CLICKABLE ===== */
+.stat-clickable {
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+
+.stat-clickable:hover {
+  opacity: 0.75;
+}
+
+.stat-clickable:active {
+  opacity: 0.6;
+}
+
+/* ===== ORDER CHIP SELECTOR ===== */
+.service-chip {
+  transition: all 150ms;
+}
+
+.service-chip.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}

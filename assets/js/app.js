@@ -115,11 +115,13 @@ window.saveService = function(service) {
     var staff = window.getStaffMember(service.assignedTo);
     var cat = window.getCategory(service.categoryId);
     var taskDate = service.firstScheduledDate || todayISO();
+    var taskTitle = (cat ? cat.name + ' - ' : '') + (customer ? customer.name : '');
+    if (service.problem) taskTitle = taskTitle + ' (' + service.problem.substring(0, 40) + ')';
     var task = {
       id: getNextId(),
       serviceId: service.id,
       customerId: service.customerId,
-      title: (cat ? cat.name + ' - ' : '') + (customer ? customer.name : ''),
+      title: taskTitle,
       status: 'pending',
       scheduledDate: taskDate,
       completedDate: null,
@@ -308,6 +310,205 @@ window.pushNotification = function(text, type, relatedId) {
   localStorage.setItem('fscrm_notifications', JSON.stringify(notifs));
 };
 
+// ========== SERVICE TYPES HELPERS ==========
+
+window.getServiceTypes = function() {
+  try { return JSON.parse(localStorage.getItem('fscrm_service_types') || '[]'); } catch(e) { return []; }
+};
+
+window.storeServiceTypes = function(types) {
+  localStorage.setItem('fscrm_service_types', JSON.stringify(types));
+};
+
+// ========== ORDER CRUD ==========
+
+window.getOrders = function(filter) {
+  try {
+    var orders = JSON.parse(localStorage.getItem('fscrm_orders') || '[]');
+    if (!filter) return orders;
+    return orders.filter(function(o) {
+      var match = true;
+      if (filter.status) match = match && o.status === filter.status;
+      if (filter.customerId) match = match && String(o.customerId) === String(filter.customerId);
+      if (filter.priority) match = match && o.priority === filter.priority;
+      return match;
+    });
+  } catch(e) { return []; }
+};
+
+window.getOrder = function(id) {
+  var orders = window.getOrders();
+  return orders.find(function(o) { return String(o.id) === String(id); }) || null;
+};
+
+window.createOrder = function(orderData) {
+  var orders = window.getOrders();
+  orderData.id = getNextId();
+  orderData.createdAt = new Date().toISOString();
+  orders.push(orderData);
+  localStorage.setItem('fscrm_orders', JSON.stringify(orders));
+  window.pushNotification('New order created for ' + orderData.customerName + ' - ' + orderData.serviceFor, 'order_created', orderData.id);
+  return orderData;
+};
+
+window.updateOrder = function(orderId, updates) {
+  var orders = window.getOrders();
+  var idx = orders.findIndex(function(o) { return String(o.id) === String(orderId); });
+  if (idx < 0) return null;
+  for (var key in updates) {
+    if (updates.hasOwnProperty(key)) {
+      orders[idx][key] = updates[key];
+    }
+  }
+  localStorage.setItem('fscrm_orders', JSON.stringify(orders));
+  return orders[idx];
+};
+
+window.assignOrder = function(orderId, staffId, staffName, scheduledDate) {
+  var updates = {
+    status: 'assigned',
+    assignedTo: staffId,
+    assignedStaffName: staffName,
+    scheduledDate: scheduledDate
+  };
+  var order = window.updateOrder(orderId, updates);
+  if (order) {
+    window.pushNotification('Order #' + orderId + ' assigned to ' + staffName + ' for ' + order.customerName, 'order_assigned', orderId);
+  }
+  return order;
+};
+
+window.completeOrder = function(orderId, notes, createTask) {
+  var order = window.getOrder(orderId);
+  if (!order) return null;
+  var updates = {
+    status: 'completed',
+    notes: notes || ''
+  };
+  order = window.updateOrder(orderId, updates);
+  if (order && createTask) {
+    var task = {
+      id: getNextId(),
+      serviceId: null,
+      customerId: order.customerId,
+      title: 'Order #' + orderId + ' - ' + order.serviceFor + ' for ' + order.customerName,
+      status: 'completed',
+      scheduledDate: order.scheduledDate || todayISO(),
+      completedDate: todayISO(),
+      assignedTo: order.assignedTo,
+      notes: notes || '',
+      categoryId: null
+    };
+    var tasks = window.getTasks();
+    tasks.push(task);
+    localStorage.setItem('fscrm_tasks', JSON.stringify(tasks));
+  }
+  window.pushNotification('Order #' + orderId + ' completed for ' + order.customerName, 'order_completed', orderId);
+  return order;
+};
+
+window.storeOrders = function(orders) {
+  localStorage.setItem('fscrm_orders', JSON.stringify(orders));
+};
+
+window.cancelOrder = function(orderId) {
+  var order = window.updateOrder(orderId, { status: 'cancelled' });
+  if (order) {
+    window.pushNotification('Order #' + orderId + ' cancelled for ' + order.customerName, 'task_missed', orderId);
+  }
+  return order;
+};
+
+// ========== DASHBOARD STATS ==========
+
+window.getDashboardStats = function() {
+  var tasks = window.getTasks();
+  var customers = window.getCustomers();
+  var services = window.getServices();
+  var staff = window.getStaff();
+  var orders = window.getOrders();
+  var today = todayISO();
+
+  var todayTasks = tasks.filter(function(t) { return t.scheduledDate === today; });
+  var missedTasks = tasks.filter(function(t) { return t.status === 'missed'; });
+
+  var recurringServiceIds = services.filter(function(s) { return s.isRecurring; }).map(function(s) { return s.id; });
+  var oneTimeServiceIds = services.filter(function(s) { return !s.isRecurring; }).map(function(s) { return s.id; });
+
+  var oneTimeCustomers = [];
+  var recurringCustomers = [];
+  customers.forEach(function(c) {
+    var custServices = services.filter(function(s) { return String(s.customerId) === String(c.id); });
+    var hasRecurring = custServices.some(function(s) { return s.isRecurring; });
+    var hasOneTime = custServices.some(function(s) { return !s.isRecurring; });
+    if (hasRecurring && recurringCustomers.indexOf(c.id) < 0) recurringCustomers.push(c.id);
+    if (hasOneTime && oneTimeCustomers.indexOf(c.id) < 0) oneTimeCustomers.push(c.id);
+  });
+
+  var oneTimeTasks = tasks.filter(function(t) { return t.serviceId && oneTimeServiceIds.indexOf(t.serviceId) >= 0; });
+  var recurringTasks = tasks.filter(function(t) { return t.serviceId && recurringServiceIds.indexOf(t.serviceId) >= 0; });
+
+  var areaWise = {};
+  customers.forEach(function(c) {
+    if (!c.area) return;
+    if (!areaWise[c.area]) areaWise[c.area] = { total: 0, today: 0, missed: 0 };
+    var custTasks = tasks.filter(function(t) { return String(t.customerId) === String(c.id); });
+    areaWise[c.area].total += custTasks.length;
+    areaWise[c.area].today += custTasks.filter(function(t) { return t.scheduledDate === today; }).length;
+    areaWise[c.area].missed += custTasks.filter(function(t) { return t.status === 'missed'; }).length;
+  });
+
+  var staffWise = {};
+  staff.forEach(function(s) {
+    var sTasks = tasks.filter(function(t) { return String(t.assignedTo) === String(s.id); });
+    staffWise[s.id] = {
+      name: s.name,
+      total: sTasks.length,
+      today: sTasks.filter(function(t) { return t.scheduledDate === today; }).length,
+      missed: sTasks.filter(function(t) { return t.status === 'missed'; }).length
+    };
+  });
+
+  var pendingOrders = orders.filter(function(o) { return o.status === 'pending'; }).length;
+  var urgentOrders = orders.filter(function(o) { return o.status !== 'cancelled' && o.priority === 'urgent'; }).length;
+  var totalOrders = orders.length;
+
+  return {
+    totalCustomers: customers.length,
+    totalStaff: staff.length,
+    oneTimeCustomers: oneTimeCustomers.length,
+    recurringCustomers: recurringCustomers.length,
+    oneTimeTasks: oneTimeTasks,
+    recurringTasks: recurringTasks,
+    oneTimeToday: oneTimeTasks.filter(function(t) { return t.scheduledDate === today; }).length,
+    oneTimeMissed: oneTimeTasks.filter(function(t) { return t.status === 'missed'; }).length,
+    recurringToday: recurringTasks.filter(function(t) { return t.scheduledDate === today; }).length,
+    recurringMissed: recurringTasks.filter(function(t) { return t.status === 'missed'; }).length,
+    todayTasks: todayTasks.length,
+    missedTasks: missedTasks.length,
+    areaWise: areaWise,
+    staffWise: staffWise,
+    totalOrders: totalOrders,
+    pendingOrders: pendingOrders,
+    urgentOrders: urgentOrders
+  };
+};
+
+// ========== DRILL-DOWN FILTER HELPER ==========
+
+window.navigateWithFilter = function(filterObj) {
+  try {
+    localStorage.setItem('fscrm_task_filter', JSON.stringify(filterObj));
+  } catch(e) {}
+  window.location.href = 'tasks.html';
+};
+
+window.clearTaskFilter = function() {
+  try {
+    localStorage.removeItem('fscrm_task_filter');
+  } catch(e) {}
+};
+
 // ========== RECURRENCE ENGINE ==========
 
 window.getNextDueDate = function(service, lastCompletedDate, previousScheduledDate) {
@@ -457,7 +658,16 @@ window.renderStatusPill = function(status) {
 
 window.formatDate = function(date) {
   if (!date) return '';
-  var d = typeof date === 'string' ? new Date(date + 'T00:00:00') : new Date(date);
+  var d;
+  if (typeof date === 'string') {
+    if (date.indexOf('T') >= 0) {
+      d = new Date(date);
+    } else {
+      d = new Date(date + 'T00:00:00');
+    }
+  } else {
+    d = new Date(date);
+  }
   if (isNaN(d.getTime())) return '';
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
@@ -465,7 +675,16 @@ window.formatDate = function(date) {
 
 window.formatRelative = function(date) {
   if (!date) return '';
-  var d = typeof date === 'string' ? new Date(date + 'T00:00:00') : new Date(date);
+  var d;
+  if (typeof date === 'string') {
+    if (date.indexOf('T') >= 0) {
+      d = new Date(date);
+    } else {
+      d = new Date(date + 'T00:00:00');
+    }
+  } else {
+    d = new Date(date);
+  }
   if (isNaN(d.getTime())) return '';
   var now = new Date();
   now.setHours(0,0,0,0);

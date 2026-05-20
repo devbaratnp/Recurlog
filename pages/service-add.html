@@ -61,6 +61,12 @@
             <div id="service-for-chips" class="flex flex-wrap gap-2"></div>
           </div>
 
+          <!-- Problem / Issue Description -->
+          <div>
+            <label for="service-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem / Issue Description</label>
+            <textarea id="service-problem" rows="3" class="form-textarea" placeholder="Describe the customer's problem or issue in detail..."></textarea>
+          </div>
+
           <!-- Category -->
           <div>
             <label for="service-category" class="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
@@ -189,13 +195,13 @@
       });
     });
 
-    // ========== SERVICE FOR CHIPS ==========
-    var SERVICE_FOR_ITEMS = ['RO', 'TV', 'Refrigerator', 'AC', 'Washing Machine', 'Other'];
+    // ========== SERVICE FOR CHIPS (dynamic) ==========
     var selectedServiceFor = null;
 
     function initServiceForChips() {
       var container = document.getElementById('service-for-chips');
-      SERVICE_FOR_ITEMS.forEach(function (item) {
+      var types = window.getServiceTypes();
+      types.forEach(function (item) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = item;
@@ -330,6 +336,7 @@
       var firstDate = document.getElementById('service-first-date').value;
       var staffId = document.getElementById('service-staff').value;
       var notes = document.getElementById('service-notes').value;
+      var problem = document.getElementById('service-problem').value.trim();
 
       if (!customerId || customerId === '__add_new__') {
         window.showToast('Please select a customer', 'error');
@@ -362,6 +369,7 @@
         categoryId: parseInt(categoryId, 10),
         serviceFor: selectedServiceFor,
         title: title,
+        problem: problem,
         isRecurring: isRecurring,
         firstScheduledDate: firstDate,
         assignedTo: parseInt(staffId, 10),

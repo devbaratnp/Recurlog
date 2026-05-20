@@ -46,7 +46,8 @@
         '<nav class="sidebar-nav">' +
           sidebarLink('dashboard.html', 'layout-dashboard', 'Dashboard', 'dashboard.html') +
           sidebarLink('customers.html', 'users', 'Customers', 'customers.html') +
-          sidebarLink('tasks.html', 'clipboard-list', 'Tasks', 'tasks.html') +
+          sidebarLink('orders.html', 'clipboard-list', 'Orders', 'orders.html') +
+          sidebarLink('tasks.html', 'check-square', 'Tasks', 'tasks.html') +
           sidebarLink('staff.html', 'briefcase', 'Staff', 'staff.html') +
           sidebarLink('reports.html', 'bar-chart-3', 'Reports', 'reports.html') +
           sidebarLink('notifications.html', 'bell', 'Notifications', 'notifications.html') +

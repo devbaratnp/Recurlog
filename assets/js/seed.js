@@ -29,14 +29,14 @@ window.SEED_DATA = (function () {
   var nextId = 1;
 
   var customers = [
-    { id: 1, name: 'Sharma Family', address: 'Adarsh Nagar, Birgunj', phone: '+977-9801234001', servicesFor: ['RO', 'Refrigerator'], location: { lat: 27.00, lng: 84.87 } },
-    { id: 2, name: 'Gupta Electronics', address: 'Main Road, Birgunj', phone: '+977-9801234002', servicesFor: ['TV', 'AC'], location: { lat: 27.01, lng: 84.88 } },
-    { id: 3, name: 'Hotel Makalu', address: 'Ghantaghar, Birgunj', phone: '+977-9801234003', servicesFor: ['AC', 'Refrigerator'], location: { lat: 27.005, lng: 84.875 } },
-    { id: 4, name: 'Patel Residence', address: 'Powerhouse Road, Birgunj', phone: '+977-9801234004', servicesFor: ['RO'], location: { lat: 26.99, lng: 84.86 } },
-    { id: 5, name: 'Singh Niwas', address: 'Adarshanagar, Birgunj', phone: '+977-9801234005', servicesFor: ['Washing Machine'], location: { lat: 27.015, lng: 84.885 } },
-    { id: 6, name: 'Modern Pharmacy', address: 'Adarsh Nagar, Birgunj', phone: '+977-9801234006', servicesFor: ['Refrigerator', 'AC'], location: { lat: 27.008, lng: 84.878 } },
-    { id: 7, name: 'Khanal House', address: 'Murli Chowk, Birgunj', phone: '+977-9801234007', servicesFor: ['RO', 'TV'], location: { lat: 26.995, lng: 84.865 } },
-    { id: 8, name: 'Birgunj Sweets', address: 'Maisthan, Birgunj', phone: '+977-9801234008', servicesFor: ['Refrigerator'], location: { lat: 27.02, lng: 84.89 } }
+    { id: 1, name: 'Sharma Family', address: 'Adarsh Nagar, Birgunj', area: 'Adarsh Nagar', phone: '+977-9801234001', servicesFor: ['RO', 'Refrigerator'], location: { lat: 27.00, lng: 84.87 } },
+    { id: 2, name: 'Gupta Electronics', address: 'Main Road, Birgunj', area: 'Station Road', phone: '+977-9801234002', servicesFor: ['TV', 'AC'], location: { lat: 27.01, lng: 84.88 } },
+    { id: 3, name: 'Hotel Makalu', address: 'Ghantaghar, Birgunj', area: 'Ghantaghar Chowk', phone: '+977-9801234003', servicesFor: ['AC', 'Refrigerator'], location: { lat: 27.005, lng: 84.875 } },
+    { id: 4, name: 'Patel Residence', address: 'Powerhouse Road, Birgunj', area: 'Powerhouse Road', phone: '+977-9801234004', servicesFor: ['RO'], location: { lat: 26.99, lng: 84.86 } },
+    { id: 5, name: 'Singh Niwas', address: 'Adarshanagar, Birgunj', area: 'Mahabirsthan', phone: '+977-9801234005', servicesFor: ['Washing Machine'], location: { lat: 27.015, lng: 84.885 } },
+    { id: 6, name: 'Modern Pharmacy', address: 'Adarsh Nagar, Birgunj', area: 'Adarsh Nagar', phone: '+977-9801234006', servicesFor: ['Refrigerator', 'AC'], location: { lat: 27.008, lng: 84.878 } },
+    { id: 7, name: 'Khanal House', address: 'Murli Chowk, Birgunj', area: 'Murli Chowk', phone: '+977-9801234007', servicesFor: ['RO', 'TV'], location: { lat: 26.995, lng: 84.865 } },
+    { id: 8, name: 'Birgunj Sweets', address: 'Maisthan, Birgunj', area: 'Maisthan', phone: '+977-9801234008', servicesFor: ['Refrigerator'], location: { lat: 27.02, lng: 84.89 } }
   ];
 
   var staff = [
@@ -54,6 +54,24 @@ window.SEED_DATA = (function () {
     { id: 4, name: 'Deep Cleaning', color: '#8B5CF6' },
     { id: 5, name: 'Installation', color: '#EC4899' },
     { id: 6, name: 'Inspection', color: '#6366F1' }
+  ];
+
+  var serviceTypes = ['RO', 'Chimney', 'Refrigerator', 'TV', 'Washing Machine', 'AC', 'Other'];
+
+  var orders = [
+    { id: 1, customerId: 1, customerName: 'Sharma Family', serviceFor: 'RO', problem: 'Water pressure very low, filter needs urgent check', status: 'pending', priority: 'urgent', assignedTo: null, assignedStaffName: null, createdAt: toISO(daysFromToday(-5)), scheduledDate: null, notes: '' },
+    { id: 2, customerId: 2, customerName: 'Gupta Electronics', serviceFor: 'AC', problem: 'AC not cooling properly, gas might be low', status: 'assigned', priority: 'normal', assignedTo: 1, assignedStaffName: 'Ramesh Yadav', createdAt: toISO(daysFromToday(-3)), scheduledDate: toISO(daysFromToday(1)), notes: 'Customer called in the morning' },
+    { id: 3, customerId: 3, customerName: 'Hotel Makalu', serviceFor: 'Refrigerator', problem: 'Commercial fridge making unusual noise, cooling inconsistent', status: 'assigned', priority: 'normal', assignedTo: 2, assignedStaffName: 'Suresh Thakur', createdAt: toISO(daysFromToday(-4)), scheduledDate: toISO(daysFromToday(0)), notes: 'Priority customer - hotel business' },
+    { id: 4, customerId: 4, customerName: 'Patel Residence', serviceFor: 'RO', problem: 'RO is leaking from the bottom, water all over the floor', status: 'completed', priority: 'urgent', assignedTo: 4, assignedStaffName: 'Anita Devi', createdAt: toISO(daysFromToday(-10)), scheduledDate: toISO(daysFromToday(-9)), notes: 'Leak fixed, replaced seal' },
+    { id: 5, customerId: 5, customerName: 'Singh Niwas', serviceFor: 'Washing Machine', problem: 'Drum not spinning, error code E4 showing on display', status: 'pending', priority: 'normal', assignedTo: null, assignedStaffName: null, createdAt: toISO(daysFromToday(-2)), scheduledDate: null, notes: '' },
+    { id: 6, customerId: 6, customerName: 'Modern Pharmacy', serviceFor: 'AC', problem: 'AC installed last week but not blowing cold air', status: 'cancelled', priority: 'urgent', assignedTo: 3, assignedStaffName: 'Bikash Sah', createdAt: toISO(daysFromToday(-12)), scheduledDate: toISO(daysFromToday(-11)), notes: 'Customer cancelled - hired another service' },
+    { id: 7, customerId: 7, customerName: 'Khanal House', serviceFor: 'TV', problem: 'TV screen flickering when connected to HDMI', status: 'pending', priority: 'normal', assignedTo: null, assignedStaffName: null, createdAt: toISO(daysFromToday(-1)), scheduledDate: null, notes: 'Customer says issue started after power cut' },
+    { id: 8, customerId: 8, customerName: 'Birgunj Sweets', serviceFor: 'Refrigerator', problem: 'Display cooler not maintaining temperature, sweets getting spoiled', status: 'assigned', priority: 'urgent', assignedTo: 5, assignedStaffName: 'Manoj Kumar', createdAt: toISO(daysFromToday(-4)), scheduledDate: toISO(daysFromToday(0)), notes: 'URGENT - food safety concern' },
+    { id: 9, customerId: 2, customerName: 'Gupta Electronics', serviceFor: 'TV', problem: 'TV not turning on, power light blinking', status: 'pending', priority: 'normal', assignedTo: null, assignedStaffName: null, createdAt: toISO(daysFromToday(-6)), scheduledDate: null, notes: '' },
+    { id: 10, customerId: 1, customerName: 'Sharma Family', serviceFor: 'Refrigerator', problem: 'Ice maker not working, water dispenser also jammed', status: 'completed', priority: 'normal', assignedTo: 2, assignedStaffName: 'Suresh Thakur', createdAt: toISO(daysFromToday(-15)), scheduledDate: toISO(daysFromToday(-14)), notes: 'Ice maker repaired, water line unclogged' },
+    { id: 11, customerId: 4, customerName: 'Patel Residence', serviceFor: 'RO', problem: 'Bad taste in water, membrane might need replacement', status: 'pending', priority: 'normal', assignedTo: null, assignedStaffName: null, createdAt: toISO(daysFromToday(-3)), scheduledDate: null, notes: '' },
+    { id: 12, customerId: 6, customerName: 'Modern Pharmacy', serviceFor: 'Refrigerator', problem: 'Vaccine storage fridge temperature fluctuating', status: 'pending', priority: 'urgent', assignedTo: null, assignedStaffName: null, createdAt: toISO(daysFromToday(-1)), scheduledDate: null, notes: 'CRITICAL - contains vaccines' },
+    { id: 13, customerId: 3, customerName: 'Hotel Makalu', serviceFor: 'AC', problem: 'One AC unit in lobby making loud rattling sound', status: 'assigned', priority: 'normal', assignedTo: 4, assignedStaffName: 'Anita Devi', createdAt: toISO(daysFromToday(-7)), scheduledDate: toISO(daysFromToday(-5)), notes: 'May need fan motor replacement' }
   ];
 
   var services = [];
@@ -98,10 +116,7 @@ window.SEED_DATA = (function () {
     return toISO(d);
   }
 
-  // Service definitions
-  // [customerId, categoryId, serviceFor, title, isRecurring, recValue, recUnit, firstDateOffset, assignedTo]
   var rawServices = [
-    // C1 Sharma Family - RO + Refrigerator
     [1, 2, 'RO', 'RO Filter Change', true, 30, 'days', -75, 1],
     [1, 6, 'RO', 'RO System Inspection', true, 45, 'days', -80, 4],
     [1, 4, 'Refrigerator', 'Refrigerator Deep Cleaning', true, 90, 'days', -60, 2],
@@ -109,8 +124,6 @@ window.SEED_DATA = (function () {
     [1, 3, 'RO', 'RO Membrane Replacement', false, 0, '', -45, 4],
     [1, 5, 'RO', 'RO System Installation', false, 0, '', -120, 3],
     [1, 6, 'Refrigerator', 'Temperature Calibration Check', true, 45, 'days', -70, 5],
-
-    // C2 Gupta Electronics - TV + AC
     [2, 6, 'TV', 'TV Calibration', true, 90, 'days', -65, 2],
     [2, 1, 'AC', 'AC Annual Maintenance', true, 45, 'days', -75, 1],
     [2, 3, 'AC', 'AC Gas Refill', false, 0, '', -30, 3],
@@ -118,8 +131,6 @@ window.SEED_DATA = (function () {
     [2, 5, 'TV', 'TV Mounting Service', false, 0, '', -90, 5],
     [2, 6, 'AC', 'AC Performance Inspection', true, 45, 'days', -65, 1],
     [2, 3, 'TV', 'TV Display Repair', false, 0, '', -15, 2],
-
-    // C3 Hotel Makalu - AC + Refrigerator
     [3, 1, 'AC', 'AC Annual Maintenance', true, 45, 'days', -80, 1],
     [3, 4, 'Refrigerator', 'Refrigerator Deep Cleaning', true, 45, 'days', -70, 4],
     [3, 3, 'AC', 'AC Compressor Repair', false, 0, '', -55, 3],
@@ -128,23 +139,17 @@ window.SEED_DATA = (function () {
     [3, 6, 'Refrigerator', 'Commercial Cooler Inspection', true, 30, 'days', -75, 1],
     [3, 1, 'Refrigerator', 'Walk-in Cooler Maintenance', true, 45, 'days', -60, 5],
     [3, 3, 'AC', 'AC Thermostat Calibration', false, 0, '', -10, 2],
-
-    // C4 Patel Residence - RO
     [4, 2, 'RO', 'RO Filter Change', true, 30, 'days', -80, 4],
     [4, 3, 'RO', 'RO Membrane Replacement', false, 0, '', -50, 1],
     [4, 6, 'RO', 'Water Quality Test', true, 60, 'days', -60, 3],
     [4, 5, 'RO', 'RO Faucet Installation', false, 0, '', -100, 5],
     [4, 6, 'RO', 'RO System Inspection', true, 45, 'days', -70, 4],
-
-    // C5 Singh Niwas - Washing Machine
     [5, 3, 'Washing Machine', 'Drum Bearing Repair', false, 0, '', -35, 3],
     [5, 5, 'Washing Machine', 'Washing Machine Installation', false, 0, '', -95, 2],
     [5, 1, 'Washing Machine', 'Annual Maintenance', true, 45, 'days', -75, 1],
     [5, 6, 'Washing Machine', 'Performance Inspection', true, 30, 'days', -80, 4],
     [5, 4, 'Washing Machine', 'Drum Deep Cleaning', true, 60, 'days', -120, 5],
     [5, 3, 'Washing Machine', 'Water Inlet Valve Replacement', false, 0, '', -20, 2],
-
-    // C6 Modern Pharmacy - Refrigerator + AC
     [6, 1, 'Refrigerator', 'Vaccine Storage Unit Maintenance', true, 30, 'days', -80, 1],
     [6, 6, 'Refrigerator', 'Temperature Log Inspection', true, 14, 'days', -75, 4],
     [6, 1, 'AC', 'AC Annual Maintenance', true, 45, 'days', -65, 2],
@@ -153,16 +158,12 @@ window.SEED_DATA = (function () {
     [6, 3, 'Refrigerator', 'Thermostat Calibration Repair', false, 0, '', -25, 1],
     [6, 5, 'Refrigerator', 'Backup Unit Installation', false, 0, '', -110, 5],
     [6, 3, 'AC', 'AC Drain Line Repair', false, 0, '', -5, 2],
-
-    // C7 Khanal House - RO + TV
     [7, 2, 'RO', 'RO Filter Change', true, 30, 'days', -80, 4],
     [7, 6, 'TV', 'TV Picture Calibration', true, 90, 'days', -60, 2],
     [7, 6, 'RO', 'RO Water Quality Inspection', true, 45, 'days', -75, 1],
     [7, 3, 'TV', 'TV Wall Mount Repair', false, 0, '', -42, 3],
     [7, 3, 'RO', 'RO Pressure Pump Repair', false, 0, '', -18, 5],
     [7, 6, 'RO', 'RO System Audit', true, 60, 'days', -120, 4],
-
-    // C8 Birgunj Sweets - Refrigerator
     [8, 4, 'Refrigerator', 'Display Cooler Deep Cleaning', true, 30, 'days', -75, 1],
     [8, 3, 'Refrigerator', 'Compressor Repair', false, 0, '', -50, 3],
     [8, 1, 'Refrigerator', 'Commercial Fridge Maintenance', true, 30, 'days', -80, 4],
@@ -171,8 +172,6 @@ window.SEED_DATA = (function () {
     [8, 6, 'Refrigerator', 'Condenser Coil Inspection', true, 45, 'days', -65, 1],
     [8, 4, 'Refrigerator', 'Storage Room Cooler Cleaning', true, 60, 'days', -90, 4],
     [8, 3, 'Refrigerator', 'Door Hinge Replacement', false, 0, '', -8, 2],
-
-    // Extra services to boost task count
     [1, 6, 'RO', 'RO Preventive Inspection', true, 14, 'days', -72, 2],
     [1, 4, 'Refrigerator', 'Condenser Coil Cleaning', true, 30, 'days', -78, 5],
     [2, 4, 'AC', 'AC Condenser Cleaning', true, 30, 'days', -82, 3],
@@ -190,8 +189,6 @@ window.SEED_DATA = (function () {
     [8, 4, 'Refrigerator', 'Ice Machine Cleaning', true, 14, 'days', -71, 4]
   ];
 
-  // Build services
-  // raw service format: [customerId, categoryId, serviceFor, title, isRecurring, recValue, recUnit, firstDateOffset, assignedTo]
   rawServices.forEach(function (s) {
     var service = {
       id: nextId++,
@@ -199,6 +196,7 @@ window.SEED_DATA = (function () {
       categoryId: s[1],
       serviceFor: s[2],
       title: s[3],
+      problem: '',
       isRecurring: s[4],
       firstScheduledDate: toISO(daysFromToday(s[7])),
       assignedTo: s[8],
@@ -212,7 +210,6 @@ window.SEED_DATA = (function () {
     services.push(service);
   });
 
-  // Generate tasks from services
   services.forEach(function (service) {
     if (service.isRecurring) {
       var firstDate = new Date(service.firstScheduledDate);
@@ -221,7 +218,6 @@ window.SEED_DATA = (function () {
         : service.recurrence.value;
       var current = new Date(firstDate);
 
-      // Generate occurrences from firstDate through endWindow
       while (current <= endWindow) {
         if (current >= startWindow) {
           var status = getStatus(current, service.assignedTo);
@@ -241,9 +237,7 @@ window.SEED_DATA = (function () {
         current = new Date(current.getTime() + interval * 24 * 60 * 60 * 1000);
       }
     } else {
-      // One-time service
       var sDate = new Date(service.firstScheduledDate);
-      // Place one-time service tasks within the window if possible
       if (sDate < startWindow) sDate = new Date(startWindow.getTime() + Math.floor(Math.random() * 75) * 24 * 60 * 60 * 1000);
       if (sDate > endWindow) sDate = new Date(startWindow.getTime() + Math.floor(Math.random() * 75) * 24 * 60 * 60 * 1000);
       var status = getStatus(sDate, service.assignedTo);
@@ -262,13 +256,11 @@ window.SEED_DATA = (function () {
     }
   });
 
-  // Generate ~20 notifications from recent tasks
   var recentTasks = tasks.filter(function (t) {
     var d = new Date(t.scheduledDate);
     return d >= daysFromToday(-30) && d <= today;
   });
 
-  // Sort by scheduledDate descending and pick ~20
   recentTasks.sort(function (a, b) {
     return new Date(b.scheduledDate) - new Date(a.scheduledDate);
   });
@@ -291,7 +283,6 @@ window.SEED_DATA = (function () {
     });
   });
 
-  // Add a few extra notifications for variety
   var extraNotifs = [
     { text: 'New customer registered: Sharma Family', type: 'customer_added', age: -35 },
     { text: 'New service added: AC Annual Maintenance for Gupta Electronics', type: 'service_added', age: -28 },
@@ -313,7 +304,6 @@ window.SEED_DATA = (function () {
     });
   });
 
-  // Sort notifications by createdAt descending
   notifications.sort(function (a, b) {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
@@ -325,22 +315,34 @@ window.SEED_DATA = (function () {
     services: services,
     tasks: tasks,
     notifications: notifications,
+    orders: orders,
+    serviceTypes: serviceTypes,
     nextId: nextId
   };
 })();
 
 var seedData = {
   init: function () {
-    if (localStorage.getItem('fscrm_seeded')) return;
-    var data = window.SEED_DATA;
-    localStorage.setItem('fscrm_customers', JSON.stringify(data.customers));
-    localStorage.setItem('fscrm_staff', JSON.stringify(data.staff));
-    localStorage.setItem('fscrm_categories', JSON.stringify(data.categories));
-    localStorage.setItem('fscrm_services', JSON.stringify(data.services));
-    localStorage.setItem('fscrm_tasks', JSON.stringify(data.tasks));
-    localStorage.setItem('fscrm_notifications', JSON.stringify(data.notifications));
-    localStorage.setItem('fscrm_next_id', data.nextId.toString());
-    localStorage.setItem('fscrm_seeded', 'true');
+    if (!localStorage.getItem('fscrm_seeded')) {
+      var data = window.SEED_DATA;
+      localStorage.setItem('fscrm_customers', JSON.stringify(data.customers));
+      localStorage.setItem('fscrm_staff', JSON.stringify(data.staff));
+      localStorage.setItem('fscrm_categories', JSON.stringify(data.categories));
+      localStorage.setItem('fscrm_services', JSON.stringify(data.services));
+      localStorage.setItem('fscrm_tasks', JSON.stringify(data.tasks));
+      localStorage.setItem('fscrm_notifications', JSON.stringify(data.notifications));
+      localStorage.setItem('fscrm_orders', JSON.stringify(data.orders));
+      localStorage.setItem('fscrm_service_types', JSON.stringify(data.serviceTypes));
+      localStorage.setItem('fscrm_next_id', data.nextId.toString());
+      localStorage.setItem('fscrm_seeded', 'true');
+    } else {
+      if (!localStorage.getItem('fscrm_service_types')) {
+        localStorage.setItem('fscrm_service_types', JSON.stringify(['RO', 'Chimney', 'Refrigerator', 'TV', 'Washing Machine', 'AC', 'Other']));
+      }
+      if (!localStorage.getItem('fscrm_orders')) {
+        localStorage.setItem('fscrm_orders', JSON.stringify([]));
+      }
+    }
   }
 };
 

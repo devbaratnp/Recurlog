@@ -51,90 +51,150 @@
     </header>
 
     <main class="p-4 md:p-6 max-w-6xl">
-      <h1 class="text-xl font-bold text-navy mb-5">Dashboard</h1>
+      <h1 class="text-xl font-bold text-navy mb-5">Dashboard &mdash; Overview</h1>
 
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="card p-4 border-l-4 border-l-brand">
+      <!-- 4A — Quick Action Buttons -->
+      <div class="flex flex-wrap gap-3 mb-6">
+        <a href="customer-add.html" class="quick-action-btn">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Add Customer
+        </a>
+        <a href="service-add.html" class="quick-action-btn">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Task
+        </a>
+        <a href="staff.html" class="quick-action-btn">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Add Staff
+        </a>
+      </div>
+
+      <!-- 4F — Open Orders Card -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="orders-stats-container">
+        <div class="card p-4 border-l-4 border-l-purple-500">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Customers</p>
-              <p id="stat-customers" class="text-2xl font-bold text-navy mt-1">0</p>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Orders</p>
+              <p id="stat-total-orders" class="text-2xl font-bold text-navy mt-1 cursor-pointer hover:opacity-75" onclick="window.location.href='orders.html'">0</p>
             </div>
-            <div class="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center">
-              <i data-lucide="users" class="w-5 h-5 text-brand"></i>
+            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <i data-lucide="clipboard-list" class="w-5 h-5 text-purple-600"></i>
             </div>
           </div>
         </div>
         <div class="card p-4 border-l-4 border-l-amber">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Tasks Today</p>
-              <p id="stat-tasks-today" class="text-2xl font-bold text-navy mt-1">0</p>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Pending Orders</p>
+              <p id="stat-pending-orders" class="text-2xl font-bold text-navy mt-1 cursor-pointer hover:opacity-75" onclick="navigateToOrders('pending')">0</p>
             </div>
             <div class="w-10 h-10 bg-amber/10 rounded-lg flex items-center justify-center">
-              <i data-lucide="clipboard-list" class="w-5 h-5 text-amber"></i>
+              <i data-lucide="clock" class="w-5 h-5 text-amber"></i>
             </div>
           </div>
         </div>
         <div class="card p-4 border-l-4 border-l-danger">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Missed Tasks</p>
-              <p id="stat-missed" class="text-2xl font-bold text-navy mt-1">0</p>
+              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Urgent Orders</p>
+              <p id="stat-urgent-orders" class="text-2xl font-bold text-navy mt-1 cursor-pointer hover:opacity-75" onclick="navigateToOrders('urgent')">0</p>
             </div>
             <div class="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center">
               <i data-lucide="alert-triangle" class="w-5 h-5 text-danger"></i>
             </div>
           </div>
         </div>
-        <div class="card p-4 border-l-4 border-l-navy">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Active Staff</p>
-              <p id="stat-staff" class="text-2xl font-bold text-navy mt-1">0</p>
-            </div>
-            <div class="w-10 h-10 bg-navy/10 rounded-lg flex items-center justify-center">
-              <i data-lucide="briefcase" class="w-5 h-5 text-navy"></i>
-            </div>
+      </div>
+
+      <!-- 4B — Total Customers Card -->
+      <div class="card p-4 md:p-5 mb-6 border-l-4 border-l-brand">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Customers</p>
+            <p id="stat-total-customers" class="text-3xl font-bold text-navy mt-1 stat-clickable" onclick="window.location.href='customers.html'">0</p>
+          </div>
+          <div class="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center">
+            <i data-lucide="users" class="w-6 h-6 text-brand"></i>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 card overflow-hidden">
-          <div class="card-header">
-            <h2 class="font-semibold text-navy">Today's Schedule</h2>
-          </div>
-          <div class="p-0">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Customer</th>
-                  <th>Staff</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="today-tasks-body"></tbody>
-            </table>
-          </div>
-          <div id="today-empty" class="empty-state hidden">
-            <i data-lucide="clipboard-list"></i>
-            <p>No tasks scheduled for today.</p>
-          </div>
+      <!-- 4C — One-Time Customers Report -->
+      <div class="card overflow-hidden mb-6">
+        <div class="card-header">
+          <h2 class="font-semibold text-navy flex items-center gap-2">
+            <i data-lucide="calendar" class="w-4 h-4 text-gray-400"></i> One-Time Customers
+          </h2>
         </div>
-
-        <div class="card overflow-hidden">
-          <div class="card-header">
-            <h2 class="font-semibold text-navy">Recent Activity</h2>
+        <div class="grid grid-cols-3 divide-x divide-gray-100">
+          <div class="p-4 text-center">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Customers</p>
+            <p id="stat-onetime-customers" class="text-xl font-bold text-navy stat-clickable" onclick="drillOneTime('all')">0</p>
           </div>
-          <div id="recent-activity" class="divide-y divide-gray-50"></div>
+          <div class="p-4 text-center">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Today's Tasks</p>
+            <p id="stat-onetime-today" class="text-xl font-bold text-navy stat-clickable" onclick="drillOneTime('today')">0</p>
+          </div>
+          <div class="p-4 text-center">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Missed Tasks</p>
+            <p id="stat-onetime-missed" class="text-xl font-bold text-danger stat-clickable" onclick="drillOneTime('missed')">0</p>
+          </div>
         </div>
       </div>
+
+      <!-- 4D — Recurring Customers Report -->
+      <div class="card overflow-hidden mb-6">
+        <div class="card-header">
+          <h2 class="font-semibold text-navy flex items-center gap-2">
+            <i data-lucide="repeat" class="w-4 h-4 text-gray-400"></i> Recurring Customers
+          </h2>
+        </div>
+        <div class="grid grid-cols-3 divide-x divide-gray-100">
+          <div class="p-4 text-center">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Customers</p>
+            <p id="stat-recurring-customers" class="text-xl font-bold text-navy stat-clickable" onclick="drillRecurring('all')">0</p>
+          </div>
+          <div class="p-4 text-center">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Today's Tasks</p>
+            <p id="stat-recurring-today" class="text-xl font-bold text-navy stat-clickable" onclick="drillRecurring('today')">0</p>
+          </div>
+          <div class="p-4 text-center">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Missed Tasks</p>
+            <p id="stat-recurring-missed" class="text-xl font-bold text-danger stat-clickable" onclick="drillRecurring('missed')">0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4E — Area-Wise Report -->
+      <div class="card overflow-hidden mb-6">
+        <div class="card-header flex items-center justify-between">
+          <h2 class="font-semibold text-navy flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> Area-Wise Report
+          </h2>
+          <button id="area-view-all" class="text-xs font-medium text-brand hover:underline hidden">View All</button>
+        </div>
+        <div id="area-report-body" class="overflow-x-auto"></div>
+        <div id="area-empty" class="empty-state hidden">
+          <i data-lucide="map"></i>
+          <p>No area data available</p>
+        </div>
+      </div>
+
+      <!-- 4F — Staff-Wise Report -->
+      <div class="card overflow-hidden mb-6">
+        <div class="card-header">
+          <h2 class="font-semibold text-navy flex items-center gap-2">
+            <i data-lucide="briefcase" class="w-4 h-4 text-gray-400"></i> Staff-Wise Report
+          </h2>
+        </div>
+        <div id="staff-report-body" class="overflow-x-auto"></div>
+        <div id="staff-empty" class="empty-state hidden">
+          <i data-lucide="users"></i>
+          <p>No staff data available</p>
+        </div>
+      </div>
+
     </main>
   </div>
 
+  <!-- Bottom Nav -->
   <nav class="bottom-nav md:hidden">
     <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 active">
       <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
@@ -144,13 +204,13 @@
       <i data-lucide="users" class="w-5 h-5"></i>
       <span class="text-[10px] font-medium truncate w-full text-center">Customers</span>
     </a>
-    <a href="tasks.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+    <a href="orders.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
       <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium truncate w-full text-center">Tasks</span>
+      <span class="text-[10px] font-medium truncate w-full text-center">Orders</span>
     </a>
-    <a href="reports.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
-      <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium truncate w-full text-center">Reports</span>
+    <a href="tasks.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="check-square" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Tasks</span>
     </a>
     <button onclick="showMoreModal()" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
       <i data-lucide="more-horizontal" class="w-5 h-5"></i>
@@ -164,6 +224,9 @@
       <div class="space-y-1">
         <a href="staff.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]">
           <i data-lucide="briefcase" class="w-5 h-5 text-gray-400"></i> Staff
+        </a>
+        <a href="reports.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]">
+          <i data-lucide="bar-chart-3" class="w-5 h-5 text-gray-400"></i> Reports
         </a>
         <a href="notifications.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]">
           <i data-lucide="bell" class="w-5 h-5 text-gray-400"></i> Notifications
@@ -190,66 +253,116 @@
       }
     }
 
+    function navigateToOrders(filter) {
+      localStorage.setItem('fscrm_order_filter', filter);
+      window.location.href = 'orders.html';
+    }
+
+    function drillOneTime(status) {
+      var filter = { type: 'one-time', value: null, status: status, label: status === 'all' ? 'One-Time Tasks' : 'One-Time ' + (status === 'today' ? 'Today\'s Tasks' : 'Missed Tasks') };
+      window.navigateWithFilter(filter);
+    }
+
+    function drillRecurring(status) {
+      var filter = { type: 'recurring', value: null, status: status, label: status === 'all' ? 'Recurring Tasks' : 'Recurring ' + (status === 'today' ? 'Today\'s Tasks' : 'Missed Tasks') };
+      window.navigateWithFilter(filter);
+    }
+
+    function drillArea(area, status) {
+      var statusLabel = status === 'today' ? 'Today\'s Tasks' : (status === 'missed' ? 'Missed Tasks' : 'All Tasks');
+      var filter = { type: 'area', value: area, status: status, label: area + ' - ' + statusLabel };
+      window.navigateWithFilter(filter);
+    }
+
+    function drillStaff(staffId, staffName, status) {
+      var statusLabel = status === 'today' ? 'Today\'s Tasks' : (status === 'missed' ? 'Missed Tasks' : 'All Tasks');
+      var filter = { type: 'staff', value: staffId, status: status, label: staffName + ' - ' + statusLabel };
+      window.navigateWithFilter(filter);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
       var today = new Date();
       var dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
       var el = document.getElementById('current-date');
       if (el) el.textContent = dateStr;
 
-      var customers = window.getCustomers();
-      var staff = window.getStaff();
-      var allTasks = window.getTasks();
-      var todayISOStr = window.todayISO ? window.todayISO() : today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      var stats = window.getDashboardStats();
 
-      document.getElementById('stat-customers').textContent = customers.length;
-      var todayTasks = allTasks.filter(function (t) { return t.scheduledDate === todayISOStr; });
-      document.getElementById('stat-tasks-today').textContent = todayTasks.length;
-      var missedAll = allTasks.filter(function (t) { return t.status === 'missed'; });
-      document.getElementById('stat-missed').textContent = missedAll.length;
-      document.getElementById('stat-staff').textContent = staff.length;
+      // Total Customers
+      document.getElementById('stat-total-customers').textContent = stats.totalCustomers;
 
-      var tbody = document.getElementById('today-tasks-body');
-      var empty = document.getElementById('today-empty');
-      if (todayTasks.length === 0) {
-        empty.classList.remove('hidden');
+      // One-Time
+      document.getElementById('stat-onetime-customers').textContent = stats.oneTimeCustomers;
+      document.getElementById('stat-onetime-today').textContent = stats.oneTimeToday;
+      document.getElementById('stat-onetime-missed').textContent = stats.oneTimeMissed;
+
+      // Recurring
+      document.getElementById('stat-recurring-customers').textContent = stats.recurringCustomers;
+      document.getElementById('stat-recurring-today').textContent = stats.recurringToday;
+      document.getElementById('stat-recurring-missed').textContent = stats.recurringMissed;
+
+      // Orders
+      document.getElementById('stat-total-orders').textContent = stats.totalOrders;
+      document.getElementById('stat-pending-orders').textContent = stats.pendingOrders;
+      document.getElementById('stat-urgent-orders').textContent = stats.urgentOrders;
+
+      // Area-Wise
+      var areaBody = document.getElementById('area-report-body');
+      var areaEmpty = document.getElementById('area-empty');
+      var areaEntries = Object.keys(stats.areaWise).map(function(k) { return { area: k, data: stats.areaWise[k] }; });
+      areaEntries.sort(function(a, b) { return b.data.total - a.data.total; });
+
+      if (areaEntries.length === 0) {
+        areaEmpty.classList.remove('hidden');
       } else {
-        todayTasks.forEach(function (task) {
-          var customer = window.getCustomer(task.customerId);
-          var staffMember = window.getStaffMember(task.assignedTo);
-          var tr = document.createElement('tr');
-          tr.innerHTML =
-            '<td data-label="Task" class="font-medium text-navy">' + (task.title || '\u2014') + '</td>' +
-            '<td data-label="Customer" class="text-gray-500">' + (customer ? customer.name : '\u2014') + '</td>' +
-            '<td data-label="Staff" class="text-gray-500">' + (staffMember ? staffMember.name : '\u2014') + '</td>' +
-            '<td data-label="Status">' + window.renderStatusPill(task.status) + '</td>' +
-            '<td data-label="Action">' +
-              (task.status === 'pending'
-                ? '<button onclick="completeTask(\'' + task.id + '\')" class="btn btn-sm btn-primary">Complete</button>'
-                : '<span class="text-xs text-gray-400">\u2014</span>') +
-            '</td>';
-          tbody.appendChild(tr);
-        });
+        areaEmpty.classList.add('hidden');
+        var showAllBtn = document.getElementById('area-view-all');
+        var topAreas = areaEntries.slice(0, 5);
+        if (areaEntries.length > 5) showAllBtn.classList.remove('hidden');
+
+        var table = document.createElement('table');
+        table.className = 'data-table';
+        table.innerHTML =
+          '<thead><tr><th>Area</th><th>Total Tasks</th><th>Today\'s Tasks</th><th>Missed</th></tr></thead><tbody>' +
+          topAreas.map(function(a) {
+            return '<tr>' +
+              '<td data-label="Area" class="font-medium text-gray-900">' + a.area + '</td>' +
+              '<td data-label="Total Tasks"><span class="stat-clickable text-brand font-semibold" onclick="drillArea(\'' + a.area.replace(/'/g, "\\'") + '\',\'all\')">' + a.data.total + '</span></td>' +
+              '<td data-label="Today\'s Tasks"><span class="stat-clickable text-navy font-semibold" onclick="drillArea(\'' + a.area.replace(/'/g, "\\'") + '\',\'today\')">' + a.data.today + '</span></td>' +
+              '<td data-label="Missed"><span class="stat-clickable text-danger font-semibold" onclick="drillArea(\'' + a.area.replace(/'/g, "\\'") + '\',\'missed\')">' + a.data.missed + '</span></td>' +
+            '</tr>';
+          }).join('') +
+          '</tbody>';
+        areaBody.appendChild(table);
       }
 
-      lucide.createIcons();
+      // Staff-Wise
+      var staffBody = document.getElementById('staff-report-body');
+      var staffEmpty = document.getElementById('staff-empty');
+      var staffEntries = Object.keys(stats.staffWise).map(function(k) { return { id: k, data: stats.staffWise[k] }; });
+      staffEntries.sort(function(a, b) { return b.data.total - a.data.total; });
 
-      var notifs = window.getNotifications();
-      var recentContainer = document.getElementById('recent-activity');
-      var recentItems = notifs.slice(0, 8);
-      var iconMap = { task_completed: 'check-circle', task_missed: 'alert-triangle', customer_added: 'user-plus', service_added: 'plus-circle' };
-      var colorMap = { task_completed: 'text-brand', task_missed: 'text-danger', customer_added: 'text-navy', service_added: 'text-amber' };
-      recentItems.forEach(function (n) {
-        var icon = iconMap[n.type] || 'info';
-        var color = colorMap[n.type] || 'text-gray-400';
-        var timeAgo = window.formatRelative ? window.formatRelative(n.createdAt) : '';
-        var div = document.createElement('div');
-        div.className = 'px-5 py-3 flex items-start gap-3';
-        div.innerHTML =
-          '<div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="' + icon + '" class="w-4 h-4 ' + color + '"></i></div>' +
-          '<div class="min-w-0"><p class="text-sm text-gray-600 leading-snug">' + (n.text || '') + '</p><p class="text-xs text-gray-400 mt-0.5">' + timeAgo + '</p></div>';
-        recentContainer.appendChild(div);
-      });
+      if (staffEntries.length === 0) {
+        staffEmpty.classList.remove('hidden');
+      } else {
+        staffEmpty.classList.add('hidden');
+        var staffTable = document.createElement('table');
+        staffTable.className = 'data-table';
+        staffTable.innerHTML =
+          '<thead><tr><th>Staff Name</th><th>Total Tasks</th><th>Today\'s Tasks</th><th>Missed</th></tr></thead><tbody>' +
+          staffEntries.map(function(s) {
+            return '<tr>' +
+              '<td data-label="Staff Name" class="font-medium text-gray-900">' + s.data.name + '</td>' +
+              '<td data-label="Total Tasks"><span class="stat-clickable text-brand font-semibold" onclick="drillStaff(\'' + s.id + '\',\'' + s.data.name.replace(/'/g, "\\'") + '\',\'all\')">' + s.data.total + '</span></td>' +
+              '<td data-label="Today\'s Tasks"><span class="stat-clickable text-navy font-semibold" onclick="drillStaff(\'' + s.id + '\',\'' + s.data.name.replace(/'/g, "\\'") + '\',\'today\')">' + s.data.today + '</span></td>' +
+              '<td data-label="Missed"><span class="stat-clickable text-danger font-semibold" onclick="drillStaff(\'' + s.id + '\',\'' + s.data.name.replace(/'/g, "\\'") + '\',\'missed\')">' + s.data.missed + '</span></td>' +
+            '</tr>';
+          }).join('') +
+          '</tbody>';
+        staffBody.appendChild(staffTable);
+      }
 
+      // Notification badge
       var unread = window.getUnreadCount ? window.getUnreadCount() : 0;
       var badge = document.getElementById('notification-badge');
       if (badge) {
