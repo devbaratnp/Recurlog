@@ -24,7 +24,7 @@ A mobile-first, offline-capable field service management web application for sch
 
 ## Overview
 
-ServCRM (codenamed Recurlog) is a complete field service management solution that runs entirely in the browser. It uses localStorage for data persistence — no server, no database, no API calls. All logic is vanilla JavaScript (ES5), making it portable and instantly deployable.
+Recurlog is a complete field service management solution that runs entirely in the browser. It uses localStorage for data persistence — no server, no database, no API calls. All logic is vanilla JavaScript (ES5), making it portable and instantly deployable.
 
 ### Who it's for
 

@@ -32,7 +32,7 @@
             '<div class="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/25">' +
               '<i data-lucide="wrench" class="w-5 h-5 text-white"></i>' +
             '</div>' +
-            '<span class="sidebar-brand-name text-lg font-bold tracking-tight">ServCRM</span>' +
+            '<span class="sidebar-brand-name text-lg font-bold tracking-tight">Recurlog</span>' +
           '</div>' +
           '<div class="flex items-center gap-1">' +
             '<button class="sidebar-desktop-toggle sidebar-collapse-btn" id="sidebar-collapse-btn" aria-label="Toggle sidebar">' +
