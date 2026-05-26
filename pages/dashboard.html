@@ -53,17 +53,24 @@
     <main class="p-4 md:p-6 max-w-6xl">
       <h1 class="text-xl font-bold text-navy mb-5">Dashboard &mdash; Overview</h1>
 
-      <!-- 4A — Quick Action Buttons -->
-      <div class="flex flex-wrap gap-3 mb-6">
-        <a href="customer-add.html" class="quick-action-btn">
-          <i data-lucide="user-plus" class="w-4 h-4"></i> Add Customer
+      <!-- Hero CTA — Add Order -->
+      <button onclick="openAddOrderChooser()" class="dashboard-hero-cta mb-6">
+        <div class="cta-icon"><i data-lucide="plus"></i></div>
+        <div class="cta-text">
+          <h3>Create New Order</h3>
+          <p>Fast one-time job or recurring schedule &bull; Start in seconds</p>
+        </div>
+        <i data-lucide="arrow-right" class="cta-arrow w-5 h-5"></i>
+      </button>
+
+      <!-- Secondary Quick Actions -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <a href="customer-add.html" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all min-h-[44px]">
+          <i data-lucide="user-plus" class="w-4 h-4 text-gray-400"></i> Add Customer
         </a>
-        <a href="service-add.html" class="quick-action-btn">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Task
+        <a href="service-add.html" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all min-h-[44px]">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-gray-400"></i> Add Task
         </a>
-        <button onclick="openAddOrderChooser()" class="quick-action-btn">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Order
-        </button>
       </div>
 
       <!-- 4F — Open Orders Card -->

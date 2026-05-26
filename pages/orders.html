@@ -93,11 +93,67 @@
         </button>
       </div>
       <div class="space-y-4">
+        <!-- Customer Selection -->
         <div>
-          <label for="order-customer" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
-          <select id="order-customer" class="form-select"></select>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
+          <div class="flex gap-2 items-start">
+            <select id="order-customer" class="form-select flex-1"></select>
+            <button type="button" id="btn-inline-customer" class="px-3 py-2.5 border border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-500 hover:text-brand hover:border-brand transition-all whitespace-nowrap min-h-[44px] flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Add New
+            </button>
+          </div>
         </div>
-        <!-- Service removed per task: Do not collect service on orders form -->
+
+        <!-- Inline Customer Creation Form (hidden by default) -->
+        <div id="inline-customer-section" class="inline-customer-form hidden">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-semibold text-gray-700">New Customer Details</h4>
+            <button type="button" id="btn-cancel-inline-customer" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Name <span class="text-danger">*</span></label>
+              <input type="text" id="inline-cust-name" class="form-input" placeholder="Customer name">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Phone</label>
+              <input type="text" id="inline-cust-phone" class="form-input" value="+977-" placeholder="+977-98XXXXXXXX">
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:12px">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Address</label>
+              <input type="text" id="inline-cust-address" class="form-input" placeholder="e.g. Adarsh Nagar, Birgunj">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Area / Locality</label>
+              <div class="location-picker">
+                <select id="inline-cust-area" class="form-select location-select"></select>
+                <button type="button" id="btn-inline-add-locality" class="location-custom-btn">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Custom
+                </button>
+              </div>
+              <div id="inline-custom-locality-row" class="mt-2 hidden">
+                <div class="flex gap-2">
+                  <input type="text" id="inline-new-locality-input" class="form-input flex-1" placeholder="Type locality name">
+                  <button type="button" id="inline-save-locality-btn" class="px-4 py-2 bg-brand text-white text-sm font-semibold rounded-lg">Save</button>
+                </div>
+                <p id="inline-locality-error" class="text-xs text-danger mt-1 hidden"></p>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Service For</label>
+            <select id="inline-cust-service" class="form-select"></select>
+          </div>
+        </div>
+
+        <!-- Service Selection -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Service Type</label>
+          <div id="order-service-dropdown-container"></div>
+        </div>
+
         <div>
           <label for="order-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem / Issue <span class="text-danger">*</span></label>
           <textarea id="order-problem" rows="3" class="form-textarea" placeholder="Describe the problem in detail..."></textarea>
@@ -251,6 +307,7 @@
     var currentOrderTab = 'all';
       var selectedOrderService = null; // deprecated — service removed from form
       var preselectedOrderType = null;
+    var orderServiceDropdown = null;
 
     // ========== INIT ==========
     document.addEventListener('DOMContentLoaded', function () {
@@ -258,15 +315,16 @@
       setupOrderTabs();
       setupOrderSearch();
       populateOrderCustomers();
-      // populateOrderServiceChips(); // service removed
       populateAssignStaff();
       setDefaultOrderDate();
       setupPriorityToggle();
+      setupInlineCustomerForm();
+      setupServiceDropdown();
+      setupInlineLocality();
 
       // Check if redirected from dashboard chooser
       try { preselectedOrderType = localStorage.getItem('fscrm_new_order_type'); } catch(e) { preselectedOrderType = null; }
       if (preselectedOrderType) {
-        // preselect UI state or just open modal
         openNewOrderModal();
       }
 
@@ -287,6 +345,126 @@
 
       lucide.createIcons();
     });
+
+    // ========== INLINE CUSTOMER CREATION ==========
+    function setupInlineCustomerForm() {
+      var btnAdd = document.getElementById('btn-inline-customer');
+      var section = document.getElementById('inline-customer-section');
+      var btnCancel = document.getElementById('btn-cancel-inline-customer');
+
+      btnAdd.addEventListener('click', function() {
+        section.classList.remove('hidden');
+        populateInlineLocalities();
+        populateInlineServices();
+        btnAdd.disabled = true;
+        btnAdd.classList.add('opacity-50', 'pointer-events-none');
+      });
+
+      btnCancel.addEventListener('click', function() {
+        section.classList.add('hidden');
+        clearInlineCustomerForm();
+        btnAdd.disabled = false;
+        btnAdd.classList.remove('opacity-50', 'pointer-events-none');
+      });
+    }
+
+    function populateInlineLocalities() {
+      var select = document.getElementById('inline-cust-area');
+      select.innerHTML = '<option value="">Select locality</option>';
+      var localities = window.getLocalities();
+      localities.forEach(function(l) {
+        var opt = document.createElement('option');
+        opt.value = l;
+        opt.textContent = l;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateInlineServices() {
+      var select = document.getElementById('inline-cust-service');
+      select.innerHTML = '<option value="">Select service type</option>';
+      var types = window.getServiceTypes();
+      types.forEach(function(t) {
+        var opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+    }
+
+    function clearInlineCustomerForm() {
+      document.getElementById('inline-cust-name').value = '';
+      document.getElementById('inline-cust-phone').value = '+977-';
+      document.getElementById('inline-cust-address').value = '';
+      document.getElementById('inline-cust-area').value = '';
+      document.getElementById('inline-cust-service').value = '';
+    }
+
+    function setupInlineLocality() {
+      var btnCustom = document.getElementById('btn-inline-add-locality');
+      var row = document.getElementById('inline-custom-locality-row');
+      var input = document.getElementById('inline-new-locality-input');
+      var btnSave = document.getElementById('inline-save-locality-btn');
+      var errEl = document.getElementById('inline-locality-error');
+      var select = document.getElementById('inline-cust-area');
+
+      btnCustom.addEventListener('click', function() {
+        row.classList.toggle('hidden');
+        if (!row.classList.contains('hidden')) input.focus();
+      });
+
+      btnSave.addEventListener('click', function() {
+        var val = input.value.trim();
+        errEl.classList.add('hidden');
+        if (!val) { errEl.textContent = 'Enter a locality name.'; errEl.classList.remove('hidden'); return; }
+        window.addLocality(val);
+        populateInlineLocalities();
+        select.value = val;
+        row.classList.add('hidden');
+        input.value = '';
+      });
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { btnSave.click(); }
+      });
+    }
+
+    function getInlineCustomerData() {
+      var name = document.getElementById('inline-cust-name').value.trim();
+      var phone = document.getElementById('inline-cust-phone').value.trim();
+      var address = document.getElementById('inline-cust-address').value.trim();
+      var area = document.getElementById('inline-cust-area').value;
+      var service = document.getElementById('inline-cust-service').value;
+      if (!name) return null;
+      return {
+        name: name,
+        phone: phone || '',
+        address: address || '',
+        area: area || '',
+        servicesFor: service ? [service] : []
+      };
+    }
+
+    // ========== SERVICE DROPDOWN ==========
+    function setupServiceDropdown() {
+      var container = document.getElementById('order-service-dropdown-container');
+      var types = window.getServiceTypes();
+      var options = types.map(function(t) { return { value: t, label: t }; });
+      options.unshift({ value: '', label: 'None (no specific service)' });
+
+      orderServiceDropdown = window.buildSearchableDropdown({
+        placeholder: 'Search service type...',
+        searchPlaceholder: 'Type to search services...',
+        options: options,
+        selectedValue: '',
+        onChange: function(val) {
+          selectedOrderService = val || null;
+        }
+      });
+
+      container.appendChild(orderServiceDropdown);
+      try { lucide.createIcons(); } catch(e) {}
+    }
 
     // ========== ORDER FILTER FROM DASHBOARD ==========
     function checkOrderFilter() {
@@ -553,7 +731,23 @@
       populateOrderCustomers();
       document.getElementById('order-problem').value = '';
       document.getElementById('order-notes').value = '';
+
+      // Reset inline customer form
+      var inlineSection = document.getElementById('inline-customer-section');
+      inlineSection.classList.add('hidden');
+      clearInlineCustomerForm();
+      var btnAdd = document.getElementById('btn-inline-customer');
+      btnAdd.disabled = false;
+      btnAdd.classList.remove('opacity-50', 'pointer-events-none');
+
+      // Reset service dropdown
+      if (orderServiceDropdown && orderServiceDropdown._setValue) {
+        orderServiceDropdown._setValue('');
+      }
+      selectedOrderService = null;
+
       document.getElementById('order-priority-normal').click();
+      setDefaultOrderDate();
       openModal('new-order-modal');
     }
 
@@ -567,11 +761,6 @@
         opt.textContent = c.name;
         select.appendChild(opt);
       });
-    }
-
-    // Service selection removed from order form; keep helper for backward compatibility if needed
-    function populateOrderServiceChips() {
-      // no-op
     }
 
     function populateAssignStaff() {
@@ -625,13 +814,31 @@
       var notes = document.getElementById('order-notes').value.trim();
       var isUrgent = document.getElementById('order-priority-urgent').classList.contains('border-danger');
 
+      // Check if inline customer form is open and needs to be saved first
+      var inlineSection = document.getElementById('inline-customer-section');
+      var inlineData = null;
+      if (!inlineSection.classList.contains('hidden')) {
+        inlineData = getInlineCustomerData();
+        if (inlineData) {
+          var newCustomer = window.createCustomerInline(inlineData);
+          customerId = String(newCustomer.id);
+          customerName = newCustomer.name;
+          // Update the customer dropdown
+          populateOrderCustomers();
+          document.getElementById('order-customer').value = customerId;
+          // Hide inline form
+          inlineSection.classList.add('hidden');
+          clearInlineCustomerForm();
+          var btnAdd = document.getElementById('btn-inline-customer');
+          btnAdd.disabled = false;
+          btnAdd.classList.remove('opacity-50', 'pointer-events-none');
+        }
+      }
+
       if (!customerId) {
         window.showToast('Please select a customer.', 'error');
         return;
       }
-      // service is no longer required on orders
-      // keep serviceFor=null for backward compatibility
-      // if needed, validate elsewhere
       if (!problem) {
         window.showToast('Please describe the problem.', 'error');
         return;
@@ -640,8 +847,7 @@
       var orderData = {
         customerId: parseInt(customerId, 10),
         customerName: customerName,
-        // no service collected here; preserve any earlier schema by leaving serviceFor null
-        serviceFor: null,
+        serviceFor: selectedOrderService || null,
         problem: problem,
         status: 'pending',
         priority: isUrgent ? 'urgent' : 'normal',
@@ -649,7 +855,6 @@
         assignedStaffName: null,
         scheduledDate: date || null,
         notes: notes,
-        // include isRecurring flag if preselected from dashboard chooser
         isRecurring: (preselectedOrderType === 'recurring')
       };
 

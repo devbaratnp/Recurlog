@@ -42,14 +42,15 @@
     <div class="p-4 sm:p-6 space-y-6">
       <section class="card p-5 fade-in" data-section="recurring">
         <h2 class="text-lg font-bold text-navy mb-4">Recurring Tasks</h2>
-        <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div class="flex flex-wrap gap-2" data-filters="recurring">
             <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
             <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
             <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisWeek" class="filter-tab btn btn-sm btn-secondary">This Week</button>
             <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="report-custom-range">
             <label class="text-sm text-gray-500">From</label>
             <input type="date" id="report-from-recurring" class="form-input" />
             <label class="text-sm text-gray-500">To</label>
@@ -68,14 +69,15 @@
 
       <section class="card p-5 fade-in" data-section="onetime">
         <h2 class="text-lg font-bold text-navy mb-4">One-Time Tasks</h2>
-        <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div class="flex flex-wrap gap-2" data-filters="onetime">
             <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
             <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
             <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisWeek" class="filter-tab btn btn-sm btn-secondary">This Week</button>
             <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="report-custom-range">
             <label class="text-sm text-gray-500">From</label>
             <input type="date" id="report-from-onetime" class="form-input" />
             <label class="text-sm text-gray-500">To</label>
@@ -95,14 +97,15 @@
       <section class="card p-5 fade-in" data-section="staff">
         <h2 class="text-lg font-bold text-navy mb-4">Staff-Wise Report</h2>
         <select id="report-staff-select" class="form-select mb-4 w-full sm:w-64"></select>
-        <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div class="flex flex-wrap gap-2" data-filters="staff">
             <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
             <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
             <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisWeek" class="filter-tab btn btn-sm btn-secondary">This Week</button>
             <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="report-custom-range">
             <label class="text-sm text-gray-500">From</label>
             <input type="date" id="report-from-staff" class="form-input" />
             <label class="text-sm text-gray-500">To</label>
@@ -122,14 +125,15 @@
       <section class="card p-5 fade-in" data-section="category">
         <h2 class="text-lg font-bold text-navy mb-4">Category-Wise Report</h2>
         <select id="report-category-select" class="form-select mb-4 w-full sm:w-64"></select>
-        <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div class="flex flex-wrap gap-2" data-filters="category">
             <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
             <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
             <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisWeek" class="filter-tab btn btn-sm btn-secondary">This Week</button>
             <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="report-custom-range">
             <label class="text-sm text-gray-500">From</label>
             <input type="date" id="report-from-category" class="form-input" />
             <label class="text-sm text-gray-500">To</label>
@@ -217,6 +221,45 @@
 
   <script>
     var charts = { recurring: null, onetime: null, staff: null, category: null };
+
+    function getWeekStart() {
+      var d = new Date();
+      var day = d.getDay();
+      var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      d.setDate(diff);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function getWeekEnd() {
+      var d = new Date();
+      var day = d.getDay();
+      var diff = d.getDate() - day + (day === 0 ? 0 : 7);
+      d.setDate(diff);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function applyPresetFilter(sectionKey, preset) {
+      var fromId = 'report-from-' + sectionKey;
+      var toId = 'report-to-' + sectionKey;
+      var today = new Date();
+      var y = today.getFullYear();
+      var m = String(today.getMonth() + 1).padStart(2, '0');
+      var d = String(today.getDate()).padStart(2, '0');
+      var dateStr = y + '-' + m + '-' + d;
+      var from, to;
+      switch (preset) {
+        case 'today':
+          from = dateStr; to = dateStr; break;
+        case 'thisWeek':
+          from = getWeekStart(); to = getWeekEnd(); break;
+        case 'thisMonth':
+          from = y + '-' + m + '-01'; to = dateStr; break;
+        default:
+          return;
+      }
+      document.getElementById(fromId).value = from;
+      document.getElementById(toId).value = to;
+    }
 
     function getCustomerName(id) {
       var c = window.getCustomer(id);
@@ -381,19 +424,14 @@
       var catSelect = document.getElementById('report-category-select');
       catSelect.innerHTML = '<option value="">Select Category</option>' + cats.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join('');
 
-      // Initial render
-      // set default date range to current month
+      // Set default: This Month
       var now = new Date();
+      var dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
       var monthStart = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01';
-      var monthEnd = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(new Date(now.getFullYear(), now.getMonth()+1, 0).getDate()).padStart(2,'0');
-      document.getElementById('report-from-recurring').value = monthStart;
-      document.getElementById('report-to-recurring').value = monthEnd;
-      document.getElementById('report-from-onetime').value = monthStart;
-      document.getElementById('report-to-onetime').value = monthEnd;
-      document.getElementById('report-from-staff').value = monthStart;
-      document.getElementById('report-to-staff').value = monthEnd;
-      document.getElementById('report-from-category').value = monthStart;
-      document.getElementById('report-to-category').value = monthEnd;
+      ['recurring', 'onetime', 'staff', 'category'].forEach(function(key) {
+        document.getElementById('report-from-' + key).value = monthStart;
+        document.getElementById('report-to-' + key).value = dateStr;
+      });
 
       renderSection('recurring', function(filter) {
         return window.getRecurringTasksReport(filter, document.getElementById('report-from-recurring').value, document.getElementById('report-to-recurring').value);
@@ -411,12 +449,17 @@
             parent.querySelectorAll('.filter-tab').forEach(function(t) { t.className = 'filter-tab px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200'; });
             this.className = 'filter-tab px-3 py-1.5 text-xs font-medium rounded-full bg-brand text-white';
             var section = parent.getAttribute('data-filters');
+
+            // Apply preset date filter
+            if (filter === 'today' || filter === 'thisWeek' || filter === 'thisMonth') {
+              applyPresetFilter(section, filter);
+              filter = 'all';
+            }
+
             if (section === 'recurring') renderSection('recurring', function(f) { return window.getRecurringTasksReport(f, document.getElementById('report-from-recurring').value, document.getElementById('report-to-recurring').value); }, filter, 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body');
             else if (section === 'onetime') renderSection('onetime', function(f) { return window.getOneTimeTasksReport(f, document.getElementById('report-from-onetime').value, document.getElementById('report-to-onetime').value); }, filter, 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body');
             else if (section === 'staff') { if (document.getElementById('report-staff-select').value) renderStaffWise(); }
             else if (section === 'category') { if (document.getElementById('report-category-select').value) renderCategoryWise(); }
-          } else {
-            this.closest('[data-section]');
           }
         });
       });

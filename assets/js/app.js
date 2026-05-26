@@ -704,6 +704,129 @@ window.formatRelative = function(date) {
   return window.formatDate(date);
 };
 
+// ========== LOCALITY/LOCATION MANAGEMENT ==========
+
+window.getLocalities = function() {
+  try { return JSON.parse(localStorage.getItem('fscrm_localities') || '[]'); } catch(e) { return []; }
+};
+
+window.addLocality = function(name) {
+  var list = window.getLocalities();
+  var exists = list.some(function(x) { return x.toLowerCase() === name.toLowerCase(); });
+  if (!exists) {
+    list.push(name);
+    localStorage.setItem('fscrm_localities', JSON.stringify(list));
+  }
+  return name;
+};
+
+// ========== INLINE CUSTOMER CREATION (for order form) ==========
+
+window.createCustomerInline = function(data) {
+  var customers = window.getCustomers();
+  var customer = {
+    id: getNextId(),
+    name: data.name,
+    address: data.address,
+    area: data.area || '',
+    phone: data.phone || '',
+    servicesFor: data.servicesFor || [],
+    location: data.location || { lat: 27.00, lng: 84.87 }
+  };
+  customers.push(customer);
+  localStorage.setItem('fscrm_customers', JSON.stringify(customers));
+  window.pushNotification('New customer ' + customer.name + ' registered', 'customer_added', customer.id);
+  return customer;
+};
+
+// ========== SEARCHABLE DROPDOWN BUILDER ==========
+
+window.buildSearchableDropdown = function(config) {
+  var container = document.createElement('div');
+  container.className = 'searchable-dropdown';
+
+  var trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'dropdown-trigger';
+  trigger.innerHTML = '<span class="trigger-text trigger-placeholder">' + (config.placeholder || 'Select...') + '</span><i data-lucide="chevron-down" class="w-4 h-4" style="flex-shrink:0"></i>';
+  container.appendChild(trigger);
+
+  var menu = document.createElement('div');
+  menu.className = 'dropdown-menu';
+  menu.innerHTML = '<input type="text" class="dropdown-search" placeholder="' + (config.searchPlaceholder || 'Search...') + '">' +
+    '<div class="dropdown-options"></div>';
+  container.appendChild(menu);
+
+  var optionsContainer = menu.querySelector('.dropdown-options');
+  var searchInput = menu.querySelector('.dropdown-search');
+
+  function renderOptions(filter) {
+    var q = (filter || '').toLowerCase().trim();
+    var filtered = q ? config.options.filter(function(o) { return o.label.toLowerCase().indexOf(q) >= 0; }) : config.options;
+    if (filtered.length === 0) {
+      optionsContainer.innerHTML = '<div class="dropdown-empty">No results found</div>';
+      return;
+    }
+    optionsContainer.innerHTML = filtered.map(function(o) {
+      var selected = config.selectedValue !== undefined && String(o.value) === String(config.selectedValue) ? ' selected' : '';
+      return '<div class="dropdown-option' + selected + '" data-value="' + o.value + '">' +
+        '<span class="option-check"><i data-lucide="check" class="w-3 h-3"></i></span>' +
+        '<span>' + o.label + '</span></div>';
+    }).join('');
+
+    optionsContainer.querySelectorAll('.dropdown-option').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var val = this.dataset.value;
+        var label = this.querySelector('span:last-child').textContent;
+        optionsContainer.querySelectorAll('.dropdown-option').forEach(function(o) { o.classList.remove('selected'); });
+        this.classList.add('selected');
+        trigger.querySelector('.trigger-text').textContent = label;
+        trigger.querySelector('.trigger-text').classList.remove('trigger-placeholder');
+        menu.classList.remove('open');
+        if (config.onChange) config.onChange(val, label);
+      });
+    });
+
+    try { lucide.createIcons(); } catch(e) {}
+  }
+
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var isOpen = menu.classList.contains('open');
+    document.querySelectorAll('.searchable-dropdown .dropdown-menu.open').forEach(function(m) { if (m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+    if (!isOpen) {
+      searchInput.value = '';
+      renderOptions('');
+      setTimeout(function() { searchInput.focus(); }, 50);
+    }
+  });
+
+  searchInput.addEventListener('input', function() { renderOptions(this.value); });
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { menu.classList.remove('open'); }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!container.contains(e.target)) { menu.classList.remove('open'); }
+  });
+
+  renderOptions('');
+
+  container._setValue = function(val) {
+    var option = config.options.find(function(o) { return String(o.value) === String(val); });
+    if (option) {
+      trigger.querySelector('.trigger-text').textContent = option.label;
+      trigger.querySelector('.trigger-text').classList.remove('trigger-placeholder');
+      optionsContainer.querySelectorAll('.dropdown-option').forEach(function(o) {
+        o.classList.toggle('selected', String(o.dataset.value) === String(val));
+      });
+    }
+  };
+
+  return container;
+};
+
 // ========== INIT ==========
 
 // Run seed data on first load
