@@ -393,7 +393,7 @@ window.completeOrder = function(orderId, notes, createTask) {
       id: getNextId(),
       serviceId: null,
       customerId: order.customerId,
-      title: 'Order #' + orderId + ' - ' + order.serviceFor + ' for ' + order.customerName,
+      title: 'Order #' + orderId + ' - ' + order.customerName,
       status: 'completed',
       scheduledDate: order.scheduledDate || todayISO(),
       completedDate: todayISO(),
@@ -585,9 +585,9 @@ window.getOneTimeTasksReport = function(filter, startDate, endDate) {
   };
 };
 
-window.getStaffWiseReport = function(staffId, filter) {
+window.getStaffWiseReport = function(staffId, filter, startDate, endDate) {
   var tasks = window.getTasks({ staffId: staffId });
-  var filtered = applyReportFilter(tasks, filter);
+  var filtered = applyReportFilter(tasks, filter, startDate, endDate);
   var total = filtered.length;
   var completed = filtered.filter(function(t) { return t.status === 'completed'; }).length;
   var missed = filtered.filter(function(t) { return t.status === 'missed'; }).length;
@@ -600,9 +600,9 @@ window.getStaffWiseReport = function(staffId, filter) {
   };
 };
 
-window.getCategoryWiseReport = function(categoryId, filter) {
+window.getCategoryWiseReport = function(categoryId, filter, startDate, endDate) {
   var tasks = window.getTasks({ categoryId: categoryId });
-  var filtered = applyReportFilter(tasks, filter);
+  var filtered = applyReportFilter(tasks, filter, startDate, endDate);
   var total = filtered.length;
   var completed = filtered.filter(function(t) { return t.status === 'completed'; }).length;
   var missed = filtered.filter(function(t) { return t.status === 'missed'; }).length;

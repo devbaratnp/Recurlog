@@ -195,6 +195,57 @@
     </div>
   </div>
 
+  <!-- Order Detail Modal -->
+  <div id="order-detail-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content max-w-lg" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-lg font-bold text-gray-900">Order Details</h3>
+        <button onclick="closeModal('order-detail-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="order-detail-body" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500">Customer</p>
+            <p id="detail-customer" class="font-semibold text-navy"></p>
+          </div>
+          <div id="detail-status-badge"></div>
+        </div>
+        <hr class="border-gray-100">
+        <div>
+          <p class="text-sm text-gray-500">Problem / Issue</p>
+          <p id="detail-problem" class="text-sm text-gray-800 mt-1"></p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Priority</p>
+            <p id="detail-priority" class="font-semibold mt-1"></p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Assigned To</p>
+            <p id="detail-assigned" class="font-semibold mt-1 text-gray-700">Unassigned</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Scheduled Date</p>
+            <p id="detail-date" class="font-semibold mt-1 text-gray-700">Not scheduled</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Created</p>
+            <p id="detail-created" class="font-semibold mt-1 text-gray-700"></p>
+          </div>
+        </div>
+        <div id="detail-notes-row" class="hidden">
+          <hr class="border-gray-100">
+          <p class="text-sm text-gray-500">Notes</p>
+          <p id="detail-notes" class="text-sm text-gray-700 mt-1 italic"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ========== STATE ==========
     var currentOrderTab = 'all';
@@ -376,7 +427,6 @@
           '<div class="flex-1 min-w-0">' +
             '<div class="flex items-center gap-2 flex-wrap">' +
               '<h3 class="font-semibold text-gray-900 text-sm">' + escapeHtml(order.customerName) + '</h3>' +
-              '<span class="badge bg-brand/10 text-brand text-xs">' + escapeHtml(order.serviceFor) + '</span>' +
               getPriorityBadge(order.priority) +
             '</div>' +
             '<p class="text-sm text-gray-500 mt-1">' + escapeHtml(problemShort) + '</p>' +
@@ -395,10 +445,13 @@
           actionHtml +
         '</div>';
 
+      var orderId = order.id;
+
       // Attach event handlers
       var assignBtn = div.querySelector('.assign-btn');
       if (assignBtn) {
-        assignBtn.addEventListener('click', function () {
+        assignBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
           document.getElementById('assign-order-id').value = this.dataset.orderId;
           openModal('assign-modal');
         });
@@ -406,7 +459,8 @@
 
       var completeBtn = div.querySelector('.complete-order-btn');
       if (completeBtn) {
-        completeBtn.addEventListener('click', function () {
+        completeBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
           document.getElementById('complete-order-id').value = this.dataset.orderId;
           document.getElementById('complete-create-task').checked = false;
           openModal('complete-order-modal');
@@ -415,10 +469,20 @@
 
       var cancelBtn = div.querySelector('.cancel-btn');
       if (cancelBtn) {
-        cancelBtn.addEventListener('click', function () {
+        cancelBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
           document.getElementById('cancel-order-id').value = this.dataset.orderId;
           openModal('cancel-modal');
         });
+      }
+
+      // Click card body to view details
+      var cardBody = div.querySelector('.flex-1');
+      if (cardBody) {
+        cardBody.addEventListener('click', function () {
+          showOrderDetail(orderId);
+        });
+        cardBody.classList.add('cursor-pointer');
       }
 
       return div;
@@ -431,6 +495,42 @@
       return div.innerHTML;
     }
 
+    function showOrderDetail(orderId) {
+      var order = window.getOrder(orderId);
+      if (!order) {
+        window.showToast('Order not found.', 'error');
+        return;
+      }
+
+      document.getElementById('detail-customer').textContent = order.customerName;
+      document.getElementById('detail-problem').textContent = order.problem || 'No description';
+      document.getElementById('detail-priority').innerHTML = getPriorityBadge(order.priority);
+
+      var statusMap = {
+        pending: '<span class="badge badge-order-pending"><i data-lucide="clock" class="w-3 h-3"></i> Pending</span>',
+        assigned: '<span class="badge badge-order-assigned"><i data-lucide="user-check" class="w-3 h-3"></i> Assigned</span>',
+        completed: '<span class="badge badge-order-completed"><i data-lucide="check-circle" class="w-3 h-3"></i> Completed</span>',
+        cancelled: '<span class="badge badge-order-cancelled"><i data-lucide="x-circle" class="w-3 h-3"></i> Cancelled</span>'
+      };
+      document.getElementById('detail-status-badge').innerHTML = statusMap[order.status] || '';
+
+      document.getElementById('detail-assigned').textContent = order.assignedStaffName || 'Unassigned';
+      document.getElementById('detail-date').textContent = order.scheduledDate ? window.formatDate(order.scheduledDate) : 'Not scheduled';
+      document.getElementById('detail-created').textContent = order.createdAt ? window.formatRelative(order.createdAt) : '-';
+
+      var notesRow = document.getElementById('detail-notes-row');
+      var notesEl = document.getElementById('detail-notes');
+      if (order.notes) {
+        notesEl.textContent = order.notes;
+        notesRow.classList.remove('hidden');
+      } else {
+        notesRow.classList.add('hidden');
+      }
+
+      try { lucide.createIcons(); } catch(e) {}
+      openModal('order-detail-modal');
+    }
+
     // ========== MODALS ==========
     function openModal(id) {
       document.getElementById(id).style.display = 'flex';
@@ -441,7 +541,7 @@
     }
 
     document.addEventListener('click', function (e) {
-      ['new-order-modal', 'assign-modal', 'complete-order-modal', 'cancel-modal'].forEach(function (id) {
+      ['new-order-modal', 'assign-modal', 'complete-order-modal', 'cancel-modal', 'order-detail-modal'].forEach(function (id) {
         var el = document.getElementById(id);
         if (e.target === el) closeModal(id);
       });
@@ -451,7 +551,6 @@
     function openNewOrderModal() {
       selectedOrderService = null;
       populateOrderCustomers();
-      populateOrderServiceChips();
       document.getElementById('order-problem').value = '';
       document.getElementById('order-notes').value = '';
       document.getElementById('order-priority-normal').click();

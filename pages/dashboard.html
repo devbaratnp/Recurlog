@@ -177,23 +177,9 @@
         </div>
       </div>
 
-      <!-- 4F — Staff-Wise Report -->
-      <div class="card overflow-hidden mb-6">
-        <div class="card-header">
-          <h2 class="font-semibold text-navy flex items-center gap-2">
-            <i data-lucide="briefcase" class="w-4 h-4 text-gray-400"></i> Staff-Wise Report
-          </h2>
-        </div>
-        <div id="staff-report-body" class="overflow-x-auto"></div>
-        <div id="staff-empty" class="empty-state hidden">
-          <i data-lucide="users"></i>
-          <p>No staff data available</p>
-        </div>
-      </div>
-
     </main>
 
-    <!-- Add Order Chooser Modal (One-Time vs Recurring) -->
+    <!-- Add Order Chooser Modal (Fast vs Recurring) -->
     <div id="add-order-chooser" class="modal-overlay hidden" onclick="hideAddOrderChooser(event)">
       <div class="modal-content" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between mb-4">
@@ -202,9 +188,10 @@
         </div>
         <p class="text-sm text-gray-600 mb-3">Choose order type to continue</p>
         <div class="flex gap-3">
-          <button onclick="chooseOrderType('one-time')" class="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg">One Time Task</button>
-          <button onclick="chooseOrderType('recurring')" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg">Recurring</button>
+          <button onclick="chooseOrderType('one-time')" class="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg font-semibold flex items-center justify-center gap-2"><i data-lucide="zap" class="w-4 h-4"></i> Fast Task</button>
+          <button onclick="chooseOrderType('recurring')" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg font-semibold flex items-center justify-center gap-2"><i data-lucide="repeat" class="w-4 h-4"></i> Recurring</button>
         </div>
+        <p class="text-xs text-gray-400 text-center mt-3">Fast: one-time job &bull; Recurring: repeats on a schedule</p>
       </div>
     </div>
   </div>
@@ -366,32 +353,6 @@
           }).join('') +
           '</tbody>';
         areaBody.appendChild(table);
-      }
-
-      // Staff-Wise
-      var staffBody = document.getElementById('staff-report-body');
-      var staffEmpty = document.getElementById('staff-empty');
-      var staffEntries = Object.keys(stats.staffWise).map(function(k) { return { id: k, data: stats.staffWise[k] }; });
-      staffEntries.sort(function(a, b) { return b.data.total - a.data.total; });
-
-      if (staffEntries.length === 0) {
-        staffEmpty.classList.remove('hidden');
-      } else {
-        staffEmpty.classList.add('hidden');
-        var staffTable = document.createElement('table');
-        staffTable.className = 'data-table';
-        staffTable.innerHTML =
-          '<thead><tr><th>Staff Name</th><th>Total Tasks</th><th>Today\'s Tasks</th><th>Missed</th></tr></thead><tbody>' +
-          staffEntries.map(function(s) {
-            return '<tr>' +
-              '<td data-label="Staff Name" class="font-medium text-gray-900">' + s.data.name + '</td>' +
-              '<td data-label="Total Tasks"><span class="stat-clickable text-brand font-semibold" onclick="drillStaff(\'' + s.id + '\',\'' + s.data.name.replace(/'/g, "\\'") + '\',\'all\')">' + s.data.total + '</span></td>' +
-              '<td data-label="Today\'s Tasks"><span class="stat-clickable text-navy font-semibold" onclick="drillStaff(\'' + s.id + '\',\'' + s.data.name.replace(/'/g, "\\'") + '\',\'today\')">' + s.data.today + '</span></td>' +
-              '<td data-label="Missed"><span class="stat-clickable text-danger font-semibold" onclick="drillStaff(\'' + s.id + '\',\'' + s.data.name.replace(/'/g, "\\'") + '\',\'missed\')">' + s.data.missed + '</span></td>' +
-            '</tr>';
-          }).join('') +
-          '</tbody>';
-        staffBody.appendChild(staffTable);
       }
 
       // Notification badge
