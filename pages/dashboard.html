@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Dashboard - ServCRM</title>
+  <title>Dashboard - Recurlog</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../assets/css/custom.css">
@@ -34,7 +34,7 @@
             <div class="w-7 h-7 bg-brand rounded-lg flex items-center justify-center">
               <i data-lucide="wrench" class="w-3.5 h-3.5 text-white"></i>
             </div>
-            <span class="font-bold text-navy text-sm">ServCRM</span>
+            <span class="font-bold text-navy text-sm">Recurlog</span>
           </div>
           <div class="hidden md:flex items-center gap-2 text-sm text-gray-500">
             <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -61,9 +61,9 @@
         <a href="service-add.html" class="quick-action-btn">
           <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Task
         </a>
-        <a href="staff.html" class="quick-action-btn">
-          <i data-lucide="user-plus" class="w-4 h-4"></i> Add Staff
-        </a>
+        <button onclick="openAddOrderChooser()" class="quick-action-btn">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Order
+        </button>
       </div>
 
       <!-- 4F — Open Orders Card -->
@@ -192,6 +192,21 @@
       </div>
 
     </main>
+
+    <!-- Add Order Chooser Modal (One-Time vs Recurring) -->
+    <div id="add-order-chooser" class="modal-overlay hidden" onclick="hideAddOrderChooser(event)">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-gray-900">Create Order</h3>
+          <button onclick="document.getElementById('add-order-chooser').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <p class="text-sm text-gray-600 mb-3">Choose order type to continue</p>
+        <div class="flex gap-3">
+          <button onclick="chooseOrderType('one-time')" class="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg">One Time Task</button>
+          <button onclick="chooseOrderType('recurring')" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg">Recurring</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Bottom Nav -->
@@ -242,7 +257,7 @@
     </div>
   </div>
 
-  <script>
+    <script>
     function showMoreModal() {
       document.getElementById('more-modal').classList.remove('hidden');
       lucide.createIcons();
@@ -251,6 +266,23 @@
       if (e.target === e.currentTarget) {
         document.getElementById('more-modal').classList.add('hidden');
       }
+    }
+
+    function openAddOrderChooser() {
+      document.getElementById('add-order-chooser').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function hideAddOrderChooser(e) {
+      if (e.target === e.currentTarget) {
+        document.getElementById('add-order-chooser').classList.add('hidden');
+      }
+    }
+
+    function chooseOrderType(type) {
+      try { localStorage.setItem('fscrm_new_order_type', type); } catch(e) {}
+      document.getElementById('add-order-chooser').classList.add('hidden');
+      window.location.href = 'orders.html';
     }
 
     function navigateToOrders(filter) {

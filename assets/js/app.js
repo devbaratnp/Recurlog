@@ -347,7 +347,9 @@ window.createOrder = function(orderData) {
   orderData.createdAt = new Date().toISOString();
   orders.push(orderData);
   localStorage.setItem('fscrm_orders', JSON.stringify(orders));
-  window.pushNotification('New order created for ' + orderData.customerName + ' - ' + orderData.serviceFor, 'order_created', orderData.id);
+  // notification message: avoid referencing serviceFor since it's removed
+  window.pushNotification('New order created for ' + orderData.customerName, 'order_created', orderData.id);
+  try { localStorage.removeItem('fscrm_new_order_type'); } catch(e) {}
   return orderData;
 };
 
@@ -527,27 +529,31 @@ window.getNextDueDate = function(service, lastCompletedDate, previousScheduledDa
 
 // ========== REPORT HELPERS ==========
 
-function applyReportFilter(tasks, filter) {
-  if (!filter || filter === 'all') return tasks;
+function applyReportFilter(tasks, filter, startDate, endDate) {
+  // filter can be 'all','missed','today','thisMonth'
+  if (!filter || filter === 'all') filter = 'all';
   var today = todayISO();
   var now = new Date();
   var monthStart = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-01';
   return tasks.filter(function(t) {
     if (!t.scheduledDate) return false;
+    // date range filtering
+    if (startDate && t.scheduledDate < startDate) return false;
+    if (endDate && t.scheduledDate > endDate) return false;
     switch (filter) {
-      case 'missed': return t.status === 'missed';
-      case 'today': return t.scheduledDate === today;
-      case 'thisMonth': return t.scheduledDate >= monthStart;
-      default: return true;
+      case 'missed': if (t.status !== 'missed') return false; break;
+      case 'today': if (t.scheduledDate !== today) return false; break;
+      case 'thisMonth': if (t.scheduledDate < monthStart) return false; break;
     }
+    return true;
   });
 }
 
-window.getRecurringTasksReport = function(filter) {
+window.getRecurringTasksReport = function(filter, startDate, endDate) {
   var services = window.getServices({ isRecurring: true });
   var serviceIds = services.map(function(s) { return s.id; });
   var tasks = window.getTasks().filter(function(t) { return serviceIds.indexOf(t.serviceId) >= 0; });
-  var filtered = applyReportFilter(tasks, filter);
+  var filtered = applyReportFilter(tasks, filter, startDate, endDate);
   var total = filtered.length;
   var completed = filtered.filter(function(t) { return t.status === 'completed'; }).length;
   var missed = filtered.filter(function(t) { return t.status === 'missed'; }).length;
@@ -560,13 +566,13 @@ window.getRecurringTasksReport = function(filter) {
   };
 };
 
-window.getOneTimeTasksReport = function(filter) {
+window.getOneTimeTasksReport = function(filter, startDate, endDate) {
   var services = window.getServices({ isRecurring: false });
   var oneTimeServiceIds = services.map(function(s) { return s.id; });
   var allServices = window.getServices();
   var recurringIds = allServices.filter(function(s) { return s.isRecurring; }).map(function(s) { return s.id; });
   var tasks = window.getTasks().filter(function(t) { return recurringIds.indexOf(t.serviceId) < 0; });
-  var filtered = applyReportFilter(tasks, filter);
+  var filtered = applyReportFilter(tasks, filter, startDate, endDate);
   var total = filtered.length;
   var completed = filtered.filter(function(t) { return t.status === 'completed'; }).length;
   var missed = filtered.filter(function(t) { return t.status === 'missed'; }).length;

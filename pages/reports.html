@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Reports - ServCRM</title>
+  <title>Reports - Recurlog</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -42,11 +42,19 @@
     <div class="p-4 sm:p-6 space-y-6">
       <section class="card p-5 fade-in" data-section="recurring">
         <h2 class="text-lg font-bold text-navy mb-4">Recurring Tasks</h2>
-        <div class="flex flex-wrap gap-2 mb-4" data-filters="recurring">
-          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
-          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
-          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
-          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div class="flex flex-wrap gap-2" data-filters="recurring">
+            <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+            <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+            <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-500">From</label>
+            <input type="date" id="report-from-recurring" class="form-input" />
+            <label class="text-sm text-gray-500">To</label>
+            <input type="date" id="report-to-recurring" class="form-input" />
+          </div>
         </div>
         <div id="recurring-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
         <div class="mb-4" style="max-height:250px"><canvas id="chart-recurring"></canvas></div>
@@ -60,11 +68,19 @@
 
       <section class="card p-5 fade-in" data-section="onetime">
         <h2 class="text-lg font-bold text-navy mb-4">One-Time Tasks</h2>
-        <div class="flex flex-wrap gap-2 mb-4" data-filters="onetime">
-          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
-          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
-          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
-          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div class="flex flex-wrap gap-2" data-filters="onetime">
+            <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+            <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+            <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-500">From</label>
+            <input type="date" id="report-from-onetime" class="form-input" />
+            <label class="text-sm text-gray-500">To</label>
+            <input type="date" id="report-to-onetime" class="form-input" />
+          </div>
         </div>
         <div id="onetime-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
         <div class="mb-4" style="max-height:250px"><canvas id="chart-onetime"></canvas></div>
@@ -79,11 +95,19 @@
       <section class="card p-5 fade-in" data-section="staff">
         <h2 class="text-lg font-bold text-navy mb-4">Staff-Wise Report</h2>
         <select id="report-staff-select" class="form-select mb-4 w-full sm:w-64"></select>
-        <div class="flex flex-wrap gap-2 mb-4" data-filters="staff">
-          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
-          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
-          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
-          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div class="flex flex-wrap gap-2" data-filters="staff">
+            <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+            <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+            <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-500">From</label>
+            <input type="date" id="report-from-staff" class="form-input" />
+            <label class="text-sm text-gray-500">To</label>
+            <input type="date" id="report-to-staff" class="form-input" />
+          </div>
         </div>
         <div id="staff-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
         <div class="mb-4" style="max-height:250px"><canvas id="chart-staff"></canvas></div>
@@ -98,11 +122,19 @@
       <section class="card p-5 fade-in" data-section="category">
         <h2 class="text-lg font-bold text-navy mb-4">Category-Wise Report</h2>
         <select id="report-category-select" class="form-select mb-4 w-full sm:w-64"></select>
-        <div class="flex flex-wrap gap-2 mb-4" data-filters="category">
-          <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
-          <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
-          <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
-          <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div class="flex flex-wrap gap-2" data-filters="category">
+            <button data-filter="all" class="filter-tab btn btn-sm" style="background:var(--color-primary);color:#fff">All</button>
+            <button data-filter="missed" class="filter-tab btn btn-sm btn-secondary">Missed</button>
+            <button data-filter="today" class="filter-tab btn btn-sm btn-secondary">Today</button>
+            <button data-filter="thisMonth" class="filter-tab btn btn-sm btn-secondary">This Month</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-gray-500">From</label>
+            <input type="date" id="report-from-category" class="form-input" />
+            <label class="text-sm text-gray-500">To</label>
+            <input type="date" id="report-to-category" class="form-input" />
+          </div>
         </div>
         <div id="category-stats" class="grid grid-cols-3 gap-3 mb-4"></div>
         <div class="mb-4" style="max-height:250px"><canvas id="chart-category"></canvas></div>
@@ -155,7 +187,7 @@
     function renderTableBody(tbodyId, tasks) {
       var tbody = document.getElementById(tbodyId);
       tbody.innerHTML = tasks.map(function(t) {
-        return '<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">' +
+        return '<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer" data-task-id="' + t.id + '">' +
           '<td class="px-4 py-3 font-medium text-navy">' + t.title + '</td>' +
           '<td class="px-4 py-3 text-gray-600">' + getCustomerName(t.customerId) + '</td>' +
           '<td class="px-4 py-3 text-gray-600">' + getStaffName(t.assignedTo) + '</td>' +
@@ -163,6 +195,23 @@
           '<td class="px-4 py-3">' + window.renderStatusPill(t.status) + '</td>' +
         '</tr>';
       }).join('');
+
+      // Attach click handlers to open details
+      tbody.querySelectorAll('tr[data-task-id]').forEach(function(row) {
+        row.addEventListener('click', function() {
+          var id = this.getAttribute('data-task-id');
+          // navigate to task detail page if exists
+          try {
+            if (window.location.pathname.indexOf('reports.html') >= 0) {
+              // prefer task-detail.html
+              window.location.href = 'task-detail.html?id=' + id;
+            } else {
+              // fallback: alert
+              window.showToast('Open task ' + id, 'info');
+            }
+          } catch(e) { window.showToast('Open task ' + id, 'info'); }
+        });
+      });
     }
 
     function renderStats(statsId, data) {
@@ -252,8 +301,25 @@
       catSelect.innerHTML = '<option value="">Select Category</option>' + cats.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join('');
 
       // Initial render
-      renderSection('recurring', window.getRecurringTasksReport, 'all', 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body');
-      renderSection('onetime', window.getOneTimeTasksReport, 'all', 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body');
+      // set default date range to current month
+      var now = new Date();
+      var monthStart = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01';
+      var monthEnd = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(new Date(now.getFullYear(), now.getMonth()+1, 0).getDate()).padStart(2,'0');
+      document.getElementById('report-from-recurring').value = monthStart;
+      document.getElementById('report-to-recurring').value = monthEnd;
+      document.getElementById('report-from-onetime').value = monthStart;
+      document.getElementById('report-to-onetime').value = monthEnd;
+      document.getElementById('report-from-staff').value = monthStart;
+      document.getElementById('report-to-staff').value = monthEnd;
+      document.getElementById('report-from-category').value = monthStart;
+      document.getElementById('report-to-category').value = monthEnd;
+
+      renderSection('recurring', function(filter) {
+        return window.getRecurringTasksReport(filter, document.getElementById('report-from-recurring').value, document.getElementById('report-to-recurring').value);
+      }, 'all', 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body');
+      renderSection('onetime', function(filter) {
+        return window.getOneTimeTasksReport(filter, document.getElementById('report-from-onetime').value, document.getElementById('report-to-onetime').value);
+      }, 'all', 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body');
 
       // Filter tabs
       document.querySelectorAll('.filter-tab').forEach(function(btn) {
@@ -264,8 +330,8 @@
             parent.querySelectorAll('.filter-tab').forEach(function(t) { t.className = 'filter-tab px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200'; });
             this.className = 'filter-tab px-3 py-1.5 text-xs font-medium rounded-full bg-brand text-white';
             var section = parent.getAttribute('data-filters');
-            if (section === 'recurring') renderSection('recurring', window.getRecurringTasksReport, filter, 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body');
-            else if (section === 'onetime') renderSection('onetime', window.getOneTimeTasksReport, filter, 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body');
+            if (section === 'recurring') renderSection('recurring', function(f) { return window.getRecurringTasksReport(f, document.getElementById('report-from-recurring').value, document.getElementById('report-to-recurring').value); }, filter, 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body');
+            else if (section === 'onetime') renderSection('onetime', function(f) { return window.getOneTimeTasksReport(f, document.getElementById('report-from-onetime').value, document.getElementById('report-to-onetime').value); }, filter, 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body');
             else if (section === 'staff') renderStaffWise();
             else if (section === 'category') renderCategoryWise();
           } else {
@@ -283,6 +349,11 @@
         var filter = document.querySelector('[data-filters="category"] .bg-brand')?.getAttribute('data-filter') || 'all';
         if (this.value) renderCategoryWise();
       });
+
+      // Date range changes: re-render affected sections
+      ['report-from-recurring','report-to-recurring'].forEach(function(id){ document.getElementById(id).addEventListener('change', function(){ renderSection('recurring', function(filter){ return window.getRecurringTasksReport(filter, document.getElementById('report-from-recurring').value, document.getElementById('report-to-recurring').value); }, document.querySelector('[data-filters="recurring"] .bg-brand')?.getAttribute('data-filter') || 'all', 'recurring-stats', 'chart-recurring', 'recurring', 'report-recurring-body'); }); });
+      ['report-from-onetime','report-to-onetime'].forEach(function(id){ document.getElementById(id).addEventListener('change', function(){ renderSection('onetime', function(filter){ return window.getOneTimeTasksReport(filter, document.getElementById('report-from-onetime').value, document.getElementById('report-to-onetime').value); }, document.querySelector('[data-filters="onetime"] .bg-brand')?.getAttribute('data-filter') || 'all', 'onetime-stats', 'chart-onetime', 'onetime', 'report-onetime-body'); }); });
+
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }

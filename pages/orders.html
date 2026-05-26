@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Orders - ServCRM</title>
+  <title>Orders - Recurlog</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../assets/css/custom.css">
@@ -97,10 +97,7 @@
           <label for="order-customer" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
           <select id="order-customer" class="form-select"></select>
         </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Service For <span class="text-danger">*</span></label>
-          <div id="order-service-chips" class="flex flex-wrap gap-2"></div>
-        </div>
+        <!-- Service removed per task: Do not collect service on orders form -->
         <div>
           <label for="order-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem / Issue <span class="text-danger">*</span></label>
           <textarea id="order-problem" rows="3" class="form-textarea" placeholder="Describe the problem in detail..."></textarea>
@@ -201,7 +198,8 @@
   <script>
     // ========== STATE ==========
     var currentOrderTab = 'all';
-    var selectedOrderService = null;
+      var selectedOrderService = null; // deprecated — service removed from form
+      var preselectedOrderType = null;
 
     // ========== INIT ==========
     document.addEventListener('DOMContentLoaded', function () {
@@ -209,10 +207,18 @@
       setupOrderTabs();
       setupOrderSearch();
       populateOrderCustomers();
-      populateOrderServiceChips();
+      // populateOrderServiceChips(); // service removed
       populateAssignStaff();
       setDefaultOrderDate();
       setupPriorityToggle();
+
+      // Check if redirected from dashboard chooser
+      try { preselectedOrderType = localStorage.getItem('fscrm_new_order_type'); } catch(e) { preselectedOrderType = null; }
+      if (preselectedOrderType) {
+        // preselect UI state or just open modal
+        openNewOrderModal();
+      }
+
       renderOrders();
 
       document.getElementById('btn-save-order').addEventListener('click', handleSaveOrder);
@@ -464,25 +470,9 @@
       });
     }
 
+    // Service selection removed from order form; keep helper for backward compatibility if needed
     function populateOrderServiceChips() {
-      var container = document.getElementById('order-service-chips');
-      container.innerHTML = '';
-      var types = window.getServiceTypes();
-      types.forEach(function (type) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = type;
-        btn.dataset.value = type;
-        btn.className = 'px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors border-gray-200 text-gray-600 hover:border-brand/50 hover:text-brand';
-        btn.addEventListener('click', function () {
-          container.querySelectorAll('button').forEach(function (b) {
-            b.className = 'px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors border-gray-200 text-gray-600 hover:border-brand/50 hover:text-brand';
-          });
-          this.className = 'px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors border-brand bg-brand text-white';
-          selectedOrderService = this.dataset.value;
-        });
-        container.appendChild(btn);
-      });
+      // no-op
     }
 
     function populateAssignStaff() {
@@ -540,10 +530,9 @@
         window.showToast('Please select a customer.', 'error');
         return;
       }
-      if (!selectedOrderService) {
-        window.showToast('Please select a service type.', 'error');
-        return;
-      }
+      // service is no longer required on orders
+      // keep serviceFor=null for backward compatibility
+      // if needed, validate elsewhere
       if (!problem) {
         window.showToast('Please describe the problem.', 'error');
         return;
@@ -552,14 +541,17 @@
       var orderData = {
         customerId: parseInt(customerId, 10),
         customerName: customerName,
-        serviceFor: selectedOrderService,
+        // no service collected here; preserve any earlier schema by leaving serviceFor null
+        serviceFor: null,
         problem: problem,
         status: 'pending',
         priority: isUrgent ? 'urgent' : 'normal',
         assignedTo: null,
         assignedStaffName: null,
         scheduledDate: date || null,
-        notes: notes
+        notes: notes,
+        // include isRecurring flag if preselected from dashboard chooser
+        isRecurring: (preselectedOrderType === 'recurring')
       };
 
       var saved = window.createOrder(orderData);
