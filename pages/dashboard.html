@@ -93,28 +93,7 @@
   </div>
 
   <!-- Bottom Nav -->
-  <nav class="bottom-nav md:hidden">
-    <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 active">
-      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium truncate w-full text-center">Dashboard</span>
-    </a>
-    <a href="customers.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
-      <i data-lucide="users" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium truncate w-full text-center">Customers</span>
-    </a>
-    <a href="orders.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
-      <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium truncate w-full text-center">Orders</span>
-    </a>
-    <a href="tasks.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
-      <i data-lucide="check-square" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium truncate w-full text-center">Tasks</span>
-    </a>
-    <button onclick="showMoreModal()" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
-      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium truncate w-full text-center">More</span>
-    </button>
-  </nav>
+  <script>injectBottomNav();</script>
 
   <div id="more-modal" class="modal-overlay hidden" onclick="hideMoreModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">

@@ -73,6 +73,31 @@
   // Store the inject function globally
   window.injectSidebar = injectSidebar;
 
+  // ===== BOTTOM NAV (mobile) — single source of truth =====
+  function injectBottomNav() {
+    var page = getPageName();
+    function item(href, icon, label, match) {
+      var active = (page === match) || (match === 'customers.html' && page.indexOf('customer') === 0);
+      return '<a href="' + href + '" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1' + (active ? ' active' : ' text-gray-500') + '">' +
+        '<i data-lucide="' + icon + '" class="w-5 h-5"></i>' +
+        '<span class="text-[10px] font-medium truncate w-full text-center">' + label + '</span>' +
+      '</a>';
+    }
+    document.write(
+      '<nav class="bottom-nav md:hidden">' +
+        item('dashboard.html', 'layout-dashboard', 'Dashboard', 'dashboard.html') +
+        item('customers.html', 'users', 'Customers', 'customers.html') +
+        item('orders.html', 'clipboard-list', 'Orders', 'orders.html') +
+        item('daybook.html', 'book-open', 'Daybook', 'daybook.html') +
+        '<button onclick="toggleSidebar()" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 text-gray-500">' +
+          '<i data-lucide="menu" class="w-5 h-5"></i>' +
+          '<span class="text-[10px] font-medium truncate w-full text-center">More</span>' +
+        '</button>' +
+      '</nav>'
+    );
+  }
+  window.injectBottomNav = injectBottomNav;
+
   // ===== TOGGLE LOGIC =====
 
   var sidebar, backdrop, body, collapseBtn, closeBtn;
