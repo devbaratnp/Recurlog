@@ -29,6 +29,13 @@ function todayISO() {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
+function tomorrowISO() {
+  var d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+window.tomorrowISO = tomorrowISO;
+
 function formatDateISO(date) {
   if (!date) return '';
   var d = typeof date === 'string' ? new Date(date + 'T00:00:00') : new Date(date);
@@ -115,7 +122,8 @@ window.saveService = function(service) {
     var staff = window.getStaffMember(service.assignedTo);
     var cat = window.getCategory(service.categoryId);
     var taskDate = service.firstScheduledDate || todayISO();
-    var taskTitle = (cat ? cat.name + ' - ' : '') + (customer ? customer.name : '');
+    var prefix = cat ? cat.name : (service.serviceFor || 'Service');
+    var taskTitle = prefix + ' - ' + (customer ? customer.name : '');
     if (service.problem) taskTitle = taskTitle + ' (' + service.problem.substring(0, 40) + ')';
     var task = {
       id: getNextId(),
@@ -161,7 +169,7 @@ window.getTask = function(id) {
   return tasks.find(function(t) { return String(t.id) === String(id); }) || null;
 };
 
-window.completeTask = function(taskId, completedDate, notes) {
+window.completeTask = function(taskId, completedDate, notes, report) {
   var tasks = window.getTasks();
   var idx = tasks.findIndex(function(t) { return String(t.id) === String(taskId); });
   if (idx < 0) return null;
@@ -169,6 +177,13 @@ window.completeTask = function(taskId, completedDate, notes) {
   task.status = 'completed';
   task.completedDate = completedDate || todayISO();
   if (notes) task.notes = (task.notes ? task.notes + ' | ' : '') + notes;
+  // Optional completion report (Task Completed By + Received By + Signature)
+  if (report) {
+    if (report.completedBy) task.completedBy = report.completedBy;
+    if (report.receivedName) task.receivedName = report.receivedName;
+    if (report.receivedContact) task.receivedContact = report.receivedContact;
+    if (report.signature) task.signature = report.signature;
+  }
   tasks[idx] = task;
   localStorage.setItem('fscrm_tasks', JSON.stringify(tasks));
 
@@ -380,12 +395,19 @@ window.assignOrder = function(orderId, staffId, staffName, scheduledDate) {
   return order;
 };
 
-window.completeOrder = function(orderId, notes, createTask) {
+window.completeOrder = function(orderId, report, createTask) {
   var order = window.getOrder(orderId);
   if (!order) return null;
+  report = report || {};
   var updates = {
     status: 'completed',
-    notes: notes || ''
+    completedDate: todayISO(),
+    notes: report.notes || '',
+    dispatchDate: report.dispatchDate || todayISO(),
+    dispatchBy: report.dispatchBy || '',
+    receivedName: report.receivedName || '',
+    receivedContact: report.receivedContact || '',
+    signature: report.signature || null
   };
   order = window.updateOrder(orderId, updates);
   if (order && createTask) {
@@ -398,7 +420,7 @@ window.completeOrder = function(orderId, notes, createTask) {
       scheduledDate: order.scheduledDate || todayISO(),
       completedDate: todayISO(),
       assignedTo: order.assignedTo,
-      notes: notes || '',
+      notes: report.notes || '',
       categoryId: null
     };
     var tasks = window.getTasks();
@@ -422,6 +444,54 @@ window.cancelOrder = function(orderId) {
 };
 
 // ========== DASHBOARD STATS ==========
+
+// Build the uniform 5-column card stats (All / Todays Completed / To Do / Today / Tomorrow) from a task list.
+function cardFromTasks(list, today, tomorrow) {
+  return {
+    all: list.length,
+    todayCompleted: list.filter(function(t) { return t.status === 'completed' && t.completedDate === today; }).length,
+    toDo: list.filter(function(t) { return t.status === 'pending'; }).length,
+    today: list.filter(function(t) { return t.scheduledDate === today && t.status === 'pending'; }).length,
+    tomorrow: list.filter(function(t) { return t.scheduledDate === tomorrow && t.status === 'pending'; }).length
+  };
+}
+
+// Same shape but for orders (statuses: pending / assigned / completed / cancelled).
+function cardFromOrders(list, today, tomorrow) {
+  function open(o) { return o.status === 'pending' || o.status === 'assigned'; }
+  return {
+    all: list.length,
+    todayCompleted: list.filter(function(o) { return o.status === 'completed' && o.completedDate === today; }).length,
+    toDo: list.filter(open).length,
+    today: list.filter(function(o) { return o.scheduledDate === today && open(o); }).length,
+    tomorrow: list.filter(function(o) { return o.scheduledDate === tomorrow && open(o); }).length
+  };
+}
+
+// Tasks belonging to recurring vs one-time services.
+function splitTasksByType() {
+  var tasks = window.getTasks();
+  var services = window.getServices();
+  var recIds = services.filter(function(s) { return s.isRecurring; }).map(function(s) { return s.id; });
+  var oneIds = services.filter(function(s) { return !s.isRecurring; }).map(function(s) { return s.id; });
+  return {
+    recurring: tasks.filter(function(t) { return t.serviceId && recIds.indexOf(t.serviceId) >= 0; }),
+    oneTime: tasks.filter(function(t) { return t.serviceId && oneIds.indexOf(t.serviceId) >= 0; })
+  };
+}
+
+window.getStaffCardStats = function(staffId) {
+  var tasks = window.getTasks({ staffId: staffId });
+  return cardFromTasks(tasks, todayISO(), tomorrowISO());
+};
+
+window.getAreaCardStats = function(area) {
+  var customerIds = window.getCustomers()
+    .filter(function(c) { return c.area === area; })
+    .map(function(c) { return String(c.id); });
+  var tasks = window.getTasks().filter(function(t) { return customerIds.indexOf(String(t.customerId)) >= 0; });
+  return cardFromTasks(tasks, todayISO(), tomorrowISO());
+};
 
 window.getDashboardStats = function() {
   var tasks = window.getTasks();
@@ -475,7 +545,26 @@ window.getDashboardStats = function() {
   var urgentOrders = orders.filter(function(o) { return o.status !== 'cancelled' && o.priority === 'urgent'; }).length;
   var totalOrders = orders.length;
 
+  // Uniform dashboard cards (All / Todays Completed / To Do / Today / Tomorrow)
+  var tomorrow = tomorrowISO();
+  var split = splitTasksByType();
+  var customerCard = cardFromTasks(tasks, today, tomorrow);
+  customerCard.all = customers.length; // Customer card's "All" counts customers, not tasks
+  var orderCard = cardFromOrders(orders, today, tomorrow);
+  var oneTimeCard = cardFromTasks(split.oneTime, today, tomorrow);
+  var recurringCard = cardFromTasks(split.recurring, today, tomorrow);
+
+  // Sorted lists for the Staff-Wise / Area-Wise selectors
+  var staffList = staff.map(function(s) { return { id: s.id, name: s.name }; });
+  var areaList = Object.keys(areaWise).sort();
+
   return {
+    customerCard: customerCard,
+    orderCard: orderCard,
+    oneTimeCard: oneTimeCard,
+    recurringCard: recurringCard,
+    staffList: staffList,
+    areaList: areaList,
     totalCustomers: customers.length,
     totalStaff: staff.length,
     oneTimeCustomers: oneTimeCustomers.length,

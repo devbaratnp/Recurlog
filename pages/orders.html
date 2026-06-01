@@ -19,6 +19,18 @@
       }
     }
   </script>
+  <style>
+    .signature-pad {
+      width: 100%;
+      height: 160px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      touch-action: none;
+      cursor: crosshair;
+      display: block;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
 <script>injectSidebar();</script>
@@ -148,30 +160,17 @@
           </div>
         </div>
 
-        <!-- Service Selection -->
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Service Type</label>
-          <div id="order-service-dropdown-container"></div>
-        </div>
-
-        <div>
-          <label for="order-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem / Issue <span class="text-danger">*</span></label>
-          <textarea id="order-problem" rows="3" class="form-textarea" placeholder="Describe the problem in detail..."></textarea>
+          <label for="order-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Description <span class="text-danger">*</span></label>
+          <textarea id="order-problem" rows="4" class="form-textarea" placeholder="Describe the order / work to be done..."></textarea>
         </div>
         <div>
-          <label for="order-priority" class="block text-sm font-semibold text-gray-700 mb-1.5">Priority</label>
-          <div class="flex gap-2">
-            <button type="button" id="order-priority-normal" class="px-4 py-2 rounded-lg text-sm font-medium border-2 border-brand bg-brand text-white">Normal</button>
-            <button type="button" id="order-priority-urgent" class="px-4 py-2 rounded-lg text-sm font-medium border-2 border-gray-200 text-gray-600 hover:border-danger/50">Urgent</button>
-          </div>
+          <label for="order-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Assign To</label>
+          <select id="order-staff" class="form-select"><option value="">Select Staff</option></select>
         </div>
         <div>
-          <label for="order-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Preferred Date</label>
+          <label for="order-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Schedule Task</label>
           <input type="date" id="order-date" class="form-input max-w-xs">
-        </div>
-        <div>
-          <label for="order-notes" class="block text-sm font-semibold text-gray-700 mb-1.5">Notes</label>
-          <textarea id="order-notes" rows="2" class="form-textarea" placeholder="Any additional notes..."></textarea>
         </div>
         <div class="flex gap-3 pt-2">
           <button onclick="closeModal('new-order-modal')" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
@@ -219,9 +218,44 @@
       </div>
       <div class="space-y-4">
         <input type="hidden" id="complete-order-id" value="">
+
+        <p class="text-sm font-bold text-navy">Order Report</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="dispatch-date" class="block text-xs font-medium text-gray-500 mb-1">Dispatch Date</label>
+            <input type="date" id="dispatch-date" class="form-input">
+          </div>
+          <div>
+            <label for="dispatch-by" class="block text-xs font-medium text-gray-500 mb-1">Dispatch By</label>
+            <input type="text" id="dispatch-by" class="form-input" placeholder="Staff / person name">
+          </div>
+        </div>
+
+        <div class="pt-1">
+          <p class="text-sm font-bold text-navy mb-2">Received By</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="received-name" class="block text-xs font-medium text-gray-500 mb-1">Name</label>
+              <input type="text" id="received-name" class="form-input" placeholder="Receiver name">
+            </div>
+            <div>
+              <label for="received-contact" class="block text-xs font-medium text-gray-500 mb-1">Contact</label>
+              <input type="text" id="received-contact" class="form-input" placeholder="Phone">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-medium text-gray-500">Signature</label>
+            <button type="button" id="sig-clear" class="text-xs text-brand hover:underline">Clear</button>
+          </div>
+          <canvas id="sig-pad" class="signature-pad" width="600" height="160"></canvas>
+        </div>
+
         <div>
           <label for="complete-notes" class="block text-sm font-semibold text-gray-700 mb-1.5">Completion Notes</label>
-          <textarea id="complete-notes" rows="3" class="form-textarea" placeholder="Notes about the completed work..."></textarea>
+          <textarea id="complete-notes" rows="2" class="form-textarea" placeholder="Notes about the completed work..."></textarea>
         </div>
         <div class="flex items-center gap-2">
           <input type="checkbox" id="complete-create-task" class="w-4 h-4 accent-brand rounded">
@@ -298,6 +332,32 @@
           <p class="text-sm text-gray-500">Notes</p>
           <p id="detail-notes" class="text-sm text-gray-700 mt-1 italic"></p>
         </div>
+        <div id="detail-report-row" class="hidden">
+          <hr class="border-gray-100">
+          <p class="text-sm font-bold text-navy mb-2">Order Report</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Dispatch Date</p>
+              <p id="detail-dispatch-date" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Dispatch By</p>
+              <p id="detail-dispatch-by" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Received By</p>
+              <p id="detail-received-name" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Receiver Contact</p>
+              <p id="detail-received-contact" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+          </div>
+          <div id="detail-sig-wrap" class="hidden mt-3">
+            <p class="text-sm text-gray-500 mb-1">Signature</p>
+            <img id="detail-signature" class="border border-gray-200 rounded-lg bg-white max-h-32" alt="Signature">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -305,9 +365,7 @@
   <script>
     // ========== STATE ==========
     var currentOrderTab = 'all';
-      var selectedOrderService = null; // deprecated — service removed from form
-      var preselectedOrderType = null;
-    var orderServiceDropdown = null;
+    var preselectedOrderType = null;
 
     // ========== INIT ==========
     document.addEventListener('DOMContentLoaded', function () {
@@ -315,12 +373,12 @@
       setupOrderTabs();
       setupOrderSearch();
       populateOrderCustomers();
+      populateOrderStaff();
       populateAssignStaff();
       setDefaultOrderDate();
-      setupPriorityToggle();
       setupInlineCustomerForm();
-      setupServiceDropdown();
       setupInlineLocality();
+      initSignaturePad();
 
       // Check if redirected from dashboard chooser
       try { preselectedOrderType = localStorage.getItem('fscrm_new_order_type'); } catch(e) { preselectedOrderType = null; }
@@ -342,6 +400,7 @@
       var dateStr = y + '-' + m + '-' + d;
       document.getElementById('order-date').value = dateStr;
       document.getElementById('assign-date').value = dateStr;
+      document.getElementById('dispatch-date').value = dateStr;
 
       lucide.createIcons();
     });
@@ -443,27 +502,6 @@
         area: area || '',
         servicesFor: service ? [service] : []
       };
-    }
-
-    // ========== SERVICE DROPDOWN ==========
-    function setupServiceDropdown() {
-      var container = document.getElementById('order-service-dropdown-container');
-      var types = window.getServiceTypes();
-      var options = types.map(function(t) { return { value: t, label: t }; });
-      options.unshift({ value: '', label: 'None (no specific service)' });
-
-      orderServiceDropdown = window.buildSearchableDropdown({
-        placeholder: 'Search service type...',
-        searchPlaceholder: 'Type to search services...',
-        options: options,
-        selectedValue: '',
-        onChange: function(val) {
-          selectedOrderService = val || null;
-        }
-      });
-
-      container.appendChild(orderServiceDropdown);
-      try { lucide.createIcons(); } catch(e) {}
     }
 
     // ========== ORDER FILTER FROM DASHBOARD ==========
@@ -639,9 +677,7 @@
       if (completeBtn) {
         completeBtn.addEventListener('click', function (e) {
           e.stopPropagation();
-          document.getElementById('complete-order-id').value = this.dataset.orderId;
-          document.getElementById('complete-create-task').checked = false;
-          openModal('complete-order-modal');
+          openCompleteModal(this.dataset.orderId);
         });
       }
 
@@ -705,6 +741,26 @@
         notesRow.classList.add('hidden');
       }
 
+      // Order report (dispatch + received-by + signature)
+      var reportRow = document.getElementById('detail-report-row');
+      var hasReport = order.dispatchDate || order.dispatchBy || order.receivedName || order.receivedContact || order.signature;
+      if (hasReport) {
+        document.getElementById('detail-dispatch-date').textContent = order.dispatchDate ? window.formatDate(order.dispatchDate) : '–';
+        document.getElementById('detail-dispatch-by').textContent = order.dispatchBy || '–';
+        document.getElementById('detail-received-name').textContent = order.receivedName || '–';
+        document.getElementById('detail-received-contact').textContent = order.receivedContact || '–';
+        var sigWrap = document.getElementById('detail-sig-wrap');
+        if (order.signature) {
+          document.getElementById('detail-signature').src = order.signature;
+          sigWrap.classList.remove('hidden');
+        } else {
+          sigWrap.classList.add('hidden');
+        }
+        reportRow.classList.remove('hidden');
+      } else {
+        reportRow.classList.add('hidden');
+      }
+
       try { lucide.createIcons(); } catch(e) {}
       openModal('order-detail-modal');
     }
@@ -727,10 +783,10 @@
 
     // ========== NEW ORDER MODAL ==========
     function openNewOrderModal() {
-      selectedOrderService = null;
       populateOrderCustomers();
+      populateOrderStaff();
       document.getElementById('order-problem').value = '';
-      document.getElementById('order-notes').value = '';
+      document.getElementById('order-staff').value = '';
 
       // Reset inline customer form
       var inlineSection = document.getElementById('inline-customer-section');
@@ -740,15 +796,20 @@
       btnAdd.disabled = false;
       btnAdd.classList.remove('opacity-50', 'pointer-events-none');
 
-      // Reset service dropdown
-      if (orderServiceDropdown && orderServiceDropdown._setValue) {
-        orderServiceDropdown._setValue('');
-      }
-      selectedOrderService = null;
-
-      document.getElementById('order-priority-normal').click();
       setDefaultOrderDate();
       openModal('new-order-modal');
+    }
+
+    function populateOrderStaff() {
+      var select = document.getElementById('order-staff');
+      select.innerHTML = '<option value="">Select Staff</option>';
+      var staff = window.getStaff();
+      staff.forEach(function (s) {
+        var opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        select.appendChild(opt);
+      });
     }
 
     function populateOrderCustomers() {
@@ -783,50 +844,26 @@
       document.getElementById('order-date').value = y + '-' + m + '-' + d;
     }
 
-    function setupPriorityToggle() {
-      var normalBtn = document.getElementById('order-priority-normal');
-      var urgentBtn = document.getElementById('order-priority-urgent');
-
-      function setPriority(active) {
-        [normalBtn, urgentBtn].forEach(function (btn) {
-          btn.className = 'px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors';
-        });
-        if (active === 'urgent') {
-          urgentBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border-2 border-danger bg-danger/10 text-danger';
-          normalBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border-2 border-gray-200 text-gray-600 hover:border-gray-300';
-        } else {
-          normalBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border-2 border-brand bg-brand text-white';
-          urgentBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border-2 border-gray-200 text-gray-600 hover:border-danger/50';
-        }
-      }
-
-      normalBtn.addEventListener('click', function () { setPriority('normal'); });
-      urgentBtn.addEventListener('click', function () { setPriority('urgent'); });
-      setPriority('normal');
-    }
-
     function handleSaveOrder() {
       var customerSelect = document.getElementById('order-customer');
       var customerId = customerSelect.value;
-      var customerName = customerSelect.options[customerSelect.selectedIndex].text;
+      var customerName = customerSelect.options[customerSelect.selectedIndex] ? customerSelect.options[customerSelect.selectedIndex].text : '';
       var problem = document.getElementById('order-problem').value.trim();
       var date = document.getElementById('order-date').value;
-      var notes = document.getElementById('order-notes').value.trim();
-      var isUrgent = document.getElementById('order-priority-urgent').classList.contains('border-danger');
+      var staffSelect = document.getElementById('order-staff');
+      var staffId = staffSelect.value;
+      var staffName = staffId ? staffSelect.options[staffSelect.selectedIndex].text : null;
 
-      // Check if inline customer form is open and needs to be saved first
+      // If the inline customer form is open, create that customer first
       var inlineSection = document.getElementById('inline-customer-section');
-      var inlineData = null;
       if (!inlineSection.classList.contains('hidden')) {
-        inlineData = getInlineCustomerData();
+        var inlineData = getInlineCustomerData();
         if (inlineData) {
           var newCustomer = window.createCustomerInline(inlineData);
           customerId = String(newCustomer.id);
           customerName = newCustomer.name;
-          // Update the customer dropdown
           populateOrderCustomers();
           document.getElementById('order-customer').value = customerId;
-          // Hide inline form
           inlineSection.classList.add('hidden');
           clearInlineCustomerForm();
           var btnAdd = document.getElementById('btn-inline-customer');
@@ -840,21 +877,21 @@
         return;
       }
       if (!problem) {
-        window.showToast('Please describe the problem.', 'error');
+        window.showToast('Please enter the order description.', 'error');
         return;
       }
 
       var orderData = {
         customerId: parseInt(customerId, 10),
         customerName: customerName,
-        serviceFor: selectedOrderService || null,
+        serviceFor: null,
         problem: problem,
-        status: 'pending',
-        priority: isUrgent ? 'urgent' : 'normal',
-        assignedTo: null,
-        assignedStaffName: null,
+        status: staffId ? 'assigned' : 'pending',
+        priority: 'normal',
+        assignedTo: staffId ? parseInt(staffId, 10) : null,
+        assignedStaffName: staffName,
         scheduledDate: date || null,
-        notes: notes,
+        notes: '',
         isRecurring: (preselectedOrderType === 'recurring')
       };
 
@@ -893,15 +930,81 @@
     // ========== COMPLETE ==========
     function handleComplete() {
       var orderId = document.getElementById('complete-order-id').value;
-      var notes = document.getElementById('complete-notes').value.trim();
+      var report = {
+        notes: document.getElementById('complete-notes').value.trim(),
+        dispatchDate: document.getElementById('dispatch-date').value || null,
+        dispatchBy: document.getElementById('dispatch-by').value.trim(),
+        receivedName: document.getElementById('received-name').value.trim(),
+        receivedContact: document.getElementById('received-contact').value.trim(),
+        signature: getSignatureDataURL()
+      };
       var createTask = document.getElementById('complete-create-task').checked;
 
-      var result = window.completeOrder(orderId, notes, createTask);
+      var result = window.completeOrder(orderId, report, createTask);
       if (result) {
         window.showToast('Order completed!' + (createTask ? ' Task created.' : ''), 'success');
         closeModal('complete-order-modal');
         renderOrders();
       }
+    }
+
+    // ===== Signature pad =====
+    var sigCanvas = null, sigCtx = null, sigDrawing = false, sigHasInk = false;
+
+    function initSignaturePad() {
+      sigCanvas = document.getElementById('sig-pad');
+      if (!sigCanvas) return;
+      sigCtx = sigCanvas.getContext('2d');
+      sigCtx.lineWidth = 2;
+      sigCtx.lineCap = 'round';
+      sigCtx.strokeStyle = '#0B1E3D';
+
+      function pos(e) {
+        var rect = sigCanvas.getBoundingClientRect();
+        var src = (e.touches && e.touches[0]) ? e.touches[0] : e;
+        return {
+          x: (src.clientX - rect.left) * (sigCanvas.width / rect.width),
+          y: (src.clientY - rect.top) * (sigCanvas.height / rect.height)
+        };
+      }
+      function start(e) { e.preventDefault(); sigDrawing = true; var p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+      function move(e) { if (!sigDrawing) return; e.preventDefault(); var p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigHasInk = true; }
+      function end() { sigDrawing = false; }
+
+      sigCanvas.addEventListener('mousedown', start);
+      sigCanvas.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', end);
+      sigCanvas.addEventListener('touchstart', start, { passive: false });
+      sigCanvas.addEventListener('touchmove', move, { passive: false });
+      sigCanvas.addEventListener('touchend', end);
+
+      document.getElementById('sig-clear').addEventListener('click', clearSignature);
+    }
+
+    function clearSignature() {
+      if (!sigCtx || !sigCanvas) return;
+      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      sigHasInk = false;
+    }
+
+    function getSignatureDataURL() {
+      if (!sigHasInk || !sigCanvas) return null;
+      return sigCanvas.toDataURL('image/png');
+    }
+
+    function openCompleteModal(orderId) {
+      var order = window.getOrder(orderId);
+      document.getElementById('complete-order-id').value = orderId;
+      document.getElementById('complete-notes').value = '';
+      document.getElementById('complete-create-task').checked = false;
+      var now = new Date();
+      document.getElementById('dispatch-date').value =
+        now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('dispatch-by').value = (order && order.assignedStaffName) ? order.assignedStaffName : '';
+      document.getElementById('received-name').value = order ? (order.customerName || '') : '';
+      document.getElementById('received-contact').value = '';
+      clearSignature();
+      openModal('complete-order-modal');
     }
 
     // ========== CANCEL ==========

@@ -19,6 +19,24 @@
       }
     }
   </script>
+  <style>
+    .dash-quick-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 14px 12px; min-height: 52px;
+      background: var(--color-primary, #1DB954); color: #fff;
+      border-radius: 12px; font-size: 14px; font-weight: 600;
+      box-shadow: 0 4px 14px rgba(29,185,84,0.25); transition: all .15s ease;
+    }
+    .dash-quick-btn:hover { background: #17a449; }
+    .dash-quick-btn:active { transform: scale(0.98); }
+    .dash-card-cell { padding: 12px 8px; text-align: center; }
+    .dash-card-cell.clickable { cursor: pointer; }
+    .dash-card-cell.clickable:hover { background: #f9fafb; }
+    .dash-col-top { font-size: 11px; font-weight: 500; color: #9ca3af; text-transform: uppercase; letter-spacing: .03em; line-height: 1.1; }
+    .dash-col-sub { font-size: 11px; font-weight: 500; color: #9ca3af; line-height: 1.1; margin-bottom: 4px; min-height: 13px; }
+    .dash-col-val { font-size: 20px; font-weight: 700; }
+    .form-select-sm { width: auto; padding: 6px 28px 6px 10px; font-size: 13px; }
+  </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
   <script>injectSidebar();</script>
@@ -50,157 +68,28 @@
       </div>
     </header>
 
-    <main class="p-4 md:p-6 max-w-6xl">
+    <main class="p-4 md:p-6 max-w-5xl">
       <h1 class="text-xl font-bold text-navy mb-5">Dashboard &mdash; Overview</h1>
 
-      <!-- Hero CTA — Add Order -->
-      <button onclick="openAddOrderChooser()" class="dashboard-hero-cta mb-6">
-        <div class="cta-icon"><i data-lucide="plus"></i></div>
-        <div class="cta-text">
-          <h3>Create New Order</h3>
-          <p>Fast one-time job or recurring schedule &bull; Start in seconds</p>
-        </div>
-        <i data-lucide="arrow-right" class="cta-arrow w-5 h-5"></i>
-      </button>
-
-      <!-- Secondary Quick Actions -->
-      <div class="flex flex-wrap gap-2 mb-6">
-        <a href="customer-add.html" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all min-h-[44px]">
-          <i data-lucide="user-plus" class="w-4 h-4 text-gray-400"></i> Add Customer
-        </a>
-        <a href="service-add.html" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all min-h-[44px]">
-          <i data-lucide="plus-circle" class="w-4 h-4 text-gray-400"></i> Add Task
-        </a>
+      <!-- Quick Add -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <button onclick="quickAdd('customer')" class="dash-quick-btn">
+          <i data-lucide="plus" class="w-4 h-4"></i> Customer
+        </button>
+        <button onclick="quickAdd('order')" class="dash-quick-btn">
+          <i data-lucide="plus" class="w-4 h-4"></i> Order
+        </button>
+        <button onclick="quickAdd('onetime')" class="dash-quick-btn">
+          <i data-lucide="plus" class="w-4 h-4"></i> One Time Task
+        </button>
+        <button onclick="quickAdd('recurring')" class="dash-quick-btn">
+          <i data-lucide="plus" class="w-4 h-4"></i> Recurring Task
+        </button>
       </div>
 
-      <!-- 4F — Open Orders Card -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="orders-stats-container">
-        <div class="card p-4 border-l-4 border-l-purple-500">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Orders</p>
-              <p id="stat-total-orders" class="text-2xl font-bold text-navy mt-1 cursor-pointer hover:opacity-75" onclick="window.location.href='orders.html'">0</p>
-            </div>
-            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <i data-lucide="clipboard-list" class="w-5 h-5 text-purple-600"></i>
-            </div>
-          </div>
-        </div>
-        <div class="card p-4 border-l-4 border-l-amber">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Pending Orders</p>
-              <p id="stat-pending-orders" class="text-2xl font-bold text-navy mt-1 cursor-pointer hover:opacity-75" onclick="navigateToOrders('pending')">0</p>
-            </div>
-            <div class="w-10 h-10 bg-amber/10 rounded-lg flex items-center justify-center">
-              <i data-lucide="clock" class="w-5 h-5 text-amber"></i>
-            </div>
-          </div>
-        </div>
-        <div class="card p-4 border-l-4 border-l-danger">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Urgent Orders</p>
-              <p id="stat-urgent-orders" class="text-2xl font-bold text-navy mt-1 cursor-pointer hover:opacity-75" onclick="navigateToOrders('urgent')">0</p>
-            </div>
-            <div class="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center">
-              <i data-lucide="alert-triangle" class="w-5 h-5 text-danger"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4B — Total Customers Card -->
-      <div class="card p-4 md:p-5 mb-6 border-l-4 border-l-brand">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total Customers</p>
-            <p id="stat-total-customers" class="text-3xl font-bold text-navy mt-1 stat-clickable" onclick="window.location.href='customers.html'">0</p>
-          </div>
-          <div class="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center">
-            <i data-lucide="users" class="w-6 h-6 text-brand"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4C — One-Time Customers Report -->
-      <div class="card overflow-hidden mb-6">
-        <div class="card-header">
-          <h2 class="font-semibold text-navy flex items-center gap-2">
-            <i data-lucide="calendar" class="w-4 h-4 text-gray-400"></i> One-Time Customers
-          </h2>
-        </div>
-        <div class="grid grid-cols-3 divide-x divide-gray-100">
-          <div class="p-4 text-center">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Customers</p>
-            <p id="stat-onetime-customers" class="text-xl font-bold text-navy stat-clickable" onclick="drillOneTime('all')">0</p>
-          </div>
-          <div class="p-4 text-center">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Today's Tasks</p>
-            <p id="stat-onetime-today" class="text-xl font-bold text-navy stat-clickable" onclick="drillOneTime('today')">0</p>
-          </div>
-          <div class="p-4 text-center">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Missed Tasks</p>
-            <p id="stat-onetime-missed" class="text-xl font-bold text-danger stat-clickable" onclick="drillOneTime('missed')">0</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4D — Recurring Customers Report -->
-      <div class="card overflow-hidden mb-6">
-        <div class="card-header">
-          <h2 class="font-semibold text-navy flex items-center gap-2">
-            <i data-lucide="repeat" class="w-4 h-4 text-gray-400"></i> Recurring Customers
-          </h2>
-        </div>
-        <div class="grid grid-cols-3 divide-x divide-gray-100">
-          <div class="p-4 text-center">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Customers</p>
-            <p id="stat-recurring-customers" class="text-xl font-bold text-navy stat-clickable" onclick="drillRecurring('all')">0</p>
-          </div>
-          <div class="p-4 text-center">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Today's Tasks</p>
-            <p id="stat-recurring-today" class="text-xl font-bold text-navy stat-clickable" onclick="drillRecurring('today')">0</p>
-          </div>
-          <div class="p-4 text-center">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Missed Tasks</p>
-            <p id="stat-recurring-missed" class="text-xl font-bold text-danger stat-clickable" onclick="drillRecurring('missed')">0</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4E — Area-Wise Report -->
-      <div class="card overflow-hidden mb-6">
-        <div class="card-header flex items-center justify-between">
-          <h2 class="font-semibold text-navy flex items-center gap-2">
-            <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> Area-Wise Report
-          </h2>
-          <button id="area-view-all" class="text-xs font-medium text-brand hover:underline hidden">View All</button>
-        </div>
-        <div id="area-report-body" class="overflow-x-auto"></div>
-        <div id="area-empty" class="empty-state hidden">
-          <i data-lucide="map"></i>
-          <p>No area data available</p>
-        </div>
-      </div>
-
+      <!-- Report cards (rendered by script) -->
+      <div id="dash-cards" class="space-y-5"></div>
     </main>
-
-    <!-- Add Order Chooser Modal (Fast vs Recurring) -->
-    <div id="add-order-chooser" class="modal-overlay hidden" onclick="hideAddOrderChooser(event)">
-      <div class="modal-content" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-bold text-gray-900">Create Order</h3>
-          <button onclick="document.getElementById('add-order-chooser').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-        </div>
-        <p class="text-sm text-gray-600 mb-3">Choose order type to continue</p>
-        <div class="flex gap-3">
-          <button onclick="chooseOrderType('one-time')" class="flex-1 px-4 py-2.5 bg-brand text-white rounded-lg font-semibold flex items-center justify-center gap-2"><i data-lucide="zap" class="w-4 h-4"></i> Fast Task</button>
-          <button onclick="chooseOrderType('recurring')" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg font-semibold flex items-center justify-center gap-2"><i data-lucide="repeat" class="w-4 h-4"></i> Recurring</button>
-        </div>
-        <p class="text-xs text-gray-400 text-center mt-3">Fast: one-time job &bull; Recurring: repeats on a schedule</p>
-      </div>
-    </div>
   </div>
 
   <!-- Bottom Nav -->
@@ -262,48 +151,199 @@
       }
     }
 
-    function openAddOrderChooser() {
-      document.getElementById('add-order-chooser').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function hideAddOrderChooser(e) {
-      if (e.target === e.currentTarget) {
-        document.getElementById('add-order-chooser').classList.add('hidden');
+    // ===== Quick Add =====
+    function quickAdd(type) {
+      if (type === 'customer') {
+        window.location.href = 'customer-add.html';
+      } else if (type === 'order') {
+        try { localStorage.setItem('fscrm_new_order_type', 'one-time'); } catch (e) {}
+        window.location.href = 'orders.html';
+      } else if (type === 'onetime') {
+        window.location.href = 'onetime-task.html';
+      } else if (type === 'recurring') {
+        window.location.href = 'recurring-task.html';
       }
     }
 
-    function chooseOrderType(type) {
-      try { localStorage.setItem('fscrm_new_order_type', type); } catch(e) {}
-      document.getElementById('add-order-chooser').classList.add('hidden');
+    // ===== Drill-down navigation =====
+    function navTasks(type, status, label) {
+      var f = { status: status, label: label };
+      if (type) { f.type = type; f.value = null; }
+      window.navigateWithFilter(f);
+    }
+    function navOrders(filter) {
+      if (filter) { try { localStorage.setItem('fscrm_order_filter', filter); } catch (e) {} }
       window.location.href = 'orders.html';
     }
 
-    function navigateToOrders(filter) {
-      localStorage.setItem('fscrm_order_filter', filter);
-      window.location.href = 'orders.html';
+    // ===== Card rendering =====
+    // A single column. `data` is an HTML attribute string (or '') describing the click target.
+    function cell(top, sub, value, color, data) {
+      var clickable = data ? ' clickable' : '';
+      return '<div class="dash-card-cell' + clickable + '"' + (data || '') + '>' +
+        '<p class="dash-col-top">' + top + '</p>' +
+        '<p class="dash-col-sub">' + (sub || '&nbsp;') + '</p>' +
+        '<p class="dash-col-val ' + color + '">' + value + '</p>' +
+      '</div>';
     }
 
-    function drillOneTime(status) {
-      var filter = { type: 'one-time', value: null, status: status, label: status === 'all' ? 'One-Time Tasks' : 'One-Time ' + (status === 'today' ? 'Today\'s Tasks' : 'Missed Tasks') };
-      window.navigateWithFilter(filter);
+    // Build the 5 columns for a task-based card. `nav` describes how columns deep-link.
+    function taskColumns(c, col1Sub, col3Top, nav) {
+      // nav: { allHref, type, label }  (type undefined = all tasks)
+      var t = nav.type;
+      var lbl = nav.label;
+      var allData = nav.allHref
+        ? ' data-act="href" data-href="' + nav.allHref + '"'
+        : ' data-act="tasks"' + (t ? ' data-type="' + t + '"' : '') + ' data-status="all" data-label="' + lbl + ' &mdash; All"';
+      return '' +
+        cell('All', col1Sub, c.all, 'text-navy', allData) +
+        cell('Todays', 'Completed', c.todayCompleted, 'text-navy',
+          ' data-act="tasks"' + (t ? ' data-type="' + t + '"' : '') + ' data-status="completed" data-label="' + lbl + ' &mdash; Completed Today"') +
+        cell(col3Top, '', c.toDo, 'text-danger', '') +
+        cell('Today', '', c.today, 'text-brand',
+          ' data-act="tasks"' + (t ? ' data-type="' + t + '"' : '') + ' data-status="today" data-label="' + lbl + ' &mdash; Today"') +
+        cell('Tomorrow', '', c.tomorrow, 'text-brand', '');
     }
 
-    function drillRecurring(status) {
-      var filter = { type: 'recurring', value: null, status: status, label: status === 'all' ? 'Recurring Tasks' : 'Recurring ' + (status === 'today' ? 'Today\'s Tasks' : 'Missed Tasks') };
-      window.navigateWithFilter(filter);
+    function orderColumns(c) {
+      return '' +
+        cell('All', 'Orders', c.all, 'text-navy', ' data-act="orders"') +
+        cell('Todays', 'Completed', c.todayCompleted, 'text-navy', ' data-act="orders" data-filter="completed"') +
+        cell('To Delivery', '', c.toDo, 'text-danger', ' data-act="orders" data-filter="assigned"') +
+        cell('Today', '', c.today, 'text-brand', '') +
+        cell('Tomorrow', '', c.tomorrow, 'text-brand', '');
     }
 
-    function drillArea(area, status) {
-      var statusLabel = status === 'today' ? 'Today\'s Tasks' : (status === 'missed' ? 'Missed Tasks' : 'All Tasks');
-      var filter = { type: 'area', value: area, status: status, label: area + ' - ' + statusLabel };
-      window.navigateWithFilter(filter);
+    function cardShell(title, headerExtra, columnsHtml, bodyId) {
+      return '<div class="card overflow-hidden">' +
+        '<div class="card-header flex items-center justify-between gap-2">' +
+          '<h2 class="font-semibold text-navy">' + title + '</h2>' +
+          (headerExtra || '') +
+        '</div>' +
+        '<div class="grid grid-cols-5 divide-x divide-gray-100"' + (bodyId ? ' id="' + bodyId + '"' : '') + '>' +
+          columnsHtml +
+        '</div>' +
+      '</div>';
     }
 
-    function drillStaff(staffId, staffName, status) {
-      var statusLabel = status === 'today' ? 'Today\'s Tasks' : (status === 'missed' ? 'Missed Tasks' : 'All Tasks');
-      var filter = { type: 'staff', value: staffId, status: status, label: staffName + ' - ' + statusLabel };
-      window.navigateWithFilter(filter);
+    function renderDashboard() {
+      var stats = window.getDashboardStats();
+      var container = document.getElementById('dash-cards');
+      var html = '';
+
+      // 1. Customer
+      html += cardShell('Customer', '',
+        taskColumns(stats.customerCard, 'Customers', 'To Do', { allHref: 'customers.html', type: null, label: 'Tasks' }));
+
+      // 2. Order
+      html += cardShell('Order', '', orderColumns(stats.orderCard));
+
+      // 3. One Time Task
+      html += cardShell('One Time Task', '',
+        taskColumns(stats.oneTimeCard, 'Tasks', 'To Do Task', { type: 'one-time', label: 'One-Time' }));
+
+      // 4. Recurring Task
+      html += cardShell('Recurring Task', '',
+        taskColumns(stats.recurringCard, 'Tasks', 'To Do Task', { type: 'recurring', label: 'Recurring' }));
+
+      // 5. Staff-Wise Report (selector)
+      var staffOptions = stats.staffList.map(function (s) {
+        return '<option value="' + s.id + '">' + s.name + '</option>';
+      }).join('');
+      var staffHeader =
+        '<div class="flex items-center gap-2">' +
+          '<select id="dash-staff-select" class="form-select form-select-sm">' +
+            '<option value="">Select Staff</option>' + staffOptions +
+          '</select>' +
+          '<button onclick="addStaff()" class="btn btn-sm btn-secondary whitespace-nowrap">+ Add</button>' +
+        '</div>';
+      html += cardShell('Staff Wise Report', staffHeader,
+        emptySelectorColumns('To Do Task'), 'staff-card-body');
+
+      // 6. Area-Wise Report (selector)
+      var areas = window.getLocalities ? window.getLocalities() : [];
+      stats.areaList.forEach(function (a) { if (areas.indexOf(a) < 0) areas.push(a); });
+      var areaOptions = areas.map(function (a) {
+        return '<option value="' + a.replace(/"/g, '&quot;') + '">' + a + '</option>';
+      }).join('');
+      var areaHeader =
+        '<div class="flex items-center gap-2">' +
+          '<select id="dash-area-select" class="form-select form-select-sm">' +
+            '<option value="">Select Area</option>' + areaOptions +
+          '</select>' +
+          '<button onclick="addArea()" class="btn btn-sm btn-secondary whitespace-nowrap">+ Add</button>' +
+        '</div>';
+      html += cardShell('Area Wise Report', areaHeader,
+        emptySelectorColumns('To Do Task'), 'area-card-body');
+
+      container.innerHTML = html;
+
+      // Selector wiring
+      var staffSelect = document.getElementById('dash-staff-select');
+      staffSelect.addEventListener('change', function () {
+        var body = document.getElementById('staff-card-body');
+        if (!this.value) { body.innerHTML = emptySelectorColumns('To Do Task'); return; }
+        var c = window.getStaffCardStats(this.value);
+        var label = staffSelect.options[staffSelect.selectedIndex].text;
+        body.innerHTML = taskColumns(c, 'Tasks', 'To Do Task', { type: 'staff', label: label });
+        body.querySelectorAll('[data-act="tasks"]').forEach(function (el) { el.setAttribute('data-value', staffSelect.value); });
+        lucide.createIcons();
+      });
+
+      var areaSelect = document.getElementById('dash-area-select');
+      areaSelect.addEventListener('change', function () {
+        var body = document.getElementById('area-card-body');
+        if (!this.value) { body.innerHTML = emptySelectorColumns('To Do Task'); return; }
+        var c = window.getAreaCardStats(this.value);
+        body.innerHTML = taskColumns(c, 'Tasks', 'To Do Task', { type: 'area', label: this.value });
+        body.querySelectorAll('[data-act="tasks"]').forEach(function (el) { el.setAttribute('data-value', areaSelect.value); });
+        lucide.createIcons();
+      });
+
+      lucide.createIcons();
+    }
+
+    // Delegated click navigation — bound once to the persistent container.
+    function bindCardClicks() {
+      var container = document.getElementById('dash-cards');
+      container.addEventListener('click', function (e) {
+        var target = e.target.closest('[data-act]');
+        if (!target) return;
+        var act = target.getAttribute('data-act');
+        if (act === 'href') {
+          window.location.href = target.getAttribute('data-href');
+        } else if (act === 'orders') {
+          navOrders(target.getAttribute('data-filter'));
+        } else if (act === 'tasks') {
+          var f = { status: target.getAttribute('data-status'), label: target.getAttribute('data-label') };
+          var type = target.getAttribute('data-type');
+          if (type) { f.type = type; f.value = target.getAttribute('data-value') || null; }
+          window.navigateWithFilter(f);
+        }
+      });
+    }
+
+    function emptySelectorColumns(col3) {
+      return '' +
+        cell('All', 'Tasks', '&ndash;', 'text-gray-300', '') +
+        cell('Todays', 'Completed', '&ndash;', 'text-gray-300', '') +
+        cell(col3, '', '&ndash;', 'text-gray-300', '') +
+        cell('Today', '', '&ndash;', 'text-gray-300', '') +
+        cell('Tomorrow', '', '&ndash;', 'text-gray-300', '');
+    }
+
+    function addStaff() {
+      window.showToast('Staff management is coming soon (admin-only feature).', 'info');
+    }
+
+    function addArea() {
+      var name = window.prompt('Enter a new area / locality name:');
+      if (!name) return;
+      name = name.trim();
+      if (!name) return;
+      window.addLocality(name);
+      window.showToast('Area "' + name + '" added.', 'success');
+      renderDashboard();
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -312,55 +352,8 @@
       var el = document.getElementById('current-date');
       if (el) el.textContent = dateStr;
 
-      var stats = window.getDashboardStats();
-
-      // Total Customers
-      document.getElementById('stat-total-customers').textContent = stats.totalCustomers;
-
-      // One-Time
-      document.getElementById('stat-onetime-customers').textContent = stats.oneTimeCustomers;
-      document.getElementById('stat-onetime-today').textContent = stats.oneTimeToday;
-      document.getElementById('stat-onetime-missed').textContent = stats.oneTimeMissed;
-
-      // Recurring
-      document.getElementById('stat-recurring-customers').textContent = stats.recurringCustomers;
-      document.getElementById('stat-recurring-today').textContent = stats.recurringToday;
-      document.getElementById('stat-recurring-missed').textContent = stats.recurringMissed;
-
-      // Orders
-      document.getElementById('stat-total-orders').textContent = stats.totalOrders;
-      document.getElementById('stat-pending-orders').textContent = stats.pendingOrders;
-      document.getElementById('stat-urgent-orders').textContent = stats.urgentOrders;
-
-      // Area-Wise
-      var areaBody = document.getElementById('area-report-body');
-      var areaEmpty = document.getElementById('area-empty');
-      var areaEntries = Object.keys(stats.areaWise).map(function(k) { return { area: k, data: stats.areaWise[k] }; });
-      areaEntries.sort(function(a, b) { return b.data.total - a.data.total; });
-
-      if (areaEntries.length === 0) {
-        areaEmpty.classList.remove('hidden');
-      } else {
-        areaEmpty.classList.add('hidden');
-        var showAllBtn = document.getElementById('area-view-all');
-        var topAreas = areaEntries.slice(0, 5);
-        if (areaEntries.length > 5) showAllBtn.classList.remove('hidden');
-
-        var table = document.createElement('table');
-        table.className = 'data-table';
-        table.innerHTML =
-          '<thead><tr><th>Area</th><th>Total Tasks</th><th>Today\'s Tasks</th><th>Missed</th></tr></thead><tbody>' +
-          topAreas.map(function(a) {
-            return '<tr>' +
-              '<td data-label="Area" class="font-medium text-gray-900">' + a.area + '</td>' +
-              '<td data-label="Total Tasks"><span class="stat-clickable text-brand font-semibold" onclick="drillArea(\'' + a.area.replace(/'/g, "\\'") + '\',\'all\')">' + a.data.total + '</span></td>' +
-              '<td data-label="Today\'s Tasks"><span class="stat-clickable text-navy font-semibold" onclick="drillArea(\'' + a.area.replace(/'/g, "\\'") + '\',\'today\')">' + a.data.today + '</span></td>' +
-              '<td data-label="Missed"><span class="stat-clickable text-danger font-semibold" onclick="drillArea(\'' + a.area.replace(/'/g, "\\'") + '\',\'missed\')">' + a.data.missed + '</span></td>' +
-            '</tr>';
-          }).join('') +
-          '</tbody>';
-        areaBody.appendChild(table);
-      }
+      bindCardClicks();
+      renderDashboard();
 
       // Notification badge
       var unread = window.getUnreadCount ? window.getUnreadCount() : 0;

@@ -28,12 +28,12 @@
       '<div class="sidebar-backdrop" id="sidebar-backdrop"></div>' +
       '<aside class="sidebar' + (collapsed === 'true' ? ' collapsed' : '') + '" id="sidebar" tabindex="-1">' +
         '<div class="flex items-center justify-between px-5 py-4 border-b border-white/10">' +
-          '<div class="flex items-center gap-3">' +
+          '<a href="dashboard.html" class="flex items-center gap-3" style="text-decoration:none">' +
             '<div class="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/25">' +
               '<i data-lucide="wrench" class="w-5 h-5 text-white"></i>' +
             '</div>' +
             '<span class="sidebar-brand-name text-lg font-bold tracking-tight">Recurlog</span>' +
-          '</div>' +
+          '</a>' +
           '<div class="flex items-center gap-1">' +
             '<button class="sidebar-desktop-toggle sidebar-collapse-btn" id="sidebar-collapse-btn" aria-label="Toggle sidebar">' +
               '<i data-lucide="panel-left-close" class="w-4 h-4"></i>' +
@@ -44,14 +44,15 @@
           '</div>' +
         '</div>' +
         '<nav class="sidebar-nav">' +
-          sidebarLink('dashboard.html', 'layout-dashboard', 'Dashboard', 'dashboard.html') +
-          sidebarLink('customers.html', 'users', 'Customers', 'customers.html') +
-          sidebarLink('orders.html', 'clipboard-list', 'Orders', 'orders.html') +
-          sidebarLink('tasks.html', 'check-square', 'Tasks', 'tasks.html') +
+          sidebarLink('customers.html', 'users', 'Customer', 'customers.html') +
+          sidebarLink('orders.html', 'clipboard-list', 'Order', 'orders.html') +
+          sidebarLink('onetime-task.html', 'calendar-check', 'Onetime Task', 'onetime-task.html') +
+          sidebarLink('recurring-task.html', 'repeat', 'Recurring Task', 'recurring-task.html') +
           sidebarLink('staff.html', 'briefcase', 'Staff', 'staff.html') +
-          sidebarLink('reports.html', 'bar-chart-3', 'Reports', 'reports.html') +
-          sidebarLink('notifications.html', 'bell', 'Notifications', 'notifications.html') +
-          sidebarLink('settings.html', 'settings', 'Settings', 'settings.html') +
+          sidebarLink('daybook.html', 'book-open', 'Daybook', 'daybook.html') +
+          sidebarLink('reports.html', 'bar-chart-3', 'Report', 'reports.html') +
+          sidebarLink('notifications.html', 'bell', 'Notification', 'notifications.html') +
+          sidebarLink('settings.html', 'settings', 'Setting', 'settings.html') +
         '</nav>' +
         '<div class="p-4 border-t border-white/10 flex flex-col gap-2">' +
           '<div class="flex items-center gap-3">' +

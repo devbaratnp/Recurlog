@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Recurring Task - Recurlog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../assets/css/custom.css">
+  <script src="../assets/js/sidebar.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
+          fontFamily: { sans: ['Poppins', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    .signature-pad {
+      width: 100%; height: 160px; border: 1px dashed #cbd5e1; border-radius: 10px;
+      background: #fff; touch-action: none; cursor: crosshair; display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+<script>injectSidebar();</script>
+
+  <div class="page-content">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <h1 class="page-title">Recurring Task</h1>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-4 md:p-6 lg:p-8 max-w-3xl mx-auto">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-5 md:p-7 space-y-6">
+
+          <!-- Customer -->
+          <div>
+            <label for="rt-customer" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
+            <div class="flex gap-2 items-center">
+              <select id="rt-customer" class="form-select flex-1"></select>
+              <a href="customer-add.html" class="px-3 py-2.5 bg-brand text-white rounded-lg text-sm font-semibold flex items-center gap-1 whitespace-nowrap" title="Add new customer">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Service For -->
+          <div>
+            <label for="rt-service" class="block text-sm font-semibold text-gray-700 mb-1.5">Service For <span class="text-danger">*</span></label>
+            <div class="flex gap-2 items-center">
+              <select id="rt-service" class="form-select flex-1"></select>
+              <button type="button" id="rt-service-add-btn" class="px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 flex items-center gap-1 whitespace-nowrap" title="Add service type">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div id="rt-service-add-row" class="mt-2 hidden">
+              <div class="flex gap-2">
+                <input type="text" id="rt-new-service" class="form-input flex-1" placeholder="New service type (e.g. Water Heater)">
+                <button type="button" id="rt-service-save" class="px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold">Save</button>
+                <button type="button" id="rt-service-cancel" class="px-4 py-2 border border-gray-200 rounded-lg text-sm">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Problem Description -->
+          <div>
+            <label for="rt-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem Description <span class="text-danger">*</span></label>
+            <textarea id="rt-problem" rows="3" class="form-textarea" placeholder="Describe the problem or work to be done..."></textarea>
+          </div>
+
+          <!-- Assign To -->
+          <div>
+            <label for="rt-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Assign To</label>
+            <select id="rt-staff" class="form-select"><option value="">Select Staff</option></select>
+          </div>
+
+          <!-- Schedule -->
+          <div>
+            <label for="rt-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Schedule Task</label>
+            <input type="date" id="rt-date" class="form-input max-w-xs">
+          </div>
+
+          <!-- Recurrence Setting -->
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4">
+            <div class="flex items-center gap-2">
+              <i data-lucide="repeat" class="w-4 h-4 text-brand"></i>
+              <span class="text-sm font-bold text-navy">Recurrence Setting</span>
+            </div>
+
+            <div class="flex items-center gap-3 flex-wrap">
+              <label for="rt-rec-value" class="text-sm text-gray-600 whitespace-nowrap">Repeat Every</label>
+              <input type="number" id="rt-rec-value" value="1" min="1" class="form-input w-20 text-center">
+              <select id="rt-rec-unit" class="form-select w-auto">
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months">Months</option>
+                <option value="years">Years</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Repeat From</label>
+              <div class="flex gap-4 flex-wrap">
+                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                  <input type="radio" name="rt-repeat" value="last-done" checked class="accent-brand"> Last Done Date
+                </label>
+                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                  <input type="radio" name="rt-repeat" value="fixed-schedule" class="accent-brand"> Fixed Schedule
+                </label>
+              </div>
+            </div>
+
+            <div id="rt-rec-preview" class="text-sm text-gray-500 italic bg-white px-3 py-2.5 rounded-lg border border-gray-200">
+              This service will repeat every 1 day(s) from the Last Done Date
+            </div>
+
+            <div>
+              <label for="rt-note" class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+              <textarea id="rt-note" rows="3" class="form-textarea" placeholder="Any additional notes..."></textarea>
+            </div>
+          </div>
+
+          <!-- In Report (optional completion) -->
+          <div class="pt-2 border-t border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-navy">In Report</h3>
+              <span class="text-xs text-gray-400">Fill only if the first task is already completed</span>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label for="rt-completed-by" class="block text-sm font-medium text-gray-600 mb-1">Task Completed By</label>
+                <input type="text" id="rt-completed-by" class="form-input" placeholder="Staff / person name">
+              </div>
+              <div>
+                <label for="rt-completed-date" class="block text-sm font-medium text-gray-600 mb-1">Task Completed Date</label>
+                <input type="date" id="rt-completed-date" class="form-input max-w-xs">
+              </div>
+
+              <div>
+                <p class="text-sm font-bold text-navy mb-2">Received By</p>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label for="rt-rec-name" class="block text-xs font-medium text-gray-500 mb-1">Name</label>
+                    <input type="text" id="rt-rec-name" class="form-input" placeholder="Receiver name">
+                  </div>
+                  <div>
+                    <label for="rt-rec-contact" class="block text-xs font-medium text-gray-500 mb-1">Contact</label>
+                    <input type="text" id="rt-rec-contact" class="form-input" placeholder="Phone">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-xs font-medium text-gray-500">Signature</label>
+                  <button type="button" id="sig-clear" class="text-xs text-brand hover:underline">Clear</button>
+                </div>
+                <canvas id="sig-pad" class="signature-pad" width="600" height="160"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save -->
+          <div class="pt-2 flex gap-3">
+            <a href="dashboard.html" class="btn btn-md btn-secondary">Cancel</a>
+            <button id="btn-save-recurring" class="btn btn-md btn-primary brand-glow">
+              <i data-lucide="save" class="w-4 h-4"></i> Save Task
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav md:hidden">
+    <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Dashboard</span>
+    </a>
+    <a href="customers.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Customers</span>
+    </a>
+    <a href="orders.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Orders</span>
+    </a>
+    <a href="recurring-task.html" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 active">
+      <i data-lucide="repeat" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">Recurring</span>
+    </a>
+    <button onclick="window.location.href='settings.html'" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg text-gray-500 min-w-0 flex-1">
+      <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium truncate w-full text-center">More</span>
+    </button>
+  </nav>
+
+  <script src="../assets/js/seed.js"></script>
+  <script src="../assets/js/router.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    lucide.createIcons();
+
+    document.addEventListener('DOMContentLoaded', function () {
+      populateCustomers();
+      populateServices();
+      populateStaff();
+      setDefaultDate();
+      setupServiceAdd();
+      setupRecurrencePreview();
+      initSignaturePad();
+      document.getElementById('btn-save-recurring').addEventListener('click', handleSave);
+    });
+
+    function populateCustomers() {
+      var select = document.getElementById('rt-customer');
+      select.innerHTML = '<option value="">Select Customer</option>';
+      window.getCustomers().forEach(function (c) {
+        var opt = document.createElement('option');
+        opt.value = c.id; opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateServices() {
+      var select = document.getElementById('rt-service');
+      var current = select.value;
+      select.innerHTML = '<option value="">Select Service</option>';
+      window.getServiceTypes().forEach(function (t) {
+        var opt = document.createElement('option');
+        opt.value = t; opt.textContent = t;
+        select.appendChild(opt);
+      });
+      if (current) select.value = current;
+    }
+
+    function populateStaff() {
+      var select = document.getElementById('rt-staff');
+      select.innerHTML = '<option value="">Select Staff</option>';
+      window.getStaff().forEach(function (s) {
+        var opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function setDefaultDate() {
+      var now = new Date();
+      var d = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('rt-date').value = d;
+    }
+
+    // ===== Recurrence preview =====
+    function setupRecurrencePreview() {
+      document.getElementById('rt-rec-value').addEventListener('input', updatePreview);
+      document.getElementById('rt-rec-unit').addEventListener('change', updatePreview);
+      document.querySelectorAll('input[name="rt-repeat"]').forEach(function (el) {
+        el.addEventListener('change', updatePreview);
+      });
+      updatePreview();
+    }
+
+    function updatePreview() {
+      var val = document.getElementById('rt-rec-value').value || '1';
+      var unit = document.getElementById('rt-rec-unit').value;
+      var repeatEl = document.querySelector('input[name="rt-repeat"]:checked');
+      var from = (repeatEl && repeatEl.value === 'fixed-schedule') ? 'Fixed Schedule' : 'Last Done Date';
+      document.getElementById('rt-rec-preview').textContent =
+        'This service will repeat every ' + val + ' ' + unit + ' from the ' + from;
+    }
+
+    // ===== Add service type inline =====
+    function setupServiceAdd() {
+      var row = document.getElementById('rt-service-add-row');
+      document.getElementById('rt-service-add-btn').addEventListener('click', function () {
+        row.classList.remove('hidden');
+        document.getElementById('rt-new-service').focus();
+      });
+      document.getElementById('rt-service-cancel').addEventListener('click', function () {
+        row.classList.add('hidden');
+        document.getElementById('rt-new-service').value = '';
+      });
+      document.getElementById('rt-service-save').addEventListener('click', function () {
+        var name = document.getElementById('rt-new-service').value.trim();
+        if (!name) { window.showToast('Enter a service type name.', 'error'); return; }
+        var types = window.getServiceTypes();
+        if (types.indexOf(name) >= 0) { window.showToast('That service type already exists.', 'error'); return; }
+        types.push(name);
+        window.storeServiceTypes(types);
+        populateServices();
+        document.getElementById('rt-service').value = name;
+        row.classList.add('hidden');
+        document.getElementById('rt-new-service').value = '';
+        window.showToast('Service type "' + name + '" added.', 'success');
+      });
+    }
+
+    // ===== Signature pad =====
+    var sigCanvas = null, sigCtx = null, sigDrawing = false, sigHasInk = false;
+
+    function initSignaturePad() {
+      sigCanvas = document.getElementById('sig-pad');
+      if (!sigCanvas) return;
+      sigCtx = sigCanvas.getContext('2d');
+      sigCtx.lineWidth = 2; sigCtx.lineCap = 'round'; sigCtx.strokeStyle = '#0B1E3D';
+
+      function pos(e) {
+        var rect = sigCanvas.getBoundingClientRect();
+        var src = (e.touches && e.touches[0]) ? e.touches[0] : e;
+        return {
+          x: (src.clientX - rect.left) * (sigCanvas.width / rect.width),
+          y: (src.clientY - rect.top) * (sigCanvas.height / rect.height)
+        };
+      }
+      function start(e) { e.preventDefault(); sigDrawing = true; var p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+      function move(e) { if (!sigDrawing) return; e.preventDefault(); var p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigHasInk = true; }
+      function end() { sigDrawing = false; }
+
+      sigCanvas.addEventListener('mousedown', start);
+      sigCanvas.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', end);
+      sigCanvas.addEventListener('touchstart', start, { passive: false });
+      sigCanvas.addEventListener('touchmove', move, { passive: false });
+      sigCanvas.addEventListener('touchend', end);
+
+      document.getElementById('sig-clear').addEventListener('click', function () {
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+        sigHasInk = false;
+      });
+    }
+
+    function getSignatureDataURL() {
+      if (!sigHasInk || !sigCanvas) return null;
+      return sigCanvas.toDataURL('image/png');
+    }
+
+    // ===== Save =====
+    function handleSave() {
+      var customerId = document.getElementById('rt-customer').value;
+      var serviceFor = document.getElementById('rt-service').value;
+      var problem = document.getElementById('rt-problem').value.trim();
+      var staffId = document.getElementById('rt-staff').value;
+      var date = document.getElementById('rt-date').value;
+      var recValue = parseInt(document.getElementById('rt-rec-value').value, 10) || 1;
+      var recUnit = document.getElementById('rt-rec-unit').value;
+      var repeatEl = document.querySelector('input[name="rt-repeat"]:checked');
+      var repeatFrom = repeatEl ? repeatEl.value : 'last-done';
+      var note = document.getElementById('rt-note').value.trim();
+
+      if (!customerId) { window.showToast('Please select a customer.', 'error'); return; }
+      if (!serviceFor) { window.showToast('Please select a service.', 'error'); return; }
+      if (!problem) { window.showToast('Please enter the problem description.', 'error'); return; }
+
+      var customer = window.getCustomer(customerId);
+
+      var service = {
+        customerId: parseInt(customerId, 10),
+        categoryId: null,
+        serviceFor: serviceFor,
+        title: serviceFor + (customer ? ' - ' + customer.name : ''),
+        problem: problem,
+        isRecurring: true,
+        firstScheduledDate: date || window.todayISO(),
+        assignedTo: staffId ? parseInt(staffId, 10) : null,
+        notes: note,
+        recurrence: {
+          value: recValue,
+          unit: recUnit,
+          repeatFrom: repeatFrom
+        }
+      };
+
+      var saved = window.saveService(service);
+      if (!saved) { window.showToast('Failed to save task.', 'error'); return; }
+
+      // If the "In Report" block is filled, mark the first generated task completed
+      var completedBy = document.getElementById('rt-completed-by').value.trim();
+      var completedDate = document.getElementById('rt-completed-date').value;
+      var recName = document.getElementById('rt-rec-name').value.trim();
+      var recContact = document.getElementById('rt-rec-contact').value.trim();
+      var signature = getSignatureDataURL();
+
+      if (completedBy || completedDate || recName || signature) {
+        var taskList = window.getTasks({ serviceId: saved.id, status: 'pending' });
+        if (taskList.length) {
+          window.completeTask(taskList[0].id, completedDate || window.todayISO(), '', {
+            completedBy: completedBy,
+            receivedName: recName,
+            receivedContact: recContact,
+            signature: signature
+          });
+        }
+      }
+
+      window.showToast('Recurring task saved successfully!', 'success');
+      localStorage.setItem('fscrm_currentCustomerId', String(saved.customerId));
+      setTimeout(function () { window.location.href = 'customer-detail.html'; }, 800);
+    }
+  </script>
+</body>
+</html>
