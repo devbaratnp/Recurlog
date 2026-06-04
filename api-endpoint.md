@@ -2,6 +2,8 @@
 
 Base URL: `/api/v1/`
 
+Base URL: `/api/v1/`
+
 Auth: `Authorization: Bearer <token>`
 
 ## Auth

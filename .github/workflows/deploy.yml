@@ -10,16 +10,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sync files via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Sync files via SFTP
+        uses: lampvina/sftp-sync-action@v1.0.0
         with:
-          server: ${{ secrets.FTP_HOST }}
+          host: ${{ secrets.SFTP_HOST || secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          port: ${{ secrets.SFTP_PORT || '22' }}
+          remoteDir: ${{ secrets.FTP_SERVER_DIR }}
           exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/.env*
+            .git*
+            node_modules/**
+            .env*
             AGENTS.md
