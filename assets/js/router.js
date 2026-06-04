@@ -1,22 +1,22 @@
 function initRouter() {
   var page = window.location.pathname.split('/').pop() || 'login.html';
-  var authed = localStorage.getItem('fscrm_auth') === 'true';
-
-  if (page !== 'login.html' && !authed) {
-    navigateTo('login.html');
-    return;
-  }
-
-  if (page === 'login.html' && authed) {
-    navigateTo('dashboard.html');
-    return;
-  }
-
-  highlightActiveNav();
-
-  if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
-  }
+  
+  window.initApp(function() {
+    var authed = window.__DATA && window.__DATA.authed;
+    
+    if (page !== 'login.html' && !authed) {
+      navigateTo('login.html');
+      return;
+    }
+    if (page === 'login.html' && authed) {
+      navigateTo('dashboard.html');
+      return;
+    }
+    highlightActiveNav();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  });
 }
 
 function navigateTo(path) {
@@ -70,8 +70,12 @@ function highlightActiveNav() {
 }
 
 function logout() {
-  localStorage.removeItem('fscrm_auth');
-  navigateTo('login.html');
+  if (typeof window.doLogout === 'function') {
+    window.doLogout();
+  } else {
+    localStorage.removeItem('fscrm_auth');
+    navigateTo('login.html');
+  }
 }
 
 function showLoadingSkeleton(duration) {

@@ -24,7 +24,7 @@ A mobile-first, offline-capable field service management web application for sch
 
 ## Overview
 
-Recurlog is a complete field service management solution that runs entirely in the browser. It uses localStorage for data persistence — no server, no database, no API calls. All logic is vanilla JavaScript (ES5), making it portable and instantly deployable.
+Recurlog is a field service management solution in **dual-mode**: `.html` pages are 100% client-side (ES5, localStorage), `.php` pages use a PHP/MySQL backend. Both coexist — `.php` is the live target, `.html` remains as fallback. See `AGENTS.md` for the full architecture guide.
 
 ### Who it's for
 
@@ -279,7 +279,7 @@ Boolean string: `"true"` after seed data initializes. Prevents re-seeding.
 
 ## Recurrence Engine
 
-Located in `assets/js/app.js:313-325` (`window.getNextDueDate`).
+Located in `assets/js/app.js:36` (`window.getNextDueDate`). Still client-side — not yet ported to PHP.
 
 ```javascript
 getNextDueDate(service, lastCompletedDate, previousScheduledDate)
@@ -317,22 +317,21 @@ When `completeTask()` is called:
 | Layer | Technology |
 |-------|-----------|
 | **HTML** | Semantic HTML5, viewport-fit for mobile notches |
-| **CSS** | Custom design system (974 lines), CSS custom properties |
+| **CSS** | Custom design system (1290 lines), CSS custom properties |
 | **CSS Framework** | Tailwind CSS (via CDN) |
 | **Icons** | Lucide (via CDN, latest) |
 | **Charts** | Chart.js (via CDN) |
 | **Font** | Poppins (Google Fonts) |
 | **JavaScript** | Vanilla JS (ES5), no transpilation needed |
-| **Data** | localStorage API |
-| **Auth** | localStorage boolean flag (`fscrm_auth`) |
+| **Backend** | PHP 8+ (`.php` pages) |
+| **Database** | MySQL 8 (`recurlog` DB, `fscrm_*` tables) |
+| **Data (client)** | localStorage API (`fscrm_*` keys) |
+| **Auth (PHP)** | PHP sessions, `fscrm_users` table |
+| **Auth (HTML)** | localStorage boolean flag (`fscrm_auth`) |
 
 ### Why no build step?
 
-This project is intentionally zero-dependency for production. All libraries are loaded via CDN at runtime. This means:
-- Open `index.html` in any browser — it just works
-- No npm install, no webpack, no build tools needed
-- Can be hosted on any static server (Netlify, Vercel, GitHub Pages, S3, nginx)
-- Works offline after first load (service worker not implemented yet)
+Client-side pages are zero-dependency — all libraries load from CDN at runtime. PHP pages need Apache/Nginx + MySQL. No npm, no webpack, no build tools regardless.
 
 ---
 
@@ -340,57 +339,79 @@ This project is intentionally zero-dependency for production. All libraries are 
 
 ```
 Recurlog/
-├── index.html                 # Entry point (splash → redirect to login)
+├── index.html                 # Entry point (splash → redirect to dashboard.php)
+├── api/                       # PHP REST API endpoints
+│   ├── config.php             # DB connection, JSON helpers, auth guard
+│   ├── helpers.php            # camelCase/snake_case field conversion
+│   ├── auth.php               # Login/logout/session check
+│   ├── customers.php          # Customer CRUD
+│   ├── services.php           # Service CRUD
+│   ├── tasks.php              # Task CRUD
+│   ├── staff.php              # Staff CRUD
+│   ├── categories.php         # Category CRUD
+│   ├── notifications.php      # Notification CRUD
+│   ├── orders.php             # Order CRUD
+│   ├── localities.php         # Locality CRUD
+│   ├── service_types.php      # Service type CRUD
+│   └── seed.php               # Seed MySQL database
+├── includes/                  # PHP template parts
+│   ├── config.php             # DB connection, auth helpers, session start
+│   ├── header.php             # Auth guard, sidebar, unread badge, opens HTML
+│   ├── footer.php             # Closes HTML, loads sidebar.js + app.js
+│   └── sidebar.php            # Nav links + bottom nav, user info
 ├── assets/
 │   ├── css/
-│   │   └── custom.css         # Mobile-first design system (974 lines)
+│   │   └── custom.css         # Mobile-first design system (1290 lines)
 │   │                          # Design tokens, sidebar, buttons, cards,
 │   │                          # forms, modals, tables, toasts, maps,
 │   │                          # skeleton loading, utility classes
 │   └── js/
-│       ├── app.js             # Core application logic (497 lines)
-│       │   ├── Helpers        # getNextId, todayISO, formatDate, etc.
-│       │   ├── Data Accessors # CRUD for customers, services, tasks,
-│       │   │                  # staff, categories, notifications
-│       │   ├── Recurrence     # getNextDueDate, recurrence engine
-│       │   ├── Reports        # Recurring/one-time/staff/category reports
-│       │   └── UI Helpers     # showToast, renderStatusPill, formatRel.
-│       ├── router.js          # Auth guard, navigation, sidebar active
-│       │                      # state, logout, skeleton loading
-│       ├── seed.js            # Realistic seed data generator (347 lines)
+│       ├── app.js             # Shared JS helpers (249 lines)
+│       │                      # Recurrence engine, navigation, UI helpers,
+│       │                      # searchable dropdown, toast system
+│       ├── router.js          # Auth guard, navigation, skeleton (HTML only)
+│       ├── seed.js            # Client-side seed data (349 lines)
 │       │                      # 8 customers, 5 staff, 6 categories,
 │       │                      # ~55 services, ~350+ tasks, ~25 notifs
-│       └── sidebar.js         # Responsive sidebar (216 lines)
+│       └── sidebar.js         # Responsive sidebar (94 lines)
 │                              # Mobile drawer, desktop collapse,
 │                              # backdrop handling, resize listeners
-└── pages/
-    ├── login.html             # Login page (120 lines)
-    ├── dashboard.html         # Home dashboard (271 lines)
-    ├── customers.html         # Customer list (174 lines)
-    ├── customer-add.html      # Add/edit customer (269 lines)
-    ├── customer-detail.html   # Customer profile (269 lines)
-    ├── service-add.html       # Add service with recurrence (402 lines)
-    ├── tasks.html             # Task board (371 lines)
-    ├── staff.html             # Staff directory (105 lines)
-    ├── staff-detail.html      # Staff profile (135 lines)
-    ├── reports.html           # Reports with Chart.js (297 lines)
-    ├── notifications.html     # Notification inbox (132 lines)
-    └── settings.html          # Settings & profile (222 lines)
+└── pages/                     # Both .html (client-side) and .php (server-side)
+    ├── login.{html,php}       # Authentication
+    ├── dashboard.{html,php}   # Home dashboard with KPI cards
+    ├── customers.{html,php}   # Customer list
+    ├── customer-add.{html,php}# Add/edit customer
+    ├── customer-detail.{html,php} # Customer profile with services/tasks
+    ├── service-add.{html,php} # Add service with recurrence
+    ├── tasks.{html,php}       # Task board (today/upcoming/missed tabs)
+    ├── staff.{html,php}       # Staff directory
+    ├── staff-detail.{html,php}# Staff profile
+    ├── reports.{html,php}     # Reports with Chart.js
+    ├── notifications.{html,php}# Notification inbox
+    ├── settings.{html,php}    # Settings & profile
+    ├── daybook.{html,php}     # Daily agenda
+    ├── orders.{html,php}      # Order CRUD with signature pad
+    ├── customer-report.{html,php} # Printable customer report
+    ├── onetime-task.{html,php}# One-time service with signature pad
+    ├── recurring-task.{html,php}# Recurring service with signature pad
+    ├── logout.php             # PHP session destroy + redirect
+    └── task-complete-ajax.php # AJAX task completion endpoint
 ```
 
 ---
 
 ## Getting Started
 
-### Option 1: Direct open (no server)
+### Option 1: Direct open (client-side only)
 
 ```
 1. Open index.html in any modern browser
 2. Login with admin@demo.com / demo123
 3. Seed data loads automatically on first visit
 ```
+HTML pages work offline. PHP pages will not function without a server.
 
-### Option 2: Local server
+### Option 2: Local static server (client-side only)
 
 ```bash
 npx serve .
@@ -399,7 +420,17 @@ python -m http.server 8000
 # then open http://localhost:8000
 ```
 
-### Option 3: Docker
+### Option 3: PHP + MySQL (full experience)
+
+Requirements: Apache/Nginx with PHP 8+, MySQL 8.
+```
+1. Create MySQL database `recurlog`
+2. Point your web server to repo root
+3. Visit http://localhost/pages/login.php (first visit creates tables on login)
+4. Login: admin@demo.com / demo123
+```
+
+### Option 4: Docker
 
 ```dockerfile
 FROM nginx:alpine
@@ -461,7 +492,7 @@ To reset all data, go to Settings → Data → Reset Demo Data. This clears all 
 
 ## Design System
 
-The custom CSS (`assets/css/custom.css`, 974 lines) is a complete mobile-first design system:
+The custom CSS (`assets/css/custom.css`, 1290 lines) is a complete mobile-first design system:
 
 ### Design Tokens
 
@@ -514,51 +545,57 @@ The custom CSS (`assets/css/custom.css`, 974 lines) is a complete mobile-first d
 
 ## JavaScript Architecture
 
-### Module loading order (every page)
+### Module loading — differs per page type
 
+**HTML pages** (loads 4 scripts in order):
 ```html
-<script src="../assets/js/seed.js"></script>    <!-- Must be first: defines window.SEED_DATA -->
-<script src="../assets/js/router.js"></script>  <!-- Auth guard + navigation -->
-<script src="../assets/js/app.js"></script>      <!-- Core logic: data accessors, helpers -->
+<script src="../assets/js/sidebar.js"></script>  <!-- In <head> via document.write -->
+<script src="../assets/js/seed.js"></script>      <!-- window.SEED_DATA + seedData.init() -->
+<script src="../assets/js/router.js"></script>    <!-- Auth guard + navigation -->
+<script src="../assets/js/app.js"></script>        <!-- Recurrence engine, UI helpers -->
 ```
 
-`sidebar.js` is loaded via `<script>` in `<head>` because `injectSidebar()` uses `document.write()` for synchronous injection.
+**PHP pages** (loads 2 scripts via `includes/footer.php`):
+```html
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/app.js"></script>
+```
+No `seed.js` or `router.js` — auth is server-side via PHP sessions. `seed.js` and `router.js` are only loaded by `.html` pages.
 
-### Key global functions
+### Key global functions (current `app.js`, 249 lines)
 
-| Function | File | Purpose |
+| Function | Line | Purpose |
 |----------|------|---------|
-| `getNextId()` | app.js:21 | Auto-incrementing ID generator |
-| `todayISO()` | app.js:27 | Returns today as YYYY-MM-DD |
-| `formatDate()` | app.js:458 | Formats "Mar 6, 2026" |
-| `formatRelative()` | app.js:466 | "Today", "Tomorrow", "3 days ago" |
-| `addToDate()` | app.js:39 | Date math (days/weeks/months/years) |
-| `getCustomers/store` | app.js:53 | Customer CRUD |
-| `getServices/store` | app.js:83 | Service CRUD |
-| `getTasks/store` | app.js:141 | Task CRUD |
-| `completeTask()` | app.js:162 | Mark complete + next-gen |
-| `getNextDueDate()` | app.js:313 | Recurrence calculation |
-| `getStaffWithStats()` | app.js:252 | Enriched staff data |
-| `showToast()` | app.js:413 | Toast notification |
-| `renderStatusPill()` | app.js:448 | Status badge HTML |
-| `navigateTo()` | router.js:22 | Page navigation |
-| `logout()` | router.js:72 | Auth clear + redirect |
-| `showLoadingSkeleton()` | router.js:77 | Skeleton overlay |
-| `toggleSidebar()` | sidebar.js:117 | Sidebar toggle |
-| `injectSidebar()` | sidebar.js:19 | Sidebar HTML injection |
-| `seedData.init()` | seed.js:333 | One-time seed init |
+| `todayISO()` | 3 | Returns today as YYYY-MM-DD |
+| `addToDate()` | 22 | Date math (days/weeks/months/years) |
+| `getNextDueDate()` | 36 | Recurrence calculation |
+| `showToast()` | 52 | Toast notification |
+| `renderStatusPill()` | 79 | Status badge HTML |
+| `formatDate()` | 89 | Formats "Mar 6, 2026" |
+| `formatRelative()` | 102 | "Today", "Tomorrow", "3 days ago" |
+| `goToCustomer()` | 129 | Navigate to customer + set localStorage |
+| `goToStaff()` | 134 | Navigate to staff + set localStorage |
+| `goToTask()` | 139 | Navigate to task + set localStorage |
+| `goToService()` | 144 | Navigate to service + set localStorage |
+| `showLoadingSkeleton()` | 149 | Skeleton overlay |
+| `buildSearchableDropdown()` | 181 | Reusable dropdown component |
 
-### Data flow
+Data CRUD (`getCustomers`, `getServices`, `getTasks`, `completeTask`, etc.) moved from `app.js` to PHP backend (`api/*.php`).
+
+### Data flow — HTML pages (client-side)
 
 ```
 User Action → Page Script → window.*() → localStorage → Re-render
 ```
+Everything synchronous, no modules.
 
-Everything is synchronous. No async operations, no callbacks. Data flows:
-1. Page loads → reads from localStorage
-2. User interacts → page script validates → calls `save*()` etc.
-3. Save functions mutate localStorage and generate notifications/tasks
-4. Page re-renders from localStorage state
+### Data flow — PHP pages (server-side)
+
+```
+Request → includes/config.php (auth) → MySQL query → Server renders HTML
+         → window.__VARIABLE = <?= json_encode(...) ?> → JS manipulates DOM
+```
+AJAX endpoints (`api/*.php`) handle mutations via JSON.
 
 ---
 
@@ -573,7 +610,7 @@ Everything is synchronous. No async operations, no callbacks. Data flows:
 - [ ] Multi-language i18n (Nepali + English)
 - [ ] Calendar view for task scheduling
 - [ ] Invoice generation from completed tasks
-- [ ] API backend integration replacing localStorage
+- [x] API backend integration (in progress — PHP/MySQL, dual-mode with client-side fallback)
 
 ---
 

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Customer Detail - Field Service CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../assets/css/custom.css?v=20260601a" />
+  <script src="../assets/js/sidebar.js?v=20260601a"></script>
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<script>injectSidebar();</script>
+
+  <div class="page-content">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <a href="customers.html" class="p-2 -ml-1 text-gray-400 hover:text-navy transition-colors rounded-lg hover:bg-gray-100">
+            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+          </a>
+          <h1 id="customer-title" class="page-title">Customer Detail</h1>
+        </div>
+      </div>
+    </header>
+
+    <div class="p-4 md:p-6 max-w-5xl mx-auto">
+
+      <div id="customer-info-card" class="card p-5 sm:p-6 mb-6">
+        <div class="flex items-start justify-between mb-4">
+          <h2 class="text-lg font-semibold text-navy">Customer Information</h2>
+          <div class="flex items-center gap-2">
+            <a href="customer-report.html" class="btn btn-sm btn-secondary"><i data-lucide="file-text" class="w-4 h-4"></i> Report</a>
+            <span id="customer-badge" class="inline-flex items-center gap-1 px-3 py-1 bg-brand/10 text-brand text-xs font-medium rounded-full">
+              <i data-lucide="check-circle" class="w-3 h-3"></i> Active
+            </span>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="block text-gray-400 text-xs uppercase tracking-wider font-medium mb-1">Name</span>
+            <span id="info-name" class="text-gray-900 font-medium">—</span>
+          </div>
+          <div>
+            <span class="block text-gray-400 text-xs uppercase tracking-wider font-medium mb-1">Phone</span>
+            <span id="info-phone" class="text-gray-900">—</span>
+          </div>
+          <div class="sm:col-span-2">
+            <span class="block text-gray-400 text-xs uppercase tracking-wider font-medium mb-1">Address</span>
+            <span id="info-address" class="text-gray-900">—</span>
+          </div>
+          <div>
+            <span class="block text-gray-400 text-xs uppercase tracking-wider font-medium mb-1">Area / Locality</span>
+            <span id="info-area" class="text-gray-900 font-medium">—</span>
+          </div>
+          <div class="sm:col-span-2">
+            <span class="block text-gray-400 text-xs uppercase tracking-wider font-medium mb-1">Services</span>
+            <div id="info-services" class="flex flex-wrap gap-1.5 mt-1">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-navy">Services</h2>
+        <a href="service-add.html" class="inline-flex items-center gap-1.5 px-4 py-2 bg-brand text-white font-medium rounded-xl hover:bg-green-600 transition-colors brand-glow text-sm">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Service
+        </a>
+      </div>
+
+      <div class="card overflow-hidden mb-8">
+        <div class="p-0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Service Title</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Next Due</th>
+                <th>Status</th>
+                <th>Staff</th>
+              </tr>
+            </thead>
+            <tbody id="customer-services-body"></tbody>
+          </table>
+        </div>
+        <div id="services-empty" class="hidden flex-col items-center justify-center py-12 text-center">
+          <i data-lucide="tool" class="w-10 h-10 text-gray-300 mb-2"></i>
+          <p class="text-gray-400 text-sm">No services found for this customer</p>
+        </div>
+      </div>
+
+      <h2 class="text-lg font-semibold text-navy mb-4">Tasks</h2>
+      <div class="card overflow-hidden mb-8">
+        <div class="p-0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="w-12">Done</th>
+                <th>Task</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+              </tr>
+            </thead>
+            <tbody id="customer-tasks-body"></tbody>
+          </table>
+        </div>
+        <div id="tasks-empty" class="hidden flex-col items-center justify-center py-12 text-center">
+          <i data-lucide="clipboard-x" class="w-10 h-10 text-gray-300 mb-2"></i>
+          <p class="text-gray-400 text-sm">No tasks found for this customer</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Complete Task Modal -->
+  <div id="cd-complete-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-lg font-bold text-gray-900">Complete Task</h3>
+        <button onclick="closeCdComplete()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <p id="cd-complete-customer" class="text-sm font-medium text-gray-500 mb-4"></p>
+      <input type="hidden" id="cd-complete-task-id" value="">
+      <div class="space-y-4">
+        <div>
+          <label for="cd-complete-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Date</label>
+          <input type="date" id="cd-complete-date" class="form-input">
+        </div>
+        <div>
+          <label for="cd-complete-note" class="block text-sm font-semibold text-gray-700 mb-1.5">Note</label>
+          <textarea id="cd-complete-note" rows="3" class="form-textarea" placeholder="e.g. changed RO housing, pre filter — rs 1500"></textarea>
+        </div>
+        <div class="flex gap-3 pt-1">
+          <button onclick="closeCdComplete()" class="btn btn-md btn-secondary flex-1">Cancel</button>
+          <button id="cd-complete-confirm" class="btn btn-md btn-primary flex-1 brand-glow">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>injectBottomNav();</script>
+
+  <script src="../assets/js/seed.js?v=20260601a"></script>
+  <script src="../assets/js/router.js?v=20260601a"></script>
+  <script src="../assets/js/app.js?v=20260601a"></script>
+  <script src="../assets/js/api.js?v=20260601a"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      window.initApp(function() {
+        lucide.createIcons();
+
+    (function() {
+      var customerId = localStorage.getItem('fscrm_currentCustomerId');
+      if (!customerId) {
+        window.location.href = 'customers.html';
+        return;
+      }
+
+      var customer = window.getCustomer(customerId);
+      if (!customer) {
+        window.showToast('Customer not found.', 'error');
+        setTimeout(function() { window.location.href = 'customers.html'; }, 1000);
+        return;
+      }
+
+      function getCategoryColor(service) {
+        var map = {
+          'RO': 'bg-emerald-100 text-emerald-700',
+          'TV': 'bg-blue-100 text-blue-700',
+          'Refrigerator': 'bg-cyan-100 text-cyan-700',
+          'AC': 'bg-orange-100 text-orange-700',
+          'Washing Machine': 'bg-purple-100 text-purple-700',
+          'Other': 'bg-gray-100 text-gray-700'
+        };
+        return map[service] || 'bg-gray-100 text-gray-700';
+      }
+
+      function getCategoryName(id) {
+        var cat = window.getCategory(id);
+        return cat ? cat.name : ('Category #' + id);
+      }
+
+      function getStaffName(id) {
+        var s = window.getStaffMember(id);
+        return s ? s.name : ('Staff #' + id);
+      }
+
+      // ====== Render Customer Info ======
+      document.getElementById('customer-title').textContent = customer.name;
+      document.getElementById('info-name').textContent = customer.name;
+      document.getElementById('info-phone').textContent = customer.phone;
+      document.getElementById('info-address').textContent = customer.address;
+      document.getElementById('info-area').textContent = customer.area || '\u2014';
+
+      var servicesContainer = document.getElementById('info-services');
+      if (customer.servicesFor && customer.servicesFor.length > 0) {
+        servicesContainer.innerHTML = customer.servicesFor.map(function(s) {
+          return '<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ' + getCategoryColor(s) + '">' + s + '</span>';
+        }).join(' ');
+      } else {
+        servicesContainer.innerHTML = '<span class="text-gray-400">None</span>';
+      }
+
+      // ====== Render Services Table ======
+      var servicesBody = document.getElementById('customer-services-body');
+      var servicesEmpty = document.getElementById('services-empty');
+
+      function renderServices() {
+        var services = window.getServices({ customerId: customer.id });
+        if (services.length === 0) {
+          servicesBody.innerHTML = '';
+          servicesEmpty.classList.remove('hidden');
+          return;
+        }
+        servicesEmpty.classList.add('hidden');
+        servicesBody.innerHTML = services.map(function(s) {
+          var catName = s.categoryId ? getCategoryName(s.categoryId) : (s.serviceFor || '—');
+          var typeLabel = s.isRecurring ? 'Recurring' : 'One-Time';
+          var nextDue = s.firstScheduledDate ? window.formatDate(s.firstScheduledDate) : '—';
+          var tasks = window.getTasks({ serviceId: s.id });
+          var latestTask = tasks.sort(function(a, b) { return new Date(b.scheduledDate) - new Date(a.scheduledDate); })[0];
+          var statusHtml = latestTask ? window.renderStatusPill(latestTask.status) : '<span class="text-xs text-gray-400">—</span>';
+          var staffName = getStaffName(s.assignedTo);
+
+          var problemHtml = s.problem ? '<div class="text-xs text-gray-400 mt-0.5">' + s.problem.substring(0, 60) + (s.problem.length > 60 ? '...' : '') + '</div>' : '';
+          return '<tr>' +
+            '<td data-label="Service Title" class="font-medium text-gray-900">' + s.title + problemHtml + '</td>' +
+            '<td data-label="Category" class="text-gray-600">' + catName + '</td>' +
+            '<td data-label="Type"><span class="badge ' + (s.isRecurring ? 'badge-info' : 'badge-pending') + '">' + typeLabel + '</span></td>' +
+            '<td data-label="Next Due" class="text-gray-600">' + nextDue + '</td>' +
+            '<td data-label="Status">' + statusHtml + '</td>' +
+            '<td data-label="Staff" class="text-gray-600">' + staffName + '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      // ====== Render Tasks Table (with inline complete) ======
+      var tasksBody = document.getElementById('customer-tasks-body');
+      var tasksEmpty = document.getElementById('tasks-empty');
+
+      function renderTasks() {
+        var tasks = window.getTasks({ customerId: customer.id });
+        tasks.sort(function(a, b) { return new Date(b.scheduledDate) - new Date(a.scheduledDate); });
+
+        if (tasks.length === 0) {
+          tasksBody.innerHTML = '';
+          tasksEmpty.classList.remove('hidden');
+          return;
+        }
+        tasksEmpty.classList.add('hidden');
+        var today = window.todayISO();
+        tasksBody.innerHTML = tasks.map(function(t) {
+          var statusHtml = window.renderStatusPill(t.status);
+          var staffName = getStaffName(t.assignedTo);
+          var done = t.status === 'completed';
+          var dateCls = (!done && t.scheduledDate < today) ? 'text-danger' : 'text-gray-600';
+          var dateStr = window.formatDate(t.scheduledDate) + ' <span class="text-xs">(' + window.formatRelative(t.scheduledDate) + ')</span>';
+
+          var checkbox = done
+            ? '<span class="inline-flex items-center justify-center w-5 h-5 rounded bg-brand text-white"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>'
+            : '<button class="cd-task-check w-5 h-5 rounded border-2 border-gray-300 hover:border-brand transition-colors align-middle" title="Mark complete" data-task-id="' + t.id + '"></button>';
+
+          return '<tr>' +
+            '<td data-label="Done">' + checkbox + '</td>' +
+            '<td data-label="Task" class="font-medium text-gray-900">' + t.title + '</td>' +
+            '<td data-label="Date" class="' + dateCls + '">' + dateStr + '</td>' +
+            '<td data-label="Status">' + statusHtml + '</td>' +
+            '<td data-label="Assigned To" class="text-gray-600">' + staffName + '</td>' +
+          '</tr>';
+        }).join('');
+
+        tasksBody.querySelectorAll('.cd-task-check').forEach(function(btn) {
+          btn.addEventListener('click', function() { cdOpenComplete(this.getAttribute('data-task-id')); });
+        });
+
+        try { lucide.createIcons(); } catch(e) {}
+      }
+
+      // ====== Complete Task Modal ======
+      function cdOpenComplete(taskId) {
+        var task = window.getTask(taskId);
+        document.getElementById('cd-complete-task-id').value = taskId;
+        document.getElementById('cd-complete-customer').textContent = customer.name + (task ? ' — ' + task.title : '');
+        document.getElementById('cd-complete-date').value = window.todayISO();
+        document.getElementById('cd-complete-note').value = '';
+        document.getElementById('cd-complete-modal').style.display = 'flex';
+      }
+
+      window.closeCdComplete = function() {
+        document.getElementById('cd-complete-modal').style.display = 'none';
+      };
+
+      document.getElementById('cd-complete-confirm').addEventListener('click', function() {
+        var id = document.getElementById('cd-complete-task-id').value;
+        var date = document.getElementById('cd-complete-date').value;
+        var note = document.getElementById('cd-complete-note').value.trim();
+        if (!date) { window.showToast('Please select a date.', 'error'); return; }
+        window.completeTask(id, date, note);
+        window.closeCdComplete();
+        renderServices();
+        renderTasks();
+        window.showToast('Task completed.', 'success');
+      });
+
+      document.getElementById('cd-complete-modal').addEventListener('click', function(e) {
+        if (e.target === this) window.closeCdComplete();
+      });
+
+      renderServices();
+      renderTasks();
+
+      try { lucide.createIcons(); } catch(e) {}
+    })();
+      });
+    });
+  </script>
+</body>
+</html>

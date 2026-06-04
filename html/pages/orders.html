@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Orders - Recurlog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../assets/css/custom.css?v=20260601a">
+  <script src="../assets/js/sidebar.js?v=20260601a"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
+          fontFamily: { sans: ['Poppins', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    .signature-pad {
+      width: 100%;
+      height: 160px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      touch-action: none;
+      cursor: crosshair;
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+<script>injectSidebar();</script>
+
+  <div class="page-content">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="flex items-center gap-2">
+          <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <h1 class="page-title">Orders</h1>
+        </div>
+        <button onclick="openNewOrderModal()" class="btn btn-sm btn-primary">
+          <i data-lucide="plus" class="w-4 h-4"></i> New Order
+        </button>
+      </div>
+    </header>
+
+    <div class="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
+
+      <!-- Filter Tabs -->
+      <div class="flex flex-wrap gap-2 mb-4" id="order-tabs">
+        <button class="order-tab-btn px-4 py-1.5 text-sm font-medium rounded-full transition-colors bg-brand text-white" data-tab="all">All</button>
+        <button class="order-tab-btn px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-600 hover:bg-gray-100" data-tab="pending">Pending</button>
+        <button class="order-tab-btn px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-600 hover:bg-gray-100" data-tab="assigned">Assigned</button>
+        <button class="order-tab-btn px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-600 hover:bg-gray-100" data-tab="completed">Completed</button>
+        <button class="order-tab-btn px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-600 hover:bg-gray-100" data-tab="cancelled">Cancelled</button>
+      </div>
+
+      <!-- Search -->
+      <div class="relative mb-4">
+        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+        <input type="text" id="order-search" placeholder="Search by customer name or problem..." class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand text-sm bg-white">
+      </div>
+
+      <!-- Orders Container -->
+      <div id="orders-container" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <script>injectBottomNav();</script>
+
+  <!-- New Order Modal -->
+  <div id="new-order-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-lg font-bold text-gray-900">New Order</h3>
+        <button onclick="closeModal('new-order-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <!-- Customer Selection -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
+          <div class="flex gap-2 items-start">
+            <select id="order-customer" class="form-select flex-1"></select>
+            <button type="button" id="btn-inline-customer" class="px-3 py-2.5 border border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-500 hover:text-brand hover:border-brand transition-all whitespace-nowrap min-h-[44px] flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Add New
+            </button>
+          </div>
+        </div>
+
+        <!-- Inline Customer Creation Form (hidden by default) -->
+        <div id="inline-customer-section" class="inline-customer-form hidden">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-semibold text-gray-700">New Customer Details</h4>
+            <button type="button" id="btn-cancel-inline-customer" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
+          </div>
+          <div class="form-row">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Name <span class="text-danger">*</span></label>
+              <input type="text" id="inline-cust-name" class="form-input" placeholder="Customer name">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Phone</label>
+              <input type="text" id="inline-cust-phone" class="form-input" value="+977-" placeholder="+977-98XXXXXXXX">
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:12px">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Address</label>
+              <input type="text" id="inline-cust-address" class="form-input" placeholder="e.g. Adarsh Nagar, Birgunj">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Area / Locality</label>
+              <div class="location-picker">
+                <select id="inline-cust-area" class="form-select location-select"></select>
+                <button type="button" id="btn-inline-add-locality" class="location-custom-btn">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Custom
+                </button>
+              </div>
+              <div id="inline-custom-locality-row" class="mt-2 hidden">
+                <div class="flex gap-2">
+                  <input type="text" id="inline-new-locality-input" class="form-input flex-1" placeholder="Type locality name">
+                  <button type="button" id="inline-save-locality-btn" class="px-4 py-2 bg-brand text-white text-sm font-semibold rounded-lg">Save</button>
+                </div>
+                <p id="inline-locality-error" class="text-xs text-danger mt-1 hidden"></p>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Service For</label>
+            <select id="inline-cust-service" class="form-select"></select>
+          </div>
+        </div>
+
+        <div>
+          <label for="order-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Description <span class="text-danger">*</span></label>
+          <textarea id="order-problem" rows="4" class="form-textarea" placeholder="Describe the order / work to be done..."></textarea>
+        </div>
+        <div>
+          <label for="order-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Assign To</label>
+          <select id="order-staff" class="form-select"><option value="">Select Staff</option></select>
+        </div>
+        <div>
+          <label for="order-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Schedule Task</label>
+          <input type="date" id="order-date" class="form-input max-w-xs">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="closeModal('new-order-modal')" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          <button id="btn-save-order" class="flex-1 px-4 py-2.5 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow">Save Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Staff Modal -->
+  <div id="assign-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-lg font-bold text-gray-900">Assign Staff</h3>
+        <button onclick="closeModal('assign-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <input type="hidden" id="assign-order-id" value="">
+        <div>
+          <label for="assign-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Staff Member <span class="text-danger">*</span></label>
+          <select id="assign-staff" class="form-select"></select>
+        </div>
+        <div>
+          <label for="assign-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Scheduled Date <span class="text-danger">*</span></label>
+          <input type="date" id="assign-date" class="form-input max-w-xs">
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="closeModal('assign-modal')" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          <button id="btn-assign-order" class="flex-1 px-4 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors">Assign</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complete Order Modal -->
+  <div id="complete-order-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-lg font-bold text-gray-900">Complete Order</h3>
+        <button onclick="closeModal('complete-order-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <input type="hidden" id="complete-order-id" value="">
+
+        <p class="text-sm font-bold text-navy">Order Report</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="dispatch-date" class="block text-xs font-medium text-gray-500 mb-1">Dispatch Date</label>
+            <input type="date" id="dispatch-date" class="form-input">
+          </div>
+          <div>
+            <label for="dispatch-by" class="block text-xs font-medium text-gray-500 mb-1">Dispatch By</label>
+            <input type="text" id="dispatch-by" class="form-input" placeholder="Staff / person name">
+          </div>
+        </div>
+
+        <div class="pt-1">
+          <p class="text-sm font-bold text-navy mb-2">Received By</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="received-name" class="block text-xs font-medium text-gray-500 mb-1">Name</label>
+              <input type="text" id="received-name" class="form-input" placeholder="Receiver name">
+            </div>
+            <div>
+              <label for="received-contact" class="block text-xs font-medium text-gray-500 mb-1">Contact</label>
+              <input type="text" id="received-contact" class="form-input" placeholder="Phone">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-medium text-gray-500">Signature</label>
+            <button type="button" id="sig-clear" class="text-xs text-brand hover:underline">Clear</button>
+          </div>
+          <canvas id="sig-pad" class="signature-pad" width="600" height="160"></canvas>
+        </div>
+
+        <div>
+          <label for="complete-notes" class="block text-sm font-semibold text-gray-700 mb-1.5">Completion Notes</label>
+          <textarea id="complete-notes" rows="2" class="form-textarea" placeholder="Notes about the completed work..."></textarea>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="complete-create-task" class="w-4 h-4 accent-brand rounded">
+          <label for="complete-create-task" class="text-sm text-gray-600">Also create a Task record for this order</label>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="closeModal('complete-order-modal')" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          <button id="btn-confirm-complete" class="flex-1 px-4 py-2.5 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow">Confirm Complete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Order Modal -->
+  <div id="cancel-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="alert-triangle" class="w-6 h-6 text-danger"></i>
+      </div>
+      <input type="hidden" id="cancel-order-id" value="">
+      <h3 class="text-lg font-bold text-navy text-center mb-2">Cancel Order?</h3>
+      <p class="text-sm text-gray-500 text-center mb-6">Are you sure you want to cancel this order? This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal('cancel-modal')" class="btn btn-md btn-secondary flex-1">Go Back</button>
+        <button onclick="confirmCancelOrder()" class="btn btn-md btn-danger flex-1">Yes, Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div id="order-detail-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content max-w-lg" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-lg font-bold text-gray-900">Order Details</h3>
+        <button onclick="closeModal('order-detail-modal')" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="order-detail-body" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500">Customer</p>
+            <p id="detail-customer" class="font-semibold text-navy"></p>
+          </div>
+          <div id="detail-status-badge"></div>
+        </div>
+        <hr class="border-gray-100">
+        <div>
+          <p class="text-sm text-gray-500">Problem / Issue</p>
+          <p id="detail-problem" class="text-sm text-gray-800 mt-1"></p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Priority</p>
+            <p id="detail-priority" class="font-semibold mt-1"></p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Assigned To</p>
+            <p id="detail-assigned" class="font-semibold mt-1 text-gray-700">Unassigned</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-500">Scheduled Date</p>
+            <p id="detail-date" class="font-semibold mt-1 text-gray-700">Not scheduled</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Created</p>
+            <p id="detail-created" class="font-semibold mt-1 text-gray-700"></p>
+          </div>
+        </div>
+        <div id="detail-notes-row" class="hidden">
+          <hr class="border-gray-100">
+          <p class="text-sm text-gray-500">Notes</p>
+          <p id="detail-notes" class="text-sm text-gray-700 mt-1 italic"></p>
+        </div>
+        <div id="detail-report-row" class="hidden">
+          <hr class="border-gray-100">
+          <p class="text-sm font-bold text-navy mb-2">Order Report</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Dispatch Date</p>
+              <p id="detail-dispatch-date" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Dispatch By</p>
+              <p id="detail-dispatch-by" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Received By</p>
+              <p id="detail-received-name" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Receiver Contact</p>
+              <p id="detail-received-contact" class="font-semibold mt-1 text-gray-700">&ndash;</p>
+            </div>
+          </div>
+          <div id="detail-sig-wrap" class="hidden mt-3">
+            <p class="text-sm text-gray-500 mb-1">Signature</p>
+            <img id="detail-signature" class="border border-gray-200 rounded-lg bg-white max-h-32" alt="Signature">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== STATE ==========
+    var currentOrderTab = 'all';
+    var preselectedOrderType = null;
+
+    // ========== INIT ==========
+    document.addEventListener('DOMContentLoaded', function () {
+      window.initApp(function () {
+      checkOrderFilter();
+      setupOrderTabs();
+      setupOrderSearch();
+      populateOrderCustomers();
+      populateOrderStaff();
+      populateAssignStaff();
+      setDefaultOrderDate();
+      setupInlineCustomerForm();
+      setupInlineLocality();
+      initSignaturePad();
+
+      // Check if redirected from dashboard chooser
+      try { preselectedOrderType = localStorage.getItem('fscrm_new_order_type'); } catch(e) { preselectedOrderType = null; }
+      if (preselectedOrderType) {
+        openNewOrderModal();
+      }
+
+      renderOrders();
+
+      document.getElementById('btn-save-order').addEventListener('click', handleSaveOrder);
+      document.getElementById('btn-assign-order').addEventListener('click', handleAssign);
+      document.getElementById('btn-confirm-complete').addEventListener('click', handleComplete);
+
+      // Prefill modal dates
+      var now = new Date();
+      var y = now.getFullYear();
+      var m = String(now.getMonth() + 1).padStart(2, '0');
+      var d = String(now.getDate()).padStart(2, '0');
+      var dateStr = y + '-' + m + '-' + d;
+      document.getElementById('order-date').value = dateStr;
+      document.getElementById('assign-date').value = dateStr;
+      document.getElementById('dispatch-date').value = dateStr;
+
+      lucide.createIcons();
+      });
+    });
+
+    // ========== INLINE CUSTOMER CREATION ==========
+    function setupInlineCustomerForm() {
+      var btnAdd = document.getElementById('btn-inline-customer');
+      var section = document.getElementById('inline-customer-section');
+      var btnCancel = document.getElementById('btn-cancel-inline-customer');
+
+      btnAdd.addEventListener('click', function() {
+        section.classList.remove('hidden');
+        populateInlineLocalities();
+        populateInlineServices();
+        btnAdd.disabled = true;
+        btnAdd.classList.add('opacity-50', 'pointer-events-none');
+      });
+
+      btnCancel.addEventListener('click', function() {
+        section.classList.add('hidden');
+        clearInlineCustomerForm();
+        btnAdd.disabled = false;
+        btnAdd.classList.remove('opacity-50', 'pointer-events-none');
+      });
+    }
+
+    function populateInlineLocalities() {
+      var select = document.getElementById('inline-cust-area');
+      select.innerHTML = '<option value="">Select locality</option>';
+      var localities = window.getLocalities();
+      localities.forEach(function(l) {
+        var opt = document.createElement('option');
+        opt.value = l;
+        opt.textContent = l;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateInlineServices() {
+      var select = document.getElementById('inline-cust-service');
+      select.innerHTML = '<option value="">Select service type</option>';
+      var types = window.getServiceTypes();
+      types.forEach(function(t) {
+        var opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+    }
+
+    function clearInlineCustomerForm() {
+      document.getElementById('inline-cust-name').value = '';
+      document.getElementById('inline-cust-phone').value = '+977-';
+      document.getElementById('inline-cust-address').value = '';
+      document.getElementById('inline-cust-area').value = '';
+      document.getElementById('inline-cust-service').value = '';
+    }
+
+    function setupInlineLocality() {
+      var btnCustom = document.getElementById('btn-inline-add-locality');
+      var row = document.getElementById('inline-custom-locality-row');
+      var input = document.getElementById('inline-new-locality-input');
+      var btnSave = document.getElementById('inline-save-locality-btn');
+      var errEl = document.getElementById('inline-locality-error');
+      var select = document.getElementById('inline-cust-area');
+
+      btnCustom.addEventListener('click', function() {
+        row.classList.toggle('hidden');
+        if (!row.classList.contains('hidden')) input.focus();
+      });
+
+      btnSave.addEventListener('click', function() {
+        var val = input.value.trim();
+        errEl.classList.add('hidden');
+        if (!val) { errEl.textContent = 'Enter a locality name.'; errEl.classList.remove('hidden'); return; }
+        window.addLocality(val);
+        populateInlineLocalities();
+        select.value = val;
+        row.classList.add('hidden');
+        input.value = '';
+      });
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { btnSave.click(); }
+      });
+    }
+
+    function getInlineCustomerData() {
+      var name = document.getElementById('inline-cust-name').value.trim();
+      var phone = document.getElementById('inline-cust-phone').value.trim();
+      var address = document.getElementById('inline-cust-address').value.trim();
+      var area = document.getElementById('inline-cust-area').value;
+      var service = document.getElementById('inline-cust-service').value;
+      if (!name) return null;
+      return {
+        name: name,
+        phone: phone || '',
+        address: address || '',
+        area: area || '',
+        servicesFor: service ? [service] : []
+      };
+    }
+
+    // ========== ORDER FILTER FROM DASHBOARD ==========
+    function checkOrderFilter() {
+      try {
+        var stored = localStorage.getItem('fscrm_order_filter');
+        if (stored) {
+          if (stored === 'pending' || stored === 'assigned' || stored === 'completed' || stored === 'cancelled') {
+            currentOrderTab = stored;
+          }
+          localStorage.removeItem('fscrm_order_filter');
+          updateOrderTabUI();
+        }
+      } catch(e) {}
+    }
+
+    // ========== TABS ==========
+    function setupOrderTabs() {
+      document.querySelectorAll('.order-tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentOrderTab = this.dataset.tab;
+          updateOrderTabUI();
+          renderOrders();
+        });
+      });
+      updateOrderTabUI();
+    }
+
+    function updateOrderTabUI() {
+      document.querySelectorAll('.order-tab-btn').forEach(function (btn) {
+        if (btn.dataset.tab === currentOrderTab) {
+          btn.className = 'order-tab-btn px-4 py-1.5 text-sm font-medium rounded-full transition-colors bg-brand text-white';
+        } else {
+          btn.className = 'order-tab-btn px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-600 hover:bg-gray-100';
+        }
+      });
+    }
+
+    // ========== SEARCH ==========
+    function setupOrderSearch() {
+      document.getElementById('order-search').addEventListener('input', function () {
+        renderOrders();
+      });
+    }
+
+    // ========== GET FILTERED ORDERS ==========
+    function getFilteredOrders() {
+      var allOrders = window.getOrders();
+
+      var filtered;
+      if (currentOrderTab === 'all') {
+        filtered = allOrders;
+      } else {
+        filtered = allOrders.filter(function (o) { return o.status === currentOrderTab; });
+      }
+
+      var search = document.getElementById('order-search').value.toLowerCase().trim();
+      if (search) {
+        filtered = filtered.filter(function (o) {
+          return o.customerName.toLowerCase().indexOf(search) >= 0 ||
+                 o.problem.toLowerCase().indexOf(search) >= 0;
+        });
+      }
+
+      filtered.sort(function (a, b) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      return filtered;
+    }
+
+    // ========== RENDER ==========
+    function renderOrders() {
+      var container = document.getElementById('orders-container');
+      var orders = getFilteredOrders();
+      container.innerHTML = '';
+
+      if (orders.length === 0) {
+        container.appendChild(createOrderEmptyState());
+        return;
+      }
+
+      var today = window.todayISO ? window.todayISO() : new Date().toISOString().split('T')[0];
+
+      orders.forEach(function (order) {
+        container.appendChild(createOrderCard(order, today));
+      });
+
+      lucide.createIcons();
+    }
+
+    function createOrderEmptyState() {
+      var div = document.createElement('div');
+      div.className = 'empty-state';
+      div.innerHTML =
+        '<i data-lucide="clipboard-list"></i>' +
+        '<p>No ' + currentOrderTab + ' orders found</p>' +
+        '<p class="empty-sub">' + (currentOrderTab === 'all' ? 'Create a new order to get started.' : 'No orders with this status.') + '</p>';
+      return div;
+    }
+
+    function getOrderStatusBadge(status) {
+      var map = {
+        pending: { cls: 'badge-order-pending', icon: 'clock', label: 'Pending' },
+        assigned: { cls: 'badge-order-assigned', icon: 'user-check', label: 'Assigned' },
+        completed: { cls: 'badge-order-completed', icon: 'check-circle', label: 'Completed' },
+        cancelled: { cls: 'badge-order-cancelled', icon: 'x-circle', label: 'Cancelled' }
+      };
+      var cfg = map[status] || map.pending;
+      return '<span class="badge ' + cfg.cls + '"><i data-lucide="' + cfg.icon + '" class="w-3 h-3"></i> ' + cfg.label + '</span>';
+    }
+
+    function getPriorityBadge(priority) {
+      if (priority === 'urgent') {
+        return '<span class="badge badge-priority-urgent"><i data-lucide="alert-triangle" class="w-3 h-3"></i> Urgent</span>';
+      }
+      return '<span class="badge badge-priority-normal">Normal</span>';
+    }
+
+    function createOrderCard(order, today) {
+      var div = document.createElement('div');
+      div.className = 'bg-white rounded-xl border border-gray-200 p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow';
+
+      var problemShort = order.problem.length > 60 ? order.problem.substring(0, 60) + '...' : order.problem;
+
+      var actionHtml = '';
+      if (order.status === 'pending') {
+        actionHtml =
+          '<button class="assign-btn px-3 py-1.5 bg-purple-600 text-white text-xs font-semibold rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-1" data-order-id="' + order.id + '"><i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Assign</button>' +
+          '<button class="cancel-btn px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1" data-order-id="' + order.id + '"><i data-lucide="x" class="w-3.5 h-3.5"></i> Cancel</button>';
+      } else if (order.status === 'assigned') {
+        actionHtml =
+          '<button class="complete-order-btn px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand/90 transition-colors flex items-center gap-1" data-order-id="' + order.id + '"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Complete</button>' +
+          '<button class="cancel-btn px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1" data-order-id="' + order.id + '"><i data-lucide="x" class="w-3.5 h-3.5"></i> Cancel</button>';
+      }
+
+      div.innerHTML =
+        '<div class="flex items-start justify-between gap-3">' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="flex items-center gap-2 flex-wrap">' +
+              '<h3 class="font-semibold text-gray-900 text-sm">' + escapeHtml(order.customerName) + '</h3>' +
+              getPriorityBadge(order.priority) +
+            '</div>' +
+            '<p class="text-sm text-gray-500 mt-1">' + escapeHtml(problemShort) + '</p>' +
+            '<div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-400">' +
+              '<span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ' + (order.scheduledDate ? window.formatDate(order.scheduledDate) : 'Not scheduled') + '</span>' +
+              '<span class="flex items-center gap-1"><i data-lucide="user" class="w-3 h-3"></i> ' + (order.assignedStaffName || 'Unassigned') + '</span>' +
+              '<span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ' + window.formatRelative(order.createdAt) + '</span>' +
+            '</div>' +
+            (order.notes ? '<p class="text-xs text-gray-400 mt-1 italic">' + escapeHtml(order.notes) + '</p>' : '') +
+          '</div>' +
+          '<div class="flex flex-col items-end gap-2 shrink-0">' +
+            getOrderStatusBadge(order.status) +
+          '</div>' +
+        '</div>' +
+        '<div class="mt-3 pt-3 border-t border-gray-100 flex justify-end gap-2 flex-wrap">' +
+          actionHtml +
+        '</div>';
+
+      var orderId = order.id;
+
+      // Attach event handlers
+      var assignBtn = div.querySelector('.assign-btn');
+      if (assignBtn) {
+        assignBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          document.getElementById('assign-order-id').value = this.dataset.orderId;
+          openModal('assign-modal');
+        });
+      }
+
+      var completeBtn = div.querySelector('.complete-order-btn');
+      if (completeBtn) {
+        completeBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          openCompleteModal(this.dataset.orderId);
+        });
+      }
+
+      var cancelBtn = div.querySelector('.cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          document.getElementById('cancel-order-id').value = this.dataset.orderId;
+          openModal('cancel-modal');
+        });
+      }
+
+      // Click card body to view details
+      var cardBody = div.querySelector('.flex-1');
+      if (cardBody) {
+        cardBody.addEventListener('click', function () {
+          showOrderDetail(orderId);
+        });
+        cardBody.classList.add('cursor-pointer');
+      }
+
+      return div;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function showOrderDetail(orderId) {
+      var order = window.getOrder(orderId);
+      if (!order) {
+        window.showToast('Order not found.', 'error');
+        return;
+      }
+
+      document.getElementById('detail-customer').textContent = order.customerName;
+      document.getElementById('detail-problem').textContent = order.problem || 'No description';
+      document.getElementById('detail-priority').innerHTML = getPriorityBadge(order.priority);
+
+      var statusMap = {
+        pending: '<span class="badge badge-order-pending"><i data-lucide="clock" class="w-3 h-3"></i> Pending</span>',
+        assigned: '<span class="badge badge-order-assigned"><i data-lucide="user-check" class="w-3 h-3"></i> Assigned</span>',
+        completed: '<span class="badge badge-order-completed"><i data-lucide="check-circle" class="w-3 h-3"></i> Completed</span>',
+        cancelled: '<span class="badge badge-order-cancelled"><i data-lucide="x-circle" class="w-3 h-3"></i> Cancelled</span>'
+      };
+      document.getElementById('detail-status-badge').innerHTML = statusMap[order.status] || '';
+
+      document.getElementById('detail-assigned').textContent = order.assignedStaffName || 'Unassigned';
+      document.getElementById('detail-date').textContent = order.scheduledDate ? window.formatDate(order.scheduledDate) : 'Not scheduled';
+      document.getElementById('detail-created').textContent = order.createdAt ? window.formatRelative(order.createdAt) : '-';
+
+      var notesRow = document.getElementById('detail-notes-row');
+      var notesEl = document.getElementById('detail-notes');
+      if (order.notes) {
+        notesEl.textContent = order.notes;
+        notesRow.classList.remove('hidden');
+      } else {
+        notesRow.classList.add('hidden');
+      }
+
+      // Order report (dispatch + received-by + signature)
+      var reportRow = document.getElementById('detail-report-row');
+      var hasReport = order.dispatchDate || order.dispatchBy || order.receivedName || order.receivedContact || order.signature;
+      if (hasReport) {
+        document.getElementById('detail-dispatch-date').textContent = order.dispatchDate ? window.formatDate(order.dispatchDate) : '–';
+        document.getElementById('detail-dispatch-by').textContent = order.dispatchBy || '–';
+        document.getElementById('detail-received-name').textContent = order.receivedName || '–';
+        document.getElementById('detail-received-contact').textContent = order.receivedContact || '–';
+        var sigWrap = document.getElementById('detail-sig-wrap');
+        if (order.signature) {
+          document.getElementById('detail-signature').src = order.signature;
+          sigWrap.classList.remove('hidden');
+        } else {
+          sigWrap.classList.add('hidden');
+        }
+        reportRow.classList.remove('hidden');
+      } else {
+        reportRow.classList.add('hidden');
+      }
+
+      try { lucide.createIcons(); } catch(e) {}
+      openModal('order-detail-modal');
+    }
+
+    // ========== MODALS ==========
+    function openModal(id) {
+      document.getElementById(id).style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    document.addEventListener('click', function (e) {
+      ['new-order-modal', 'assign-modal', 'complete-order-modal', 'cancel-modal', 'order-detail-modal'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (e.target === el) closeModal(id);
+      });
+    });
+
+    // ========== NEW ORDER MODAL ==========
+    function openNewOrderModal() {
+      populateOrderCustomers();
+      populateOrderStaff();
+      document.getElementById('order-problem').value = '';
+      document.getElementById('order-staff').value = '';
+
+      // Reset inline customer form
+      var inlineSection = document.getElementById('inline-customer-section');
+      inlineSection.classList.add('hidden');
+      clearInlineCustomerForm();
+      var btnAdd = document.getElementById('btn-inline-customer');
+      btnAdd.disabled = false;
+      btnAdd.classList.remove('opacity-50', 'pointer-events-none');
+
+      setDefaultOrderDate();
+      openModal('new-order-modal');
+    }
+
+    function populateOrderStaff() {
+      var select = document.getElementById('order-staff');
+      select.innerHTML = '<option value="">Select Staff</option>';
+      var staff = window.getStaff();
+      staff.forEach(function (s) {
+        var opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateOrderCustomers() {
+      var select = document.getElementById('order-customer');
+      select.innerHTML = '';
+      var customers = window.getCustomers();
+      customers.forEach(function (c) {
+        var opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateAssignStaff() {
+      var select = document.getElementById('assign-staff');
+      select.innerHTML = '';
+      var staff = window.getStaff();
+      staff.forEach(function (s) {
+        var opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function setDefaultOrderDate() {
+      var now = new Date();
+      var y = now.getFullYear();
+      var m = String(now.getMonth() + 1).padStart(2, '0');
+      var d = String(now.getDate()).padStart(2, '0');
+      document.getElementById('order-date').value = y + '-' + m + '-' + d;
+    }
+
+    function handleSaveOrder() {
+      var customerSelect = document.getElementById('order-customer');
+      var customerId = customerSelect.value;
+      var customerName = customerSelect.options[customerSelect.selectedIndex] ? customerSelect.options[customerSelect.selectedIndex].text : '';
+      var problem = document.getElementById('order-problem').value.trim();
+      var date = document.getElementById('order-date').value;
+      var staffSelect = document.getElementById('order-staff');
+      var staffId = staffSelect.value;
+      var staffName = staffId ? staffSelect.options[staffSelect.selectedIndex].text : null;
+
+      // If the inline customer form is open, create that customer first
+      var inlineSection = document.getElementById('inline-customer-section');
+      if (!inlineSection.classList.contains('hidden')) {
+        var inlineData = getInlineCustomerData();
+        if (inlineData) {
+          var newCustomer = window.createCustomerInline(inlineData);
+          customerId = String(newCustomer.id);
+          customerName = newCustomer.name;
+          populateOrderCustomers();
+          document.getElementById('order-customer').value = customerId;
+          inlineSection.classList.add('hidden');
+          clearInlineCustomerForm();
+          var btnAdd = document.getElementById('btn-inline-customer');
+          btnAdd.disabled = false;
+          btnAdd.classList.remove('opacity-50', 'pointer-events-none');
+        }
+      }
+
+      if (!customerId) {
+        window.showToast('Please select a customer.', 'error');
+        return;
+      }
+      if (!problem) {
+        window.showToast('Please enter the order description.', 'error');
+        return;
+      }
+
+      var orderData = {
+        customerId: parseInt(customerId, 10),
+        customerName: customerName,
+        serviceFor: null,
+        problem: problem,
+        status: staffId ? 'assigned' : 'pending',
+        priority: 'normal',
+        assignedTo: staffId ? parseInt(staffId, 10) : null,
+        assignedStaffName: staffName,
+        scheduledDate: date || null,
+        notes: '',
+        isRecurring: (preselectedOrderType === 'recurring')
+      };
+
+      var saved = window.createOrder(orderData);
+      if (saved) {
+        window.showToast('Order created successfully!', 'success');
+        closeModal('new-order-modal');
+        renderOrders();
+      }
+    }
+
+    // ========== ASSIGN ==========
+    function handleAssign() {
+      var orderId = document.getElementById('assign-order-id').value;
+      var staffId = document.getElementById('assign-staff').value;
+      var staffName = document.getElementById('assign-staff').options[document.getElementById('assign-staff').selectedIndex].text;
+      var date = document.getElementById('assign-date').value;
+
+      if (!staffId) {
+        window.showToast('Please select a staff member.', 'error');
+        return;
+      }
+      if (!date) {
+        window.showToast('Please select a scheduled date.', 'error');
+        return;
+      }
+
+      var result = window.assignOrder(orderId, parseInt(staffId, 10), staffName, date);
+      if (result) {
+        window.showToast('Order assigned to ' + staffName, 'success');
+        closeModal('assign-modal');
+        renderOrders();
+      }
+    }
+
+    // ========== COMPLETE ==========
+    function handleComplete() {
+      var orderId = document.getElementById('complete-order-id').value;
+      var report = {
+        notes: document.getElementById('complete-notes').value.trim(),
+        dispatchDate: document.getElementById('dispatch-date').value || null,
+        dispatchBy: document.getElementById('dispatch-by').value.trim(),
+        receivedName: document.getElementById('received-name').value.trim(),
+        receivedContact: document.getElementById('received-contact').value.trim(),
+        signature: getSignatureDataURL()
+      };
+      var createTask = document.getElementById('complete-create-task').checked;
+
+      var result = window.completeOrder(orderId, report, createTask);
+      if (result) {
+        window.showToast('Order completed!' + (createTask ? ' Task created.' : ''), 'success');
+        closeModal('complete-order-modal');
+        renderOrders();
+      }
+    }
+
+    // ===== Signature pad =====
+    var sigCanvas = null, sigCtx = null, sigDrawing = false, sigHasInk = false;
+
+    function initSignaturePad() {
+      sigCanvas = document.getElementById('sig-pad');
+      if (!sigCanvas) return;
+      sigCtx = sigCanvas.getContext('2d');
+      sigCtx.lineWidth = 2;
+      sigCtx.lineCap = 'round';
+      sigCtx.strokeStyle = '#0B1E3D';
+
+      function pos(e) {
+        var rect = sigCanvas.getBoundingClientRect();
+        var src = (e.touches && e.touches[0]) ? e.touches[0] : e;
+        return {
+          x: (src.clientX - rect.left) * (sigCanvas.width / rect.width),
+          y: (src.clientY - rect.top) * (sigCanvas.height / rect.height)
+        };
+      }
+      function start(e) { e.preventDefault(); sigDrawing = true; var p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+      function move(e) { if (!sigDrawing) return; e.preventDefault(); var p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigHasInk = true; }
+      function end() { sigDrawing = false; }
+
+      sigCanvas.addEventListener('mousedown', start);
+      sigCanvas.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', end);
+      sigCanvas.addEventListener('touchstart', start, { passive: false });
+      sigCanvas.addEventListener('touchmove', move, { passive: false });
+      sigCanvas.addEventListener('touchend', end);
+
+      document.getElementById('sig-clear').addEventListener('click', clearSignature);
+    }
+
+    function clearSignature() {
+      if (!sigCtx || !sigCanvas) return;
+      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      sigHasInk = false;
+    }
+
+    function getSignatureDataURL() {
+      if (!sigHasInk || !sigCanvas) return null;
+      return sigCanvas.toDataURL('image/png');
+    }
+
+    function openCompleteModal(orderId) {
+      var order = window.getOrder(orderId);
+      document.getElementById('complete-order-id').value = orderId;
+      document.getElementById('complete-notes').value = '';
+      document.getElementById('complete-create-task').checked = false;
+      var now = new Date();
+      document.getElementById('dispatch-date').value =
+        now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      document.getElementById('dispatch-by').value = (order && order.assignedStaffName) ? order.assignedStaffName : '';
+      document.getElementById('received-name').value = order ? (order.customerName || '') : '';
+      document.getElementById('received-contact').value = '';
+      clearSignature();
+      openModal('complete-order-modal');
+    }
+
+    // ========== CANCEL ==========
+    function confirmCancelOrder() {
+      var orderId = document.getElementById('cancel-order-id').value;
+      var result = window.cancelOrder(orderId);
+      if (result) {
+        window.showToast('Order cancelled.', 'info');
+        closeModal('cancel-modal');
+        renderOrders();
+      }
+    }
+
+  </script>
+  <script src="../assets/js/seed.js?v=20260601a"></script>
+  <script src="../assets/js/router.js?v=20260601a"></script>
+  <script src="../assets/js/app.js?v=20260601a"></script>
+  <script src="../assets/js/api.js?v=20260601a"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
