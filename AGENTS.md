@@ -117,6 +117,23 @@ Or open any HTML/PHP file directly (PHP needs Apache/Nginx).
   - Task complete modal (notes, signature pad, received by/contact)
 - Staff can only see/complete their own assigned tasks.
 
+## Admin set password for staff (June 2026)
+
+- `pages/staff.php` now shows a "Has Login"/"No Login" badge on each staff card (via LEFT JOIN on `fscrm_users.staff_id`).
+- "Set Password" / "Reset Password" button opens a modal with email + password fields.
+- POST handler `set_password` creates a `fscrm_users` record (role=staff, staff_id linked) if none exists, or updates email/password if one does.
+- Deleting a staff member now also cleans up the linked `fscrm_users` record.
+
+## Database migration
+
+- `migration.sql` — schema-only migration. Run once on the target database before first use:
+  ```sql
+  SOURCE /path/to/migration.sql;
+  ```
+  or import via phpMyAdmin / MySQL CLI. Creates all tables with `IF NOT EXISTS` (safe to re-run).
+- `db.sql` — raw SQLyog dump with schema + demo data (local dev backup).
+- Seeding with demo data is done via `api/seed.php` or Settings > Reset Demo Data.
+
 ## Deployment
 
 Push to `main` → `.github/workflows/static.yml` deploys repo root to GitHub Pages. PHP files won't execute on Pages (static only) — deploys client-side version.

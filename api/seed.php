@@ -59,8 +59,11 @@ $db->query("ALTER TABLE fscrm_customers AUTO_INCREMENT = 1");
 $db->query("ALTER TABLE fscrm_users AUTO_INCREMENT = 1");
 
 // --- Users ---
-// Ensure staff_id column exists
-$db->query("ALTER TABLE fscrm_users ADD COLUMN staff_id INT DEFAULT NULL AFTER role");
+// Ensure staff_id column exists (safe if migration already added it)
+$colCheck = $db->query("SHOW COLUMNS FROM fscrm_users LIKE 'staff_id'");
+if ($colCheck->num_rows === 0) {
+    $db->query("ALTER TABLE fscrm_users ADD COLUMN staff_id INT DEFAULT NULL AFTER role");
+}
 $hash = password_hash('demo123', PASSWORD_DEFAULT);
 $db->query("INSERT INTO fscrm_users (id, name, email, password, role, staff_id) VALUES (1, 'Admin User', 'admin@demo.com', '$hash', 'admin', NULL)");
 

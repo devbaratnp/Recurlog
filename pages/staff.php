@@ -42,9 +42,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrfToken();
     $id = (int)($_POST['id'] ?? 0);
     if ($id) {
+      $stmt = $db->prepare("DELETE FROM fscrm_users WHERE staff_id = ?");
+      $stmt->bind_param('i', $id);
+      $stmt->execute();
       $stmt = $db->prepare("DELETE FROM fscrm_staff WHERE id = ?");
       $stmt->bind_param('i', $id);
       $stmt->execute();
+    }
+    header('Location: staff.php');
+    exit;
+  }
+  if (isset($_POST['set_password'])) {
+    requireCsrfToken();
+    $staffId = (int)($_POST['staff_id'] ?? 0);
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    if ($staffId && $email && strlen($password) >= 4) {
+      $stmt = $db->prepare("SELECT id, name FROM fscrm_staff WHERE id = ?");
+      $stmt->bind_param('i', $staffId);
+      $stmt->execute();
+      $staffRow = $stmt->get_result()->fetch_assoc();
+      if ($staffRow) {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $db->prepare("SELECT id FROM fscrm_users WHERE staff_id = ?");
+        $stmt->bind_param('i', $staffId);
+        $stmt->execute();
+        $existing = $stmt->get_result()->fetch_assoc();
+        if ($existing) {
+          $stmt = $db->prepare("UPDATE fscrm_users SET email = ?, password = ? WHERE staff_id = ?");
+          $stmt->bind_param('ssi', $email, $hash, $staffId);
+        } else {
+          $stmt = $db->prepare("INSERT INTO fscrm_users (name, email, password, role, staff_id) VALUES (?, ?, ?, 'staff', ?)");
+          $stmt->bind_param('sssi', $staffRow['name'], $email, $hash, $staffId);
+        }
+        $stmt->execute();
+      }
     }
     header('Location: staff.php');
     exit;
@@ -54,8 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $result = $db->query("SELECT s.*,
   (SELECT COUNT(*) FROM fscrm_tasks WHERE assigned_to = s.id AND status = 'pending') as active_tasks,
   (SELECT COUNT(*) FROM fscrm_tasks WHERE assigned_to = s.id) as total,
-  (SELECT COUNT(*) FROM fscrm_tasks WHERE assigned_to = s.id AND status = 'completed') as completed
-FROM fscrm_staff s ORDER BY name");
+  (SELECT COUNT(*) FROM fscrm_tasks WHERE assigned_to = s.id AND status = 'completed') as completed,
+  u.id as user_id,
+  u.email as user_email
+FROM fscrm_staff s
+LEFT JOIN fscrm_users u ON u.staff_id = s.id
+ORDER BY s.name");
 $staff = [];
 while ($row = $result->fetch_assoc()) {
   $row['completion_rate'] = $row['total'] > 0 ? round(($row['completed'] / $row['total']) * 100) : 0;
@@ -124,10 +160,20 @@ $staffJson = json_encode($staff);
             <div class="flex items-center gap-1.5 text-gray-500"><i data-lucide="clipboard-list" class="w-4 h-4"></i> <span class="font-medium text-navy"><?= (int)$s['active_tasks'] ?></span> Active</div>
             <div class="flex items-center gap-1.5 text-gray-500"><i data-lucide="check-circle" class="w-4 h-4 text-brand"></i> <span class="font-medium text-navy"><?= $s['completion_rate'] ?>%</span></div>
           </div>
-          <div class="w-full bg-gray-100 rounded-full h-2 mb-4">
+          <div class="w-full bg-gray-100 rounded-full h-2 mb-3">
             <div class="bg-brand h-2 rounded-full transition-all" style="width:<?= $s['completion_rate'] ?>%"></div>
           </div>
-          <a href="staff-detail.php?id=<?= $s['id'] ?>" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand/80 transition-colors">View Profile <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
+          <div class="flex items-center justify-between">
+            <a href="staff-detail.php?id=<?= $s['id'] ?>" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand/80 transition-colors">View Profile <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
+            <div class="flex items-center gap-2">
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium <?= $s['user_id'] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' ?>">
+                <?= $s['user_id'] ? 'Has Login' : 'No Login' ?>
+              </span>
+              <button onclick="openPasswordModal(<?= $s['id'] ?>, '<?= htmlspecialchars($s['name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($s['user_email'] ?? '', ENT_QUOTES) ?>')" class="text-xs font-medium text-navy hover:text-brand transition-colors">
+                <i data-lucide="key" class="w-3.5 h-3.5 inline"></i> <?= $s['user_id'] ? 'Reset' : 'Set' ?> Password
+              </button>
+            </div>
+          </div>
         </div>
         <?php endforeach; ?>
       </div>
@@ -226,6 +272,46 @@ $staffJson = json_encode($staff);
     </div>
   </div>
 
+  <!-- Set Password Modal -->
+  <div id="password-modal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeModal(event,'password-modal')">
+    <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl" onclick="event.stopPropagation()">
+      <form method="POST" action="">
+        <?= csrfHiddenField() ?>
+        <input type="hidden" name="set_password" value="1">
+        <input type="hidden" name="staff_id" id="pwd-staff-id" value="">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h3 class="font-semibold text-navy">Set Password</h3>
+          <button type="button" onclick="closeModal(event,'password-modal')" class="text-gray-400 hover:text-gray-600 p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="form-label">Staff</label>
+            <p id="pwd-staff-name" class="text-sm font-medium text-navy bg-gray-50 rounded-lg px-3 py-2"></p>
+          </div>
+          <div>
+            <label class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" name="email" id="pwd-email" required class="form-input w-full" maxlength="255" placeholder="staff@example.com">
+          </div>
+          <div>
+            <label class="form-label">Password <span class="text-danger">*</span></label>
+            <div class="relative">
+              <input type="password" name="password" id="pwd-password" required class="form-input w-full pr-10" minlength="4" placeholder="Minimum 4 characters">
+              <button type="button" onclick="togglePassword()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1">
+                <i data-lucide="eye" id="pwd-eye-icon" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="px-5 py-4 border-t border-gray-100 flex gap-3">
+          <button type="button" onclick="closeModal(event,'password-modal')" class="btn btn-md btn-secondary flex-1">Cancel</button>
+          <button type="submit" class="btn btn-md btn-primary flex-1">Save Login</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     var STAFF_DATA = <?= $staffJson ?>;
 
@@ -249,6 +335,28 @@ $staffJson = json_encode($staff);
       document.getElementById('delete-id').value = id;
       document.getElementById('delete-name').textContent = name;
       document.getElementById('delete-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function openPasswordModal(id, name, email) {
+      document.getElementById('pwd-staff-id').value = id;
+      document.getElementById('pwd-staff-name').textContent = name;
+      document.getElementById('pwd-email').value = email || '';
+      document.getElementById('pwd-password').value = '';
+      document.getElementById('password-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function togglePassword() {
+      var inp = document.getElementById('pwd-password');
+      var icon = document.getElementById('pwd-eye-icon');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        inp.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
       lucide.createIcons();
     }
 
