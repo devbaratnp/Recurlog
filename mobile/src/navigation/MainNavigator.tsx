@@ -194,6 +194,7 @@ export function MainNavigator() {
       <Tab.Screen name="DashboardTab" component={DashboardStack} />
       <Tab.Screen name="CustomersTab" component={CustomerListScreen} />
       <Tab.Screen name="DaybookTab" component={DaybookScreen} />
+      <Tab.Screen name="OrdersStaffTab" component={OrderListScreen} />
       <Tab.Screen name="TasksTab" component={TaskListScreen} />
       <Tab.Screen name="MoreTab" component={DashboardStack} listeners={({ navigation }) => ({ tabPress: (e) => { e.preventDefault(); navigation.navigate('DashboardTab'); } })} />
     </Tab.Navigator>

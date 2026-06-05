@@ -59,6 +59,26 @@ export function DashboardSkeleton() {
   );
 }
 
+export function StaffDashboardSkeleton() {
+  return (
+    <View style={styles.skeletonContainer}>
+      <ShimmerBlock height={56} style={{ marginBottom: SPACING[4] }} />
+      <View style={styles.kpiRow}>
+        {[1, 2, 3].map((i) => (
+          <ShimmerBlock key={i} height={80} style={{ flex: 1 }} />
+        ))}
+      </View>
+      <ShimmerBlock height={90} style={{ marginTop: SPACING[4], marginBottom: SPACING[4] }} />
+      <ShimmerBlock height={200} style={{ marginBottom: SPACING[4] }} />
+      <View style={styles.actionRow}>
+        {[1, 2, 3, 4].map((i) => (
+          <ShimmerBlock key={i} height={70} style={{ flex: 1 }} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   shimmer: {
     backgroundColor: COLORS.neutral200,
@@ -70,5 +90,14 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     gap: SPACING[2],
+  },
+  kpiRow: {
+    flexDirection: 'row',
+    gap: SPACING[2],
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: SPACING[3],
+    marginTop: SPACING[4],
   },
 });

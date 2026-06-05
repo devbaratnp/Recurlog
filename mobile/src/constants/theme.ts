@@ -1,23 +1,23 @@
 export const COLORS = {
-  primary: '#1DB954',
+  primary: '#22C55E',
   primaryDark: '#16a34a',
-  success: '#22C55E',
+  success: '#16A34A',
   danger: '#EF4444',
   warning: '#F59E0B',
   info: '#3B82F6',
   navy: '#0B1E3D',
   amber: '#F59E0B',
 
-  neutral50: '#F9FAFB',
-  neutral100: '#F3F4F6',
-  neutral200: '#E5E7EB',
-  neutral300: '#D1D5DB',
-  neutral400: '#9CA3AF',
-  neutral500: '#6B7280',
-  neutral600: '#4B5563',
-  neutral700: '#374151',
-  neutral800: '#1F2937',
-  neutral900: '#111827',
+  neutral50: '#F8FAFC',
+  neutral100: '#F1F5F9',
+  neutral200: '#E2E8F0',
+  neutral300: '#CBD5E1',
+  neutral400: '#94A3B8',
+  neutral500: '#64748B',
+  neutral600: '#475569',
+  neutral700: '#334155',
+  neutral800: '#1E293B',
+  neutral900: '#0F172A',
 
   white: '#FFFFFF',
   black: '#000000',
@@ -32,8 +32,17 @@ export const COLORS = {
   badgeInfoText: '#1E40AF',
 
   backdrop: 'rgba(0,0,0,0.5)',
-  shadow: 'rgba(0,0,0,0.1)',
-  brandGlow: 'rgba(29,185,84,0.3)',
+  shadow: 'rgba(0,0,0,0.08)',
+  brandGlow: 'rgba(34,197,94,0.3)',
+
+  kpiGreen: '#22C55E',
+  kpiGreenBg: '#F0FDF4',
+  kpiAmber: '#F59E0B',
+  kpiAmberBg: '#FFFBEB',
+  kpiRed: '#EF4444',
+  kpiRedBg: '#FEF2F2',
+  cardBorder: '#E2E8F0',
+  textSecondary: '#64748B',
 };
 
 export const FONTS = {
@@ -72,6 +81,8 @@ export const RADIUS = {
   md: 8,
   lg: 12,
   xl: 16,
+  '2xl': 20,
+  '3xl': 24,
   full: 999,
 };
 
