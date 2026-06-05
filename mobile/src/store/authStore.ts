@@ -53,9 +53,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           const freshUser = data.data;
           await AsyncStorage.setItem(USER_KEY, JSON.stringify(freshUser));
           set({ user: freshUser, isInitialized: true });
-        } catch {
-          set({ user: null, token: null, isInitialized: true });
-          await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_TOKEN_KEY, USER_KEY]);
+        } catch (error: any) {
+          if (error?.response?.status === 401) {
+            set({ user: null, token: null, isInitialized: true });
+            await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_TOKEN_KEY, USER_KEY]);
+          } else {
+            set({ isInitialized: true });
+          }
         }
       } else {
         set({ isInitialized: true });

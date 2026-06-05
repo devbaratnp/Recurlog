@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Image,
+  View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ArrowLeft, Calendar, Clock, User, MapPin, Phone, Tag, Repeat, Wrench, ClipboardCheck, CheckCircle, CheckSquare, Pencil } from 'lucide-react-native';
+import { ArrowLeft, Calendar, User, Phone, ClipboardCheck, CheckCircle, CheckSquare, Pencil } from 'lucide-react-native';
 import { tasksApi } from '../../api/client';
 import { StatusBadge } from '../../components/StatusBadge';
 import { StaffTaskCompleteModal } from '../../components/StaffTaskCompleteModal';
@@ -13,6 +14,7 @@ import type { Task } from '../../types';
 
 export function TaskDetailScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const taskId = route.params?.id;
   const user = useAuthStore((s) => s.user);
@@ -25,8 +27,8 @@ export function TaskDetailScreen() {
     if (!taskId) return;
     try {
       const { data } = await tasksApi.get(taskId);
-      setTask(data.data || null);
-    } catch {} finally { setLoading(false); }
+      setTask(data?.data || null);
+    } catch { Alert.alert('Error', 'Failed to load task'); } finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export function TaskDetailScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
           </TouchableOpacity>
@@ -53,7 +55,7 @@ export function TaskDetailScreen() {
   if (!task) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
           </TouchableOpacity>
@@ -74,7 +76,7 @@ export function TaskDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -218,7 +220,7 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   editBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' },

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft, Plus, Circle, Check as CheckIcon } from 'lucide-react-native';
 import { customersApi, servicesApi, tasksApi } from '../../api/client';
@@ -12,6 +13,7 @@ import type { Customer, Service, Task } from '../../types';
 
 export function CustomerDetailScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const id = route.params?.id;
 
@@ -29,11 +31,11 @@ export function CustomerDetailScreen() {
           servicesApi.list({ customer_id: id }),
           tasksApi.list({ customer_id: id }),
         ]);
-        setCustomer(custRes.data.data);
-        setServices(Array.isArray(svcRes.data.data) ? svcRes.data.data : []);
-        const taskList = Array.isArray(taskRes.data.data) ? taskRes.data.data : [];
+        setCustomer(custRes.data?.data);
+        setServices(Array.isArray(svcRes.data?.data) ? svcRes.data.data : []);
+        const taskList = Array.isArray(taskRes.data?.data) ? taskRes.data.data : [];
         setTasks(taskList.sort((a: any, b: any) => b.scheduledDate.localeCompare(a.scheduledDate)));
-      } catch {} finally { setLoading(false); }
+      } catch { Alert.alert('Error', 'Failed to load customer data'); } finally { setLoading(false); }
     };
     load();
   }, [id]);
@@ -48,7 +50,7 @@ export function CustomerDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
@@ -156,8 +158,8 @@ export function CustomerDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING[4], height: 56, backgroundColor: COLORS.white,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: SPACING[4], backgroundColor: COLORS.white,
     borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },

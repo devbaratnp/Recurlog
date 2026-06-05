@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Plus, ArrowLeft } from 'lucide-react-native';
 import { customersApi } from '../../api/client';
@@ -11,8 +12,8 @@ import type { Customer } from '../../types';
 
 export function CustomerListScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [filtered, setFiltered] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -20,20 +21,19 @@ export function CustomerListScreen() {
   const fetchData = useCallback(async () => {
     try {
       const { data } = await customersApi.list();
-      const list = Array.isArray(data.data) ? data.data : [];
+      const list = Array.isArray(data?.data) ? data.data : [];
       setCustomers(list);
-      setFiltered(list);
-    } catch {} finally {
+    } catch { Alert.alert('Error', 'Failed to load customers'); } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => { fetchData(); }, []);
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) { setFiltered(customers); return; }
-    setFiltered(customers.filter((c) => c.name.toLowerCase().includes(q)));
+    if (!q) return customers;
+    return customers.filter((c) => c.name.toLowerCase().includes(q));
   }, [search, customers]);
 
   const onRefresh = async () => {
@@ -72,7 +72,7 @@ export function CustomerListScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
@@ -97,6 +97,9 @@ export function CustomerListScreen() {
           </View>
         }
         ListEmptyComponent={!loading ? <EmptyState title="No customers found" subtitle="Try adjusting your search" /> : null}
+        windowSize={10}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
       />
     </View>
   );
@@ -106,7 +109,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING[4], height: 56, backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING[4], backgroundColor: COLORS.white,
     borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },

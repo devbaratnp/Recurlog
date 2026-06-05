@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet, Modal, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet, Modal, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, Calendar, User, CheckCircle, X, Filter } from 'lucide-react-native';
 import { tasksApi } from '../../api/client';
@@ -16,10 +17,10 @@ type Tab = 'today' | 'upcoming' | 'missed';
 
 export function TaskListScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const isStaff = user?.role === 'staff';
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [filtered, setFiltered] = useState<Task[]>([]);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('today');
   const [loading, setLoading] = useState(true);
@@ -40,17 +41,17 @@ export function TaskListScreen() {
       if (isStaff && user?.staffId) params.assigned_to = user.staffId;
 
       const { data } = await tasksApi.list(params);
-      const list = Array.isArray(data.data) ? data.data : [];
+      const list = Array.isArray(data?.data) ? data.data : [];
       setTasks(list);
-    } catch {} finally { setLoading(false); }
+    } catch { Alert.alert('Error', 'Failed to load tasks'); } finally { setLoading(false); }
   }, [activeTab]);
 
   useEffect(() => { fetchTasks(); }, [activeTab]);
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) { setFiltered(tasks); return; }
-    setFiltered(tasks.filter((t) => t.title.toLowerCase().includes(q) || (t.customerName || '').toLowerCase().includes(q) || (t.assignedStaffName || '').toLowerCase().includes(q)));
+    if (!q) return tasks;
+    return tasks.filter((t) => t.title.toLowerCase().includes(q) || (t.customerName || '').toLowerCase().includes(q) || (t.assignedStaffName || '').toLowerCase().includes(q));
   }, [search, tasks]);
 
   const onRefresh = async () => { setRefreshing(true); await fetchTasks(); setRefreshing(false); };
@@ -118,7 +119,7 @@ export function TaskListScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -142,6 +143,9 @@ export function TaskListScreen() {
         ListEmptyComponent={
           !loading ? <EmptyState title={emptyMessages[activeTab].title} subtitle={emptyMessages[activeTab].sub} /> : null
         }
+        windowSize={10}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
       />
 
       {isStaff && selectedTask ? (
@@ -190,7 +194,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

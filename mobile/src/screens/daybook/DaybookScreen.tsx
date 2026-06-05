@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StyleSheet, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StyleSheet, TextInput, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, ChevronLeft, ChevronRight, Calendar, CheckCircle, ClipboardList } from 'lucide-react-native';
 import { tasksApi, ordersApi } from '../../api/client';
@@ -11,6 +12,7 @@ import type { Task, Order } from '../../types';
 
 export function DaybookScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState(todayISO());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -26,10 +28,10 @@ export function DaybookScreen() {
       setTasks(Array.isArray(taskRes.data?.data) ? taskRes.data.data : []);
       const allOrders = Array.isArray(orderRes.data?.data) ? orderRes.data.data : [];
       setOrders(allOrders.filter((o: Order) => o.scheduledDate === selectedDate || o.completedDate === selectedDate));
-    } catch {} finally { setLoading(false); }
+    } catch { Alert.alert('Error', 'Failed to load daybook'); } finally { setLoading(false); }
   }, [selectedDate]);
 
-  useEffect(() => { fetchData(); }, [selectedDate]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const onRefresh = async () => { setRefreshing(true); await fetchData(); setRefreshing(false); };
 
@@ -62,7 +64,7 @@ export function DaybookScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -184,7 +186,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

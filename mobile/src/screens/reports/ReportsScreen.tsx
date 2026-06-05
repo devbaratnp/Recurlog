@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { tasksApi, staffApi, categoriesApi } from '../../api/client';
@@ -11,6 +12,7 @@ import type { Task, Staff, Category } from '../../types';
 
 export function ReportsScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -24,10 +26,10 @@ export function ReportsScreen() {
         staffApi.list(),
         categoriesApi.list(),
       ]);
-      setAllTasks(Array.isArray(taskRes.data.data) ? taskRes.data.data : []);
-      setStaff(Array.isArray(staffRes.data.data) ? staffRes.data.data : []);
-      setCategories(Array.isArray(catRes.data.data) ? catRes.data.data : []);
-    } catch {} finally { setLoading(false); }
+      setAllTasks(Array.isArray(taskRes.data?.data) ? taskRes.data.data : []);
+      setStaff(Array.isArray(staffRes.data?.data) ? staffRes.data.data : []);
+      setCategories(Array.isArray(catRes.data?.data) ? catRes.data.data : []);
+    } catch { Alert.alert('Error', 'Failed to load reports'); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchData(); }, []);
@@ -52,7 +54,7 @@ export function ReportsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -137,7 +139,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

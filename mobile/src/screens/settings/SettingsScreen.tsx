@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { ArrowLeft, LogOut, Bell, Globe, Monitor, Download, Trash2 } from 'lucide-react-native';
+import { ArrowLeft, LogOut, Bell, Globe, Monitor, Download } from 'lucide-react-native';
 import { useAuthStore } from '../../store/authStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 
@@ -21,6 +22,7 @@ function SettingsRow({ icon, title, subtitle, children }: { icon: React.ReactNod
 
 export function SettingsScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
@@ -34,7 +36,7 @@ export function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
@@ -100,7 +102,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },

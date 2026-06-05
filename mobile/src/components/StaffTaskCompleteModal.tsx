@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Modal, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
+  Modal, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { tasksApi } from '../api/client';
@@ -44,7 +44,7 @@ export function StaffTaskCompleteModal({ visible, task, onClose, onComplete }: S
       } as any);
       reset();
       onComplete();
-    } catch {} finally {
+    } catch { Alert.alert('Error', 'Failed to complete task'); } finally {
       setSubmitting(false);
     }
   };

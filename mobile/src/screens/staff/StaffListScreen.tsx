@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl, Image, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, Image, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { staffApi, tasksApi } from '../../api/client';
@@ -9,6 +10,7 @@ import type { Staff, Task } from '../../types';
 
 export function StaffListScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const [staff, setStaff] = useState<(Staff & { completionRate?: number; activeTaskCount?: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -16,8 +18,8 @@ export function StaffListScreen() {
   const fetchStaff = useCallback(async () => {
     try {
       const [staffRes, taskRes] = await Promise.all([staffApi.list(), tasksApi.list()]);
-      const staffList = Array.isArray(staffRes.data.data) ? staffRes.data.data : [];
-      const allTasks = Array.isArray(taskRes.data.data) ? taskRes.data.data : [];
+      const staffList = Array.isArray(staffRes.data?.data) ? staffRes.data.data : [];
+      const allTasks = Array.isArray(taskRes.data?.data) ? taskRes.data.data : [];
 
       const enriched = staffList.map((s: Staff) => {
         const staffTasks = allTasks.filter((t: Task) => t.assignedTo === s.id);
@@ -30,7 +32,7 @@ export function StaffListScreen() {
         };
       });
       setStaff(enriched);
-    } catch {} finally { setLoading(false); }
+    } catch { Alert.alert('Error', 'Failed to load staff'); } finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchStaff(); }, []);
@@ -59,7 +61,7 @@ export function StaffListScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -73,6 +75,9 @@ export function StaffListScreen() {
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
         ListEmptyComponent={!loading ? <EmptyState title="No staff found" /> : null}
+        windowSize={10}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
       />
     </View>
   );
@@ -82,7 +87,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

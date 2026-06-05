@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { tasksApi, staffApi } from '../../api/client';
@@ -10,6 +11,7 @@ import type { Task } from '../../types';
 
 export function TaskEditScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const taskId = route.params?.id as number;
   const user = useAuthStore((s) => s.user);
@@ -51,7 +53,7 @@ export function TaskEditScreen() {
       await tasksApi.update(taskId, {
         title: title.trim(),
         status,
-        assignedTo,
+        assignedTo: assignedTo ?? undefined,
         scheduledDate,
         notes: notes.trim(),
       });
@@ -66,7 +68,7 @@ export function TaskEditScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
           </TouchableOpacity>
@@ -87,7 +89,7 @@ export function TaskEditScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Plus, Wrench, Calendar, Bell } from 'lucide-react-native';
 import { useAuthStore } from '../../store/authStore';
@@ -20,6 +21,7 @@ interface DashStat {
 
 export function DashboardScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const { unreadCount } = useNotificationStore();
   const [loading, setLoading] = useState(true);
@@ -88,7 +90,7 @@ export function DashboardScreen() {
         today: oneTimeTasks.filter((t: any) => t.scheduledDate === today && t.status === 'pending').length,
         tomorrow: oneTimeTasks.filter((t: any) => t.scheduledDate === tomorrowStr && t.status === 'pending').length,
       });
-    } catch {}
+    } catch { Alert.alert('Error', 'Failed to load dashboard'); }
   }, []);
 
   useEffect(() => {
@@ -116,7 +118,7 @@ export function DashboardScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
           <View style={styles.headerLeft}>
             <View style={styles.logoSmall}>
               <Wrench size={16} color={COLORS.white} />
@@ -139,7 +141,7 @@ export function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <View style={styles.headerLeft}>
           <View style={styles.logoSmall}>
             <Wrench size={16} color={COLORS.white} />
@@ -258,7 +260,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING[4],
-    height: 56,
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.neutral200,

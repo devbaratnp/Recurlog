@@ -53,7 +53,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       );
       const unreadCount = notifications.filter((n) => !n.isRead).length;
       set({ notifications, unreadCount });
-    } catch {}
+    } catch (e) { console.error('Failed to mark notification as read', e); }
   },
 
   markAllRead: async () => {
@@ -61,6 +61,6 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       await notificationsApi.markAllRead();
       const notifications = get().notifications.map((n) => ({ ...n, isRead: true }));
       set({ notifications, unreadCount: 0 });
-    } catch {}
+    } catch (e) { console.error('Failed to mark all notifications as read', e); }
   },
 }));

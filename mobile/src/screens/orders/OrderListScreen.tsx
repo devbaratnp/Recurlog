@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, Calendar, User, Plus } from 'lucide-react-native';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
@@ -14,10 +15,10 @@ import { EmptyState } from '../../components/EmptyState';
 
 export function OrderListScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const isStaff = user?.role === 'staff';
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filtered, setFiltered] = useState<Order[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -27,17 +28,17 @@ export function OrderListScreen() {
       const params: any = {};
       if (isStaff && user?.staffId) params.assigned_to = String(user.staffId);
       const { data } = await ordersApi.list(params);
-      const list = Array.isArray(data.data) ? data.data : [];
+      const list = Array.isArray(data?.data) ? data.data : [];
       setOrders(list);
-    } catch {} finally { setLoading(false); }
+    } catch { Alert.alert('Error', 'Failed to load orders'); } finally { setLoading(false); }
   }, [isStaff, user?.staffId]);
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) { setFiltered(orders); return; }
-    setFiltered(orders.filter((o) => o.customerName.toLowerCase().includes(q) || o.serviceFor.toLowerCase().includes(q)));
+    if (!q) return orders;
+    return orders.filter((o) => o.customerName.toLowerCase().includes(q) || o.serviceFor.toLowerCase().includes(q));
   }, [search, orders]);
 
   const onRefresh = async () => { setRefreshing(true); await fetchOrders(); setRefreshing(false); };
@@ -68,7 +69,7 @@ export function OrderListScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -87,6 +88,9 @@ export function OrderListScreen() {
           </View>
         }
         ListEmptyComponent={!loading ? <EmptyState title="No orders found" /> : null}
+        windowSize={10}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
       />
     </View>
   );
@@ -96,7 +100,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

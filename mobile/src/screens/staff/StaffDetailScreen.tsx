@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { staffApi, tasksApi } from '../../api/client';
@@ -11,6 +12,7 @@ import type { Staff, Task } from '../../types';
 
 export function StaffDetailScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const id = route.params?.id;
 
@@ -26,10 +28,10 @@ export function StaffDetailScreen() {
           staffApi.get(id),
           tasksApi.list({ assigned_to: id }),
         ]);
-        setStaff(staffRes.data.data);
-        const list = Array.isArray(taskRes.data.data) ? taskRes.data.data : [];
+        setStaff(staffRes.data?.data);
+        const list = Array.isArray(taskRes.data?.data) ? taskRes.data.data : [];
         setTasks(list.sort((a: any, b: any) => b.scheduledDate.localeCompare(a.scheduledDate)));
-      } catch {} finally { setLoading(false); }
+      } catch { Alert.alert('Error', 'Failed to load staff data'); } finally { setLoading(false); }
     };
     load();
   }, [id]);
@@ -49,7 +51,7 @@ export function StaffDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   backBtn: { padding: 8, minWidth: 44 },

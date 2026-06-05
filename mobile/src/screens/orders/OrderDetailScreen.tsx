@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, TextInput, Modal } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft, User, Calendar as CalendarIcon } from 'lucide-react-native';
 import { ordersApi, staffApi } from '../../api/client';
@@ -11,6 +12,7 @@ import type { Order } from '../../types';
 
 export function OrderDetailScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const id = route.params?.id;
 
@@ -34,14 +36,14 @@ export function OrderDetailScreen() {
   useEffect(() => {
     if (!id) { navigation.goBack(); return; }
     Promise.all([ordersApi.get(id), staffApi.list()]).then(([o, s]) => {
-      setOrder(o.data.data);
+      setOrder(o.data?.data);
       setStaff(Array.isArray(s.data?.data) ? s.data.data : []);
     }).catch(() => navigation.goBack()).finally(() => setLoading(false));
   }, [id]);
 
   const refreshOrder = async () => {
     const { data } = await ordersApi.get(id);
-    setOrder(data.data);
+    setOrder(data?.data);
   };
 
   const handleAssign = async () => {
@@ -82,7 +84,7 @@ export function OrderDetailScreen() {
         try {
           await ordersApi.update(id, { status: 'cancelled' });
           await refreshOrder();
-        } catch {}
+        } catch { Alert.alert('Error', 'Failed to cancel order'); }
       }},
     ]);
   };
@@ -97,7 +99,7 @@ export function OrderDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -231,7 +233,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

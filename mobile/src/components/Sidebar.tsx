@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Animated, Dimensions, StatusBar,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Animated, Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {

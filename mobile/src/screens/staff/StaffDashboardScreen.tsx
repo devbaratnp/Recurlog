@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  View, Text, ScrollView, RefreshControl, StyleSheet,
+  View, Text, ScrollView, RefreshControl, StyleSheet, Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../store/authStore';
@@ -58,7 +58,7 @@ export function StaffDashboardScreen() {
       setUpcomingTasks(allUpcoming.filter((t) => t.scheduledDate > today && t.status === 'pending').slice(0, 30));
       setAllTasks(allRecent);
       setAssignedOrders(allOrders.filter((o) => o.status === 'pending' || o.status === 'assigned'));
-    } catch {} finally { setLoading(false); }
+    } catch { Alert.alert('Error', 'Failed to load dashboard'); } finally { setLoading(false); }
   }, [user?.staffId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);

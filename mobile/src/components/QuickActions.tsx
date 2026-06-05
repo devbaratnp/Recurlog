@@ -1,4 +1,4 @@
-import { memo, useRef, useCallback } from 'react';
+import { memo, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
 import { MapPin, ClipboardList, Users, BookOpen } from 'lucide-react-native';
 import { COLORS, RADIUS, SPACING, FONT_SIZES } from '../constants/theme';
