@@ -172,6 +172,7 @@ function statusPillShort($status) {
                     <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Staff</th>
                     <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Date</th>
                     <th class="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Status</th>
+                    <th class="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -184,6 +185,11 @@ function statusPillShort($status) {
                     <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['staff_name'] ?: '—') ?></td>
                     <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['scheduled_date']) ?></td>
                     <td class="px-4 py-3 text-center"><?= statusPillShort($t['status']) ?></td>
+                    <td class="px-4 py-3 text-right">
+                      <a href="task-edit.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-ghost p-1.5" title="Edit">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      </a>
+                    </td>
                   </tr>
                   <?php endforeach; ?>
                 </tbody>
