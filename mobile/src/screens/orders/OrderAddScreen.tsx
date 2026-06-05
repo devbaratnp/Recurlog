@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ArrowLeft, Check } from 'lucide-react-native';
+import { ArrowLeft } from 'lucide-react-native';
 import { ordersApi, customersApi, staffApi } from '../../api/client';
+import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import { todayISO } from '../../utils/date';
 
 export function OrderAddScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const editId = route.params?.id;
 
@@ -23,9 +26,6 @@ export function OrderAddScreen() {
 
   const [customers, setCustomers] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
-  const [customerSearch, setCustomerSearch] = useState('');
-  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
-  const [showStaffDropdown, setShowStaffDropdown] = useState(false);
 
   useEffect(() => {
     Promise.all([customersApi.list(), staffApi.list()]).then(([c, s]) => {
@@ -33,10 +33,6 @@ export function OrderAddScreen() {
       setStaff(Array.isArray(s.data?.data) ? s.data.data : []);
     });
   }, []);
-
-  const filteredCustomers = customers.filter((c: any) =>
-    c.name?.toLowerCase().includes(customerSearch.toLowerCase())
-  );
 
   const handleSave = async () => {
     if (!customerId) { Alert.alert('Validation', 'Please select a customer.'); return; }
@@ -64,7 +60,7 @@ export function OrderAddScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -77,35 +73,18 @@ export function OrderAddScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Customer</Text>
-          <TextInput
-            style={styles.input}
-            value={customerSearch}
-            onChangeText={(t) => { setCustomerSearch(t); setShowCustomerDropdown(true); }}
+          <SearchableDropdown
+            items={customers}
+            selectedId={customerId}
+            onSelect={(item) => {
+              if (item) {
+                setCustomerId(Number(item.id));
+                setCustomerName(item.name);
+              }
+            }}
             placeholder="Search customers..."
-            placeholderTextColor={COLORS.neutral400}
+            emptyText="No customers found"
           />
-          {showCustomerDropdown && customerSearch.length > 0 && (
-            <View style={styles.dropdown}>
-              {filteredCustomers.map((c: any) => (
-                <TouchableOpacity
-                  key={c.id}
-                  style={[styles.dropdownItem, customerId === c.id && styles.dropdownItemActive]}
-                  onPress={() => {
-                    setCustomerId(c.id);
-                    setCustomerName(c.name);
-                    setCustomerSearch(c.name);
-                    setShowCustomerDropdown(false);
-                  }}
-                >
-                  <Text style={styles.dropdownItemText}>{c.name}</Text>
-                  {customerId === c.id && <Check size={16} color={COLORS.primary} />}
-                </TouchableOpacity>
-              ))}
-              {filteredCustomers.length === 0 && (
-                <Text style={styles.dropdownEmpty}>No customers found</Text>
-              )}
-            </View>
-          )}
         </View>
 
         <View style={styles.fieldGroup}>
@@ -138,28 +117,14 @@ export function OrderAddScreen() {
 
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Assign To</Text>
-          <TouchableOpacity style={styles.selectBtn} onPress={() => setShowStaffDropdown(!showStaffDropdown)}>
-            <Text style={assignedTo ? styles.selectText : styles.selectPlaceholder}>
-              {assignedTo ? staff.find((s: any) => s.id === assignedTo)?.name || 'Selected' : 'Select staff...'}
-            </Text>
-          </TouchableOpacity>
-          {showStaffDropdown && (
-            <View style={styles.dropdown}>
-              <TouchableOpacity style={styles.dropdownItem} onPress={() => { setAssignedTo(null); setShowStaffDropdown(false); }}>
-                <Text style={styles.dropdownItemText}>Unassigned</Text>
-              </TouchableOpacity>
-              {staff.map((s: any) => (
-                <TouchableOpacity
-                  key={s.id}
-                  style={[styles.dropdownItem, assignedTo === s.id && styles.dropdownItemActive]}
-                  onPress={() => { setAssignedTo(s.id); setShowStaffDropdown(false); }}
-                >
-                  <Text style={styles.dropdownItemText}>{s.name}</Text>
-                  {assignedTo === s.id && <Check size={16} color={COLORS.primary} />}
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <SearchableDropdown
+            items={staff}
+            selectedId={assignedTo}
+            onSelect={(item) => setAssignedTo(item ? Number(item.id) : null)}
+            placeholder="Select staff..."
+            emptyText="No staff found"
+            allowClear
+          />
         </View>
 
         <View style={styles.fieldGroup}>
@@ -180,7 +145,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING[4], height: 56, backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING[4], backgroundColor: COLORS.white,
     borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
@@ -207,21 +172,4 @@ const styles = StyleSheet.create({
   toggleActiveDanger: { backgroundColor: COLORS.danger, borderColor: COLORS.danger },
   toggleText: { fontSize: FONT_SIZES.sm, fontWeight: '500', color: COLORS.neutral600 },
   toggleTextActive: { color: COLORS.white },
-  selectBtn: {
-    height: 44, borderWidth: 1, borderColor: COLORS.neutral200, borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING[4], justifyContent: 'center', backgroundColor: COLORS.white,
-  },
-  selectText: { fontSize: FONT_SIZES.sm, color: COLORS.neutral900 },
-  selectPlaceholder: { fontSize: FONT_SIZES.sm, color: COLORS.neutral400 },
-  dropdown: {
-    marginTop: 4, borderWidth: 1, borderColor: COLORS.neutral200, borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.white, maxHeight: 200, overflow: 'hidden',
-  },
-  dropdownItem: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING[4], paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.neutral50,
-  },
-  dropdownItemActive: { backgroundColor: COLORS.primary + '10' },
-  dropdownItemText: { fontSize: FONT_SIZES.sm, color: COLORS.neutral800 },
-  dropdownEmpty: { padding: SPACING[4], fontSize: FONT_SIZES.sm, color: COLORS.neutral400, textAlign: 'center' },
 });

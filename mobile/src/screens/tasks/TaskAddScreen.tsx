@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { tasksApi, customersApi, staffApi, servicesApi } from '../../api/client';
+import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import { todayISO } from '../../utils/date';
 
 export function TaskAddScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   const [customerId, setCustomerId] = useState<number | null>(null);
-  const [customerSearch, setCustomerSearch] = useState('');
   const [customers, setCustomers] = useState<any[]>([]);
-  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
 
   const [title, setTitle] = useState('');
   const [problem, setProblem] = useState('');
@@ -24,7 +25,6 @@ export function TaskAddScreen() {
 
   const [assignedTo, setAssignedTo] = useState<number | null>(null);
   const [staff, setStaff] = useState<any[]>([]);
-  const [showStaffDropdown, setShowStaffDropdown] = useState(false);
 
   const [scheduledDate, setScheduledDate] = useState(todayISO());
   const [notes, setNotes] = useState('');
@@ -36,10 +36,6 @@ export function TaskAddScreen() {
       setStaff(Array.isArray(s.data?.data) ? s.data.data : []);
     });
   }, []);
-
-  const filteredCustomers = customers.filter((c: any) =>
-    c.name?.toLowerCase().includes(customerSearch.toLowerCase())
-  );
 
   const handleSave = async () => {
     if (!customerId) { Alert.alert('Validation', 'Please select a customer.'); return; }
@@ -74,7 +70,7 @@ export function TaskAddScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
@@ -84,28 +80,15 @@ export function TaskAddScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Customer</Text>
-          <TextInput
-            style={styles.input}
-            value={customerSearch}
-            onChangeText={(t) => { setCustomerSearch(t); setShowCustomerDropdown(true); }}
+          <SearchableDropdown
+            items={customers}
+            selectedId={customerId}
+            onSelect={(item) => {
+              if (item) setCustomerId(Number(item.id));
+            }}
             placeholder="Search customers..."
-            placeholderTextColor={COLORS.neutral400}
+            emptyText="No customers found"
           />
-          {showCustomerDropdown && customerSearch.length > 0 && (
-            <View style={styles.dropdown}>
-              {filteredCustomers.map((c: any) => (
-                <TouchableOpacity
-                  key={c.id}
-                  style={[styles.dropdownItem, customerId === c.id && styles.dropdownItemActive]}
-                  onPress={() => {
-                    setCustomerId(c.id); setCustomerSearch(c.name); setShowCustomerDropdown(false);
-                  }}
-                >
-                  <Text style={styles.dropdownItemText}>{c.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
         </View>
 
         <View style={styles.fieldGroup}>
@@ -201,27 +184,14 @@ export function TaskAddScreen() {
 
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Assign To</Text>
-          <TouchableOpacity style={styles.selectBtn} onPress={() => setShowStaffDropdown(!showStaffDropdown)}>
-            <Text style={assignedTo ? styles.selectText : styles.selectPlaceholder}>
-              {assignedTo ? staff.find((s: any) => s.id === assignedTo)?.name || 'Selected' : 'Select staff...'}
-            </Text>
-          </TouchableOpacity>
-          {showStaffDropdown && (
-            <View style={styles.dropdown}>
-              <TouchableOpacity style={styles.dropdownItem} onPress={() => { setAssignedTo(null); setShowStaffDropdown(false); }}>
-                <Text style={styles.dropdownItemText}>Unassigned</Text>
-              </TouchableOpacity>
-              {staff.map((s: any) => (
-                <TouchableOpacity
-                  key={s.id}
-                  style={[styles.dropdownItem, assignedTo === s.id && styles.dropdownItemActive]}
-                  onPress={() => { setAssignedTo(s.id); setShowStaffDropdown(false); }}
-                >
-                  <Text style={styles.dropdownItemText}>{s.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <SearchableDropdown
+            items={staff}
+            selectedId={assignedTo}
+            onSelect={(item) => setAssignedTo(item ? Number(item.id) : null)}
+            placeholder="Select staff..."
+            emptyText="No staff found"
+            allowClear
+          />
         </View>
 
         <View style={styles.fieldGroup}>
@@ -246,7 +216,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING[4],
-    height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
+    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },

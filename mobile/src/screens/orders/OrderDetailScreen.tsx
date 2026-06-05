@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft, User, Calendar as CalendarIcon } from 'lucide-react-native';
 import { ordersApi, staffApi } from '../../api/client';
+import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { PriorityBadge } from '../../components/PriorityBadge';
 import { StatusBadge } from '../../components/StatusBadge';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
@@ -173,15 +174,14 @@ export function OrderDetailScreen() {
             <Text style={styles.modalTitle}>Assign Staff</Text>
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Staff Member</Text>
-              {staff.map((s: any) => (
-                <TouchableOpacity
-                  key={s.id}
-                  style={[styles.assignOption, assignStaff === s.id && styles.assignOptionActive]}
-                  onPress={() => setAssignStaff(s.id)}
-                >
-                  <Text style={[styles.assignOptionText, assignStaff === s.id && styles.assignOptionTextActive]}>{s.name}</Text>
-                </TouchableOpacity>
-              ))}
+              <SearchableDropdown
+                items={staff}
+                selectedId={assignStaff}
+                onSelect={(item) => setAssignStaff(item ? Number(item.id) : null)}
+                placeholder="Search staff..."
+                emptyText="No staff found"
+                allowClear
+              />
             </View>
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Scheduled Date</Text>
@@ -276,13 +276,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING[4], fontSize: FONT_SIZES.sm, color: COLORS.neutral900, backgroundColor: COLORS.white,
   },
   textArea: { height: 80, paddingVertical: SPACING[3], textAlignVertical: 'top' },
-  assignOption: {
-    paddingVertical: 12, paddingHorizontal: SPACING[4], borderRadius: RADIUS.lg,
-    borderWidth: 1, borderColor: COLORS.neutral200, marginBottom: 6,
-  },
-  assignOptionActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  assignOptionText: { fontSize: FONT_SIZES.sm, color: COLORS.neutral800 },
-  assignOptionTextActive: { color: COLORS.white, fontWeight: '600' },
   modalBtn: {
     paddingVertical: 14, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary, alignItems: 'center', marginTop: 8,
   },

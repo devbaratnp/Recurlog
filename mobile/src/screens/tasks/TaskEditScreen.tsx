@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { tasksApi, staffApi } from '../../api/client';
+import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { useAuthStore } from '../../store/authStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import { todayISO } from '../../utils/date';
@@ -21,7 +22,6 @@ export function TaskEditScreen() {
   const [status, setStatus] = useState<'pending' | 'completed' | 'missed'>('pending');
   const [assignedTo, setAssignedTo] = useState<number | null>(null);
   const [staff, setStaff] = useState<any[]>([]);
-  const [showStaffDropdown, setShowStaffDropdown] = useState(false);
   const [scheduledDate, setScheduledDate] = useState(todayISO());
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
@@ -124,27 +124,14 @@ export function TaskEditScreen() {
 
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Assign To</Text>
-          <TouchableOpacity style={styles.selectBtn} onPress={() => setShowStaffDropdown(!showStaffDropdown)}>
-            <Text style={assignedTo ? styles.selectText : styles.selectPlaceholder}>
-              {assignedTo ? staff.find((s: any) => s.id === assignedTo)?.name || 'Selected' : 'Unassigned'}
-            </Text>
-          </TouchableOpacity>
-          {showStaffDropdown && (
-            <View style={styles.dropdown}>
-              <TouchableOpacity style={styles.dropdownItem} onPress={() => { setAssignedTo(null); setShowStaffDropdown(false); }}>
-                <Text style={styles.dropdownItemText}>Unassigned</Text>
-              </TouchableOpacity>
-              {staff.map((s: any) => (
-                <TouchableOpacity
-                  key={s.id}
-                  style={[styles.dropdownItem, assignedTo === s.id && styles.dropdownItemActive]}
-                  onPress={() => { setAssignedTo(s.id); setShowStaffDropdown(false); }}
-                >
-                  <Text style={styles.dropdownItemText}>{s.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <SearchableDropdown
+            items={staff}
+            selectedId={assignedTo}
+            onSelect={(item) => setAssignedTo(item ? Number(item.id) : null)}
+            placeholder="Select staff..."
+            emptyText="No staff found"
+            allowClear
+          />
         </View>
 
         <View style={styles.fieldGroup}>
@@ -184,22 +171,6 @@ const styles = StyleSheet.create({
   toggleActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   toggleText: { fontSize: FONT_SIZES.sm, fontWeight: '500', color: COLORS.neutral600 },
   toggleTextActive: { color: COLORS.white },
-  selectBtn: {
-    height: 44, borderWidth: 1, borderColor: COLORS.neutral200, borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING[4], justifyContent: 'center', backgroundColor: COLORS.white,
-  },
-  selectText: { fontSize: FONT_SIZES.sm, color: COLORS.neutral900 },
-  selectPlaceholder: { fontSize: FONT_SIZES.sm, color: COLORS.neutral400 },
-  dropdown: {
-    marginTop: 4, borderWidth: 1, borderColor: COLORS.neutral200, borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.white, maxHeight: 200, overflow: 'hidden',
-  },
-  dropdownItem: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING[4], paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.neutral50,
-  },
-  dropdownItemActive: { backgroundColor: COLORS.primary + '10' },
-  dropdownItemText: { fontSize: FONT_SIZES.sm, color: COLORS.neutral800 },
   saveBtn: {
     paddingVertical: 14, borderRadius: RADIUS.lg, backgroundColor: COLORS.primary,
     alignItems: 'center', marginTop: 8,
