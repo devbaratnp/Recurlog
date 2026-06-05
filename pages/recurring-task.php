@@ -88,12 +88,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $customers = $db->query("SELECT id, name FROM fscrm_customers ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 $staffList = $db->query("SELECT id, name FROM fscrm_staff ORDER BY name")->fetch_all(MYSQLI_ASSOC);
+
+// Fetch recurring tasks
+$rtResult = $db->query("
+  SELECT t.*, c.name AS customer_name, s.name AS staff_name
+  FROM fscrm_tasks t
+  LEFT JOIN fscrm_customers c ON t.customer_id = c.id
+  LEFT JOIN fscrm_staff s ON t.assigned_to = s.id
+  LEFT JOIN fscrm_services sv ON t.service_id = sv.id
+  WHERE sv.is_recurring = 1
+  ORDER BY t.scheduled_date DESC
+  LIMIT 100
+");
+$recurringTasks = $rtResult ? $rtResult->fetch_all(MYSQLI_ASSOC) : [];
+
+function statusPillShort($status) {
+  $map = ['pending'=>'#FEF3C7:#92400E','completed'=>'#D1FAE5:#065F46','missed'=>'#FEE2E2:#991B1B'];
+  $cfg = explode(':', $map[$status] ?? $map['pending']);
+  return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:'.$cfg[0].';color:'.$cfg[1].'">'.ucfirst($status).'</span>';
+}
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Recurring Task - Recurlog</title>
+  <title>Recurring Tasks - Recurlog</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
@@ -118,18 +137,69 @@ $staffList = $db->query("SELECT id, name FROM fscrm_staff ORDER BY name")->fetch
 <body class="bg-gray-50 min-h-screen font-sans">
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
 <div class="page-content">
-    <header class="page-header">
-      <div class="page-header-inner">
-        <div class="flex items-center gap-2">
-          <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
-            <i data-lucide="menu" class="w-5 h-5"></i>
+      <header class="page-header">
+        <div class="page-header-inner">
+          <div class="flex items-center gap-2">
+            <button onclick="toggleSidebar()" class="sidebar-toggle-btn" aria-label="Toggle menu">
+              <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            <h1 class="page-title">Recurring Tasks</h1>
+          </div>
+          <button id="show-add-form" class="btn btn-sm btn-primary flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> New
           </button>
-          <h1 class="page-title">Recurring Task</h1>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <div class="p-4 md:p-6 lg:p-8 max-w-3xl mx-auto">
+    <div class="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
+
+      <!-- Task List -->
+      <div id="task-list-section">
+        <?php if (empty($recurringTasks)): ?>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center mb-4">
+            <i data-lucide="repeat" class="w-10 h-10 text-gray-300 mx-auto mb-3"></i>
+            <p class="text-gray-500 mb-3">No recurring tasks yet.</p>
+            <button onclick="document.getElementById('show-add-form').click()" class="btn btn-sm btn-primary">Create First Task</button>
+          </div>
+        <?php else: ?>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="bg-gray-50 border-b border-gray-100">
+                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Task</th>
+                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Customer</th>
+                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Staff</th>
+                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Date</th>
+                    <th class="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($recurringTasks as $t): ?>
+                  <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <td class="px-4 py-3">
+                      <a href="task-detail.php?id=<?= $t['id'] ?>" class="font-medium text-navy hover:text-brand transition-colors"><?= htmlspecialchars($t['title']) ?></a>
+                    </td>
+                    <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['customer_name'] ?: '—') ?></td>
+                    <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['staff_name'] ?: '—') ?></td>
+                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['scheduled_date']) ?></td>
+                    <td class="px-4 py-3 text-center"><?= statusPillShort($t['status']) ?></td>
+                  </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- Add Form (hidden by default) -->
+      <div id="add-form-section" class="hidden">
+      <div class="flex items-center gap-2 mb-4">
+        <button id="hide-add-form" class="text-sm text-gray-500 hover:text-navy flex items-center gap-1">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to list
+        </button>
+      </div>
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <form method="POST" id="rt-form"><?= csrfHiddenField() ?>
         <div class="p-5 md:p-7 space-y-6">
@@ -295,9 +365,37 @@ $staffList = $db->query("SELECT id, name FROM fscrm_staff ORDER BY name")->fetch
         </form>
       </div>
     </div>
+    </div>
   </div>
 
   <script>
+    // ===== Toggle list/add-form =====
+    document.addEventListener('DOMContentLoaded', function () {
+      var listSection = document.getElementById('task-list-section');
+      var formSection = document.getElementById('add-form-section');
+      var showBtn = document.getElementById('show-add-form');
+      var hideBtn = document.getElementById('hide-add-form');
+      var formInited = false;
+      if (showBtn) showBtn.addEventListener('click', function () {
+        listSection.classList.add('hidden'); formSection.classList.remove('hidden');
+        if (!formInited) {
+          formInited = true;
+          var now = new Date();
+          var d = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+          var dateInput = document.getElementById('rt-date');
+          if (dateInput) dateInput.value = d;
+          initSignaturePad();
+          // Trigger recurrence preview
+          var updateFn = document.getElementById('rt-rec-preview');
+          if (updateFn) updateFn.textContent = 'Every 1 days from Last Done Date';
+        }
+      });
+      if (hideBtn) hideBtn.addEventListener('click', function () {
+        formSection.classList.add('hidden'); listSection.classList.remove('hidden');
+      });
+      // Update recurrence preview on the fly (for when init happens)
+    });
+
     // ===== Signature pad =====
     var sigCanvas = null, sigCtx = null, sigDrawing = false, sigHasInk = false;
 
@@ -333,13 +431,6 @@ $staffList = $db->query("SELECT id, name FROM fscrm_staff ORDER BY name")->fetch
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-      // Default date
-      var now = new Date();
-      var d = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-      document.getElementById('rt-date').value = d;
-
-      initSignaturePad();
-
       // Save signature data before form submit
       document.getElementById('rt-form').addEventListener('submit', async function (e) {
         e.preventDefault();

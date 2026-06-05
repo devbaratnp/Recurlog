@@ -84,7 +84,7 @@ export function TaskListScreen() {
   );
 
   const renderTask = ({ item }: { item: Task }) => (
-    <TouchableOpacity style={[styles.taskCard, SHADOWS.sm]} onPress={() => navigation.navigate('TaskDetail', { id: item.id })}>
+    <TouchableOpacity style={[styles.taskCard, SHADOWS.sm]} onPress={() => navigation.navigate('DashboardTab', { screen: 'TaskDetail', params: { id: item.id } })}>
       <View style={styles.taskContent}>
         <View style={{ flex: 1 }}>
           <Text style={styles.taskTitle}>{item.title}</Text>

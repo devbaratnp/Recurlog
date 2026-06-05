@@ -173,7 +173,7 @@ export function StaffDashboardScreen() {
           ) : (
             todayTasks.map((task) => (
               <View key={task.id} style={styles.taskRow}>
-                <TouchableOpacity style={styles.taskInfo} onPress={() => navigation.navigate('TaskDetail', { id: task.id })}>
+                <TouchableOpacity style={styles.taskInfo} onPress={() => navigation.navigate('DashboardTab', { screen: 'TaskDetail', params: { id: task.id } })}>
                   <Text style={styles.taskTitle}>{task.title}</Text>
                   <Text style={styles.taskMeta}>{task.customerName || `Customer #${task.customerId}`}</Text>
                 </TouchableOpacity>
@@ -204,7 +204,7 @@ export function StaffDashboardScreen() {
             </View>
           ) : (
             upcomingTasks.map((task) => (
-              <TouchableOpacity key={task.id} style={styles.taskRow} onPress={() => navigation.navigate('TaskDetail', { id: task.id })}>
+              <TouchableOpacity key={task.id} style={styles.taskRow} onPress={() => navigation.navigate('DashboardTab', { screen: 'TaskDetail', params: { id: task.id } })}>
                 <View style={styles.taskInfo}>
                   <Text style={styles.taskTitle}>{task.title}</Text>
                   <Text style={styles.taskMeta}>
@@ -259,7 +259,7 @@ export function StaffDashboardScreen() {
             </View>
           ) : (
             recentTasks.map((task) => (
-              <TouchableOpacity key={task.id} style={styles.activityRow} onPress={() => navigation.navigate('TaskDetail', { id: task.id })}>
+              <TouchableOpacity key={task.id} style={styles.activityRow} onPress={() => navigation.navigate('DashboardTab', { screen: 'TaskDetail', params: { id: task.id } })}>
                 <View style={[styles.activityDot, { backgroundColor: task.status === 'completed' ? COLORS.primary : COLORS.danger }]} />
                 <View style={styles.activityInfo}>
                   <Text style={styles.activityTitle}>{task.title}</Text>
