@@ -3,9 +3,10 @@ import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ArrowLeft, Calendar, Clock, User, MapPin, Phone, Tag, Repeat, Wrench, ClipboardCheck, CheckCircle } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Clock, User, MapPin, Phone, Tag, Repeat, Wrench, ClipboardCheck, CheckCircle, CheckSquare } from 'lucide-react-native';
 import { tasksApi } from '../../api/client';
 import { StatusBadge } from '../../components/StatusBadge';
+import { StaffTaskCompleteModal } from '../../components/StaffTaskCompleteModal';
 import { useAuthStore } from '../../store/authStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import type { Task } from '../../types';
@@ -18,15 +19,19 @@ export function TaskDetailScreen() {
   const isStaff = user?.role === 'staff';
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
+  const [completeModalVisible, setCompleteModalVisible] = useState(false);
+
+  const fetchTask = async () => {
+    if (!taskId) return;
+    try {
+      const { data } = await tasksApi.get(taskId);
+      setTask(data.data || null);
+    } catch {} finally { setLoading(false); }
+  };
 
   useEffect(() => {
     if (!taskId) { navigation.goBack(); return; }
-    (async () => {
-      try {
-        const { data } = await tasksApi.get(taskId);
-        setTask(data.data || null);
-      } catch {} finally { setLoading(false); }
-    })();
+    fetchTask();
   }, [taskId]);
 
   if (loading) {
@@ -169,6 +174,30 @@ export function TaskDetailScreen() {
 
         <View style={{ height: 80 }} />
       </ScrollView>
+
+      {/* Complete button for staff */}
+      {isStaff && task.status === 'pending' && (
+        <View style={styles.bottomBar}>
+          <TouchableOpacity
+            style={styles.completeBtn}
+            onPress={() => setCompleteModalVisible(true)}
+          >
+            <CheckSquare size={18} color={COLORS.white} />
+            <Text style={styles.completeBtnText}>Mark Complete</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <StaffTaskCompleteModal
+        visible={completeModalVisible}
+        task={task}
+        onClose={() => setCompleteModalVisible(false)}
+        onComplete={() => {
+          setCompleteModalVisible(false);
+          setLoading(true);
+          fetchTask();
+        }}
+      />
     </View>
   );
 }
@@ -213,4 +242,14 @@ const styles = StyleSheet.create({
   detailText: { fontSize: FONT_SIZES.sm, color: COLORS.neutral800, lineHeight: 20 },
   signatureBlock: { marginTop: SPACING[2] },
   signatureImage: { height: 64, borderWidth: 1, borderColor: COLORS.neutral200, borderRadius: RADIUS.md, backgroundColor: COLORS.neutral50, marginTop: 4 },
+  bottomBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    paddingHorizontal: SPACING[4], paddingVertical: SPACING[3],
+    backgroundColor: COLORS.white, borderTopWidth: 1, borderTopColor: COLORS.neutral200,
+  },
+  completeBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: COLORS.primary, borderRadius: RADIUS.lg, height: 48,
+  },
+  completeBtnText: { color: COLORS.white, fontSize: FONT_SIZES.sm, fontWeight: '700' },
 });

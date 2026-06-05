@@ -10,7 +10,7 @@ $db = getDB();
 switch ($method) {
     case 'GET':
         if ($id) {
-            $stmt = $db->prepare("SELECT * FROM fscrm_tasks WHERE id = ?");
+            $stmt = $db->prepare("SELECT t.*, c.name AS customer_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id WHERE t.id = ?");
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $row = $stmt->get_result()->fetch_assoc();
@@ -21,45 +21,45 @@ switch ($method) {
             $types = '';
             $vals = [];
             if (!empty($_GET['status'])) {
-                $where[] = 'status = ?';
+                $where[] = 't.status = ?';
                 $types .= 's';
                 $vals[] = $_GET['status'];
             }
             if (!empty($_GET['customer_id'])) {
-                $where[] = 'customer_id = ?';
+                $where[] = 't.customer_id = ?';
                 $types .= 'i';
                 $vals[] = intval($_GET['customer_id']);
             }
             if (!empty($_GET['assigned_to'])) {
-                $where[] = 'assigned_to = ?';
+                $where[] = 't.assigned_to = ?';
                 $types .= 'i';
                 $vals[] = intval($_GET['assigned_to']);
             }
             if (!empty($_GET['service_id'])) {
-                $where[] = 'service_id = ?';
+                $where[] = 't.service_id = ?';
                 $types .= 'i';
                 $vals[] = intval($_GET['service_id']);
             }
             if (!empty($_GET['scheduled_date'])) {
-                $where[] = 'scheduled_date = ?';
+                $where[] = 't.scheduled_date = ?';
                 $types .= 's';
                 $vals[] = $_GET['scheduled_date'];
             }
             if (!empty($_GET['start_date'])) {
-                $where[] = 'scheduled_date >= ?';
+                $where[] = 't.scheduled_date >= ?';
                 $types .= 's';
                 $vals[] = $_GET['start_date'];
             }
             if (!empty($_GET['end_date'])) {
-                $where[] = 'scheduled_date <= ?';
+                $where[] = 't.scheduled_date <= ?';
                 $types .= 's';
                 $vals[] = $_GET['end_date'];
             }
-            $sql = "SELECT * FROM fscrm_tasks";
+            $sql = "SELECT t.*, c.name AS customer_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id";
             if (!empty($where)) {
                 $sql .= " WHERE " . implode(' AND ', $where);
             }
-            $sql .= " ORDER BY scheduled_date DESC";
+            $sql .= " ORDER BY t.scheduled_date DESC";
             if (!empty($where)) {
                 $stmt = $db->prepare($sql);
                 if (!empty($vals)) $stmt->bind_param($types, ...$vals);
@@ -94,7 +94,7 @@ switch ($method) {
         );
         $stmt->execute();
         $newId = $db->insert_id;
-        $stmt = $db->prepare("SELECT * FROM fscrm_tasks WHERE id = ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id WHERE t.id = ?");
         $stmt->bind_param('i', $newId);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
@@ -129,7 +129,7 @@ switch ($method) {
         $stmt = $db->prepare("UPDATE fscrm_tasks SET " . implode(', ', $fields) . " WHERE id = ?");
         $stmt->bind_param($types, ...$vals);
         $stmt->execute();
-        $stmt = $db->prepare("SELECT * FROM fscrm_tasks WHERE id = ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id WHERE t.id = ?");
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
