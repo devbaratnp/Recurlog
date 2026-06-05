@@ -18,8 +18,6 @@ switch ($action) {
 function handleLogin() {
     global $JWT_SECRET;
 
-    checkRateLimitIp(5, 300);
-
     $input = getJsonInput();
     $email = trim($input['email'] ?? '');
     $password = $input['password'] ?? '';
