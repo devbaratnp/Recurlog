@@ -16,6 +16,7 @@ import { CustomerDetailScreen } from '../screens/customers/CustomerDetailScreen'
 import { TaskListScreen } from '../screens/tasks/TaskListScreen';
 import { TaskAddScreen } from '../screens/tasks/TaskAddScreen';
 import { TaskDetailScreen } from '../screens/tasks/TaskDetailScreen';
+import { TaskEditScreen } from '../screens/tasks/TaskEditScreen';
 import { OrderListScreen } from '../screens/orders/OrderListScreen';
 import { OrderAddScreen } from '../screens/orders/OrderAddScreen';
 import { OrderDetailScreen } from '../screens/orders/OrderDetailScreen';
@@ -36,6 +37,7 @@ export type MainStackParamList = {
   RecurringTaskList: { status?: string; filter?: any; type?: 'onetime' | 'recurring' } | undefined;
   TaskAdd: { type?: 'onetime' | 'recurring' } | undefined;
   TaskDetail: { id: number };
+  TaskEdit: { id: number };
   OrderList: { filter?: string } | undefined;
   OrderAdd: undefined;
   OrderDetail: { id: number };
@@ -145,6 +147,7 @@ function DashboardStack() {
       <Stack.Screen name="TaskList" component={TaskListScreen} />
       <Stack.Screen name="RecurringTaskList" component={TaskListScreen} />
       <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
+      <Stack.Screen name="TaskEdit" component={TaskEditScreen} />
       <Stack.Screen name="TaskAdd" component={TaskAddScreen} />
       <Stack.Screen name="OrderList" component={OrderListScreen} />
       <Stack.Screen name="OrderAdd" component={OrderAddScreen} />

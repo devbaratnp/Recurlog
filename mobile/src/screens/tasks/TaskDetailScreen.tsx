@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Image,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ArrowLeft, Calendar, Clock, User, MapPin, Phone, Tag, Repeat, Wrench, ClipboardCheck, CheckCircle, CheckSquare } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Clock, User, MapPin, Phone, Tag, Repeat, Wrench, ClipboardCheck, CheckCircle, CheckSquare, Pencil } from 'lucide-react-native';
 import { tasksApi } from '../../api/client';
 import { StatusBadge } from '../../components/StatusBadge';
 import { StaffTaskCompleteModal } from '../../components/StaffTaskCompleteModal';
@@ -79,6 +79,11 @@ export function TaskDetailScreen() {
           <ArrowLeft size={20} color={COLORS.neutral600} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Task Detail</Text>
+        {!isStaff && (
+          <TouchableOpacity onPress={() => navigation.navigate('TaskEdit', { id: task.id })} style={styles.editBtn}>
+            <Pencil size={18} color={COLORS.neutral600} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -216,6 +221,7 @@ const styles = StyleSheet.create({
     height: 56, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   backBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center' },
+  editBtn: { padding: 8, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.navy, marginLeft: 4 },
   scrollContent: { padding: SPACING[4], paddingBottom: 40 },
   card: {
