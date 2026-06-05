@@ -50,7 +50,7 @@ export function TaskListScreen() {
   useEffect(() => {
     const q = search.toLowerCase().trim();
     if (!q) { setFiltered(tasks); return; }
-    setFiltered(tasks.filter((t) => t.title.toLowerCase().includes(q) || (t.customerName || '').toLowerCase().includes(q)));
+    setFiltered(tasks.filter((t) => t.title.toLowerCase().includes(q) || (t.customerName || '').toLowerCase().includes(q) || (t.assignedStaffName || '').toLowerCase().includes(q)));
   }, [search, tasks]);
 
   const onRefresh = async () => { setRefreshing(true); await fetchTasks(); setRefreshing(false); };
