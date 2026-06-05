@@ -20,10 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 
 $JWT_SECRET = getenv('JWT_SECRET') ?: 'recurlog-jwt-secret-change-in-production';
 
-$DB_HOST = getenv('DB_HOST') ?: '127.0.0.1';
-$DB_USER = getenv('DB_USER') ?: 'root';
-$DB_PASS = getenv('DB_PASS') ?: '';
-$DB_NAME = getenv('DB_NAME') ?: 'recurlog';
+$DB_HOST = getenv('DB_HOST') ?: 'localhost';
+$DB_USER = getenv('DB_USER') ?: 'ektamultp_recurlog';
+$DB_PASS = getenv('DB_PASS') ?: '2^0y+57lo;.qfD.B';
+$DB_NAME = getenv('DB_NAME') ?: 'ektamultp_recurlog';
 $DB_PORT = (int)(getenv('DB_PORT') ?: 3306);
 
 function getDB() {
