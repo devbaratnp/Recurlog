@@ -149,6 +149,12 @@ function statusPillShort($status) {
 
     <div class="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
 
+      <!-- Search -->
+      <div class="relative mb-4">
+        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
+        <input type="text" id="task-search" placeholder="Search tasks by title, customer, or staff…" class="form-input pl-12">
+      </div>
+
       <!-- Task List -->
       <div id="task-list-section">
         <?php if (empty($oneTimeTasks)): ?>
@@ -160,7 +166,7 @@ function statusPillShort($status) {
         <?php else: ?>
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
             <div class="overflow-x-auto">
-              <table class="w-full text-sm">
+              <table id="task-table" class="w-full text-sm">
                 <thead>
                   <tr class="bg-gray-50 border-b border-gray-100">
                     <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Task</th>
@@ -429,6 +435,20 @@ function statusPillShort($status) {
           window.showToast('Network error.', 'error');
         });
       });
+
+      // ===== Search filter =====
+      var searchInput = document.getElementById('task-search');
+      var table = document.getElementById('task-table');
+      if (searchInput && table) {
+        searchInput.addEventListener('input', function () {
+          var q = this.value.toLowerCase().trim();
+          var rows = table.querySelectorAll('tbody tr');
+          rows.forEach(function (row) {
+            var text = row.textContent.toLowerCase();
+            row.style.display = !q || text.includes(q) ? '' : 'none';
+          });
+        });
+      }
     });
   </script>
 <?php require_once '../includes/footer.php'; ?>
