@@ -57,6 +57,7 @@ export interface Task {
   serviceId: number;
   customerId: number;
   title: string;
+  description?: string;
   status: TaskStatus;
   scheduledDate: string;
   completedDate: string | null;

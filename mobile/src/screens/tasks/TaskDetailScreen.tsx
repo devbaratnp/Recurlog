@@ -128,9 +128,15 @@ export function TaskDetailScreen() {
         </View>
 
         {/* Details Card */}
-        {(task.notes || task.serviceProblem) && (
+        {(task.description || task.serviceProblem || task.notes) && (
           <View style={[styles.card, SHADOWS.sm]}>
             <Text style={styles.sectionLabel}>Details</Text>
+            {task.description && (
+              <View style={styles.detailBlock}>
+                <Text style={styles.detailLabel}>Description</Text>
+                <Text style={styles.detailText}>{task.description}</Text>
+              </View>
+            )}
             {task.serviceProblem && (
               <View style={styles.detailBlock}>
                 <Text style={styles.detailLabel}>Problem</Text>
