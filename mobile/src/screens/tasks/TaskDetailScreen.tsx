@@ -123,7 +123,7 @@ export function TaskDetailScreen() {
         {/* Assignment Card */}
         <View style={[styles.card, SHADOWS.sm]}>
           <Text style={styles.sectionLabel}>Assignment</Text>
-          <InfoIcon icon={User} label="Assigned To" value={task.assignedTo ? `Staff #${task.assignedTo}` : 'Unassigned'} />
+          <InfoIcon icon={User} label="Assigned To" value={task.assignedStaffName || (task.assignedTo ? `Staff #${task.assignedTo}` : 'Unassigned')} />
           {task.completedBy && <InfoIcon icon={User} label="Completed By" value={task.completedBy} />}
         </View>
 

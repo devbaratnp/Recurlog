@@ -68,6 +68,7 @@ export interface Task {
   receivedContact: string | null;
   signature: string | null;
   customerName?: string;
+  assignedStaffName?: string;
   serviceProblem?: string;
 }
 
