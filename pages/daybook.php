@@ -214,7 +214,7 @@ $pageTitle = 'Daybook';
       return '<div class="px-4 py-3 border-b border-gray-50 last:border-0">' +
         '<div class="flex items-center justify-between gap-3">' +
           '<div class="min-w-0">' +
-            '<p class="text-sm font-medium text-gray-900 truncate">' + t.title + '</p>' +
+            '<p class="text-sm font-medium text-gray-900 truncate"><a href="task-detail.php?id=' + t.id + '" class="text-inherit hover:underline">' + t.title + '</a></p>' +
             '<p class="text-xs text-gray-500 mt-0.5">' + customerName(t.customerId) + ' &middot; ' + staffName(t.assignedTo) + '</p>' +
             extra +
           '</div>' +

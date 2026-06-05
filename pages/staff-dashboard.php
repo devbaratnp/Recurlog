@@ -135,7 +135,7 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
         <div class="px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
           <div class="flex items-start justify-between gap-3">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-navy"><?= htmlspecialchars($t['title']) ?></p>
+              <p class="text-sm font-medium text-navy"><a href="task-detail.php?id=<?= $t['id'] ?>" class="text-inherit hover:underline"><?= htmlspecialchars($t['title']) ?></a></p>
               <p class="text-xs text-gray-500 mt-0.5">
                 <?= htmlspecialchars($t['customer_name'] ?: 'Customer #' . $t['customer_id']) ?>
                 <?php if ($t['customer_phone']): ?> &middot; <?= htmlspecialchars($t['customer_phone']) ?><?php endif; ?>
@@ -171,7 +171,7 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
         <div class="px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
           <div class="flex items-start justify-between gap-3">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-navy"><?= htmlspecialchars($t['title']) ?></p>
+              <p class="text-sm font-medium text-navy"><a href="task-detail.php?id=<?= $t['id'] ?>" class="text-inherit hover:underline"><?= htmlspecialchars($t['title']) ?></a></p>
               <p class="text-xs text-gray-500 mt-0.5">
                 <?= htmlspecialchars($t['customer_name'] ?: 'Customer #' . $t['customer_id']) ?>
                 &middot; <span class="text-amber font-medium"><?= date('M j', strtotime($t['scheduled_date'])) ?></span>
@@ -224,7 +224,7 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
         <div class="px-4 py-2.5 border-b border-gray-50 last:border-0 flex items-center gap-3">
           <div class="w-1.5 h-1.5 rounded-full <?= $t['status'] === 'completed' ? 'bg-brand' : 'bg-danger' ?> shrink-0"></div>
           <div class="flex-1 min-w-0">
-            <p class="text-xs text-gray-600 truncate"><?= htmlspecialchars($t['title']) ?></p>
+            <p class="text-xs text-gray-600 truncate"><a href="task-detail.php?id=<?= $t['id'] ?>" class="text-inherit hover:underline"><?= htmlspecialchars($t['title']) ?></a></p>
             <p class="text-[11px] text-gray-400"><?= htmlspecialchars($t['customer_name'] ?: '') ?> &middot; <?= date('M j', strtotime($t['scheduled_date'])) ?></p>
           </div>
           <span class="text-[11px] font-medium <?= $t['status'] === 'completed' ? 'text-brand' : 'text-danger' ?>"><?= ucfirst($t['status']) ?></span>
