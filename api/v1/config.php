@@ -174,7 +174,9 @@ function insertAndFetch($table, $columns, $types, $values) {
     $colNames = implode(', ', $columns);
     $stmt = $db->prepare("INSERT INTO $table ($colNames) VALUES ($placeholders)");
     $stmt->bind_param($types, ...$values);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        jsonError('Database error: ' . $stmt->error, 500, 'DB_ERROR');
+    }
     $newId = $db->insert_id;
     return fetchSingle($table, $newId);
 }

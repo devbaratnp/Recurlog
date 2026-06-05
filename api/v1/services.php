@@ -21,7 +21,7 @@ switch ($method) {
         }
         [$page, $perPage, $offset] = getPageParams();
         $search = $_GET['search'] ?? '';
-        [$searchClause, $searchParams] = buildSearchClause($search, ['s.service_name', 's.description']);
+        [$searchClause, $searchParams] = buildSearchClause($search, ['s.title', 's.problem']);
         $filters = [];
         $filterParams = [];
         if ($customerId) { $filters[] = 's.customer_id = ?'; $filterParams[] = $customerId; }
@@ -34,7 +34,7 @@ switch ($method) {
         if ($allParams) $stmt->bind_param($types, ...$allParams);
         $stmt->execute();
         $total = (int)$stmt->get_result()->fetch_assoc()['cnt'];
-        $stmt = $db->prepare("SELECT s.* FROM fscrm_services s WHERE 1=1 $searchClause $filterClause ORDER BY s.service_name ASC LIMIT ? OFFSET ?");
+        $stmt = $db->prepare("SELECT s.* FROM fscrm_services s WHERE 1=1 $searchClause $filterClause ORDER BY s.title ASC LIMIT ? OFFSET ?");
         $allParams2 = array_merge($allParams, [$perPage, $offset]);
         $types2 = $types . 'ii';
         if ($allParams) $stmt->bind_param($types2, ...$allParams2); else $stmt->bind_param('ii', $perPage, $offset);
@@ -47,18 +47,21 @@ switch ($method) {
         $input = getJsonInput();
         $data = toSnake($input);
         $row = insertAndFetch('fscrm_services',
-            ['customer_id', 'category_id', 'service_name', 'description', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from', 'status'],
-            'iississs',
+            ['customer_id', 'category_id', 'service_for', 'title', 'problem', 'is_recurring', 'first_scheduled_date', 'assigned_to', 'notes', 'rec_value', 'rec_unit', 'repeat_from'],
+            'iissisissis',
             [
                 $data['customer_id'] ?? null,
                 $data['category_id'] ?? null,
-                $data['service_name'] ?? '',
-                $data['description'] ?? '',
+                $data['service_for'] ?? '',
+                $data['title'] ?? '',
+                $data['problem'] ?? '',
                 $data['is_recurring'] ?? 0,
+                $data['first_scheduled_date'] ?? null,
+                $data['assigned_to'] ?? null,
+                $data['notes'] ?? '',
                 $data['rec_value'] ?? null,
                 $data['rec_unit'] ?? '',
-                $data['repeat_from'] ?? '',
-                $data['status'] ?? 'active'
+                $data['repeat_from'] ?? ''
             ]
         );
         jsonResponse(toCamel($row), 201);
@@ -71,11 +74,11 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        $colMap = ['customer_id', 'category_id', 'service_name', 'description', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from', 'status'];
+        $colMap = ['customer_id', 'category_id', 'service_for', 'title', 'problem', 'is_recurring', 'first_scheduled_date', 'assigned_to', 'notes', 'rec_value', 'rec_unit', 'repeat_from'];
         foreach ($colMap as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = $f;
-                $types .= in_array($f, ['customer_id', 'category_id', 'is_recurring', 'rec_value']) ? 'i' : 's';
+                $types .= in_array($f, ['customer_id', 'category_id', 'is_recurring', 'assigned_to', 'rec_value']) ? 'i' : 's';
                 $vals[] = $data[$f];
             }
         }

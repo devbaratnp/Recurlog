@@ -18,7 +18,7 @@ switch ($method) {
         }
         [$page, $perPage, $offset] = getPageParams();
         $search = $_GET['search'] ?? '';
-        [$searchClause, $searchParams] = buildSearchClause($search, ['name', 'phone', 'email', 'role']);
+        [$searchClause, $searchParams] = buildSearchClause($search, ['name', 'phone']);
         $stmt = $db->prepare("SELECT COUNT(*) as cnt FROM fscrm_staff WHERE 1=1 $searchClause");
         if ($searchParams) $stmt->bind_param(str_repeat('s', count($searchParams)), ...$searchParams);
         $stmt->execute();
@@ -36,9 +36,9 @@ switch ($method) {
         $input = getJsonInput();
         $data = toSnake($input);
         $row = insertAndFetch('fscrm_staff',
-            ['name', 'phone', 'email', 'role', 'is_active'],
-            'ssssi',
-            [$data['name'] ?? '', $data['phone'] ?? '', $data['email'] ?? '', $data['role'] ?? 'staff', $data['is_active'] ?? 1]
+            ['name', 'phone', 'avatar', 'active_tasks'],
+            'sssi',
+            [$data['name'] ?? '', $data['phone'] ?? '', $data['avatar'] ?? '', $data['active_tasks'] ?? 0]
         );
         jsonResponse(toCamel($row), 201);
         break;
@@ -50,7 +50,7 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        foreach (['name', 'phone', 'email', 'role', 'is_active'] as $f) {
+        foreach (['name', 'phone', 'avatar', 'active_tasks'] as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = $f;
                 $types .= is_int($data[$f]) ? 'i' : 's';

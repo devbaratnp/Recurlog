@@ -46,14 +46,13 @@ switch ($method) {
         $input = getJsonInput();
         $data = toSnake($input);
         $row = insertAndFetch('fscrm_notifications',
-            ['user_id', 'title', 'message', 'is_read', 'link'],
-            'issis',
+            ['text', 'type', 'related_id', 'is_read'],
+            'ssii',
             [
-                $data['user_id'] ?? null,
-                $data['title'] ?? '',
-                $data['message'] ?? '',
-                $data['is_read'] ?? 0,
-                $data['link'] ?? ''
+                $data['text'] ?? '',
+                $data['type'] ?? 'info',
+                $data['related_id'] ?? null,
+                $data['is_read'] ?? 0
             ]
         );
         jsonResponse(toCamel($row), 201);
@@ -66,10 +65,10 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        foreach (['user_id', 'title', 'message', 'is_read', 'link'] as $f) {
+        foreach (['text', 'type', 'related_id', 'is_read'] as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = $f;
-                $types .= in_array($f, ['user_id', 'is_read']) ? 'i' : 's';
+                $types .= in_array($f, ['related_id', 'is_read']) ? 'i' : 's';
                 $vals[] = $data[$f];
             }
         }

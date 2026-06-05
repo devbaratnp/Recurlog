@@ -18,7 +18,7 @@ switch ($method) {
         }
         [$page, $perPage, $offset] = getPageParams();
         $search = $_GET['search'] ?? '';
-        [$searchClause, $searchParams] = buildSearchClause($search, ['o.title', 'o.description', 'o.customer_name', 'o.address', 'o.phone']);
+        [$searchClause, $searchParams] = buildSearchClause($search, ['o.problem', 'o.customer_name']);
         $filters = [];
         $filterParams = [];
         foreach (['status', 'customer_id', 'priority'] as $f) {
@@ -48,21 +48,24 @@ switch ($method) {
         $input = getJsonInput();
         $data = toSnake($input);
         $row = insertAndFetch('fscrm_orders',
-            ['customer_id', 'customer_name', 'address', 'phone', 'locality', 'title', 'description', 'status', 'priority', 'assigned_to', 'order_date', 'total_amount'],
-            'issssssssssd',
+            ['customer_id', 'customer_name', 'service_for', 'problem', 'status', 'priority', 'assigned_to', 'assigned_staff_name', 'scheduled_date', 'notes', 'dispatch_date', 'dispatch_by', 'received_name', 'received_contact', 'signature'],
+            'issssississssss',
             [
                 $data['customer_id'] ?? null,
                 $data['customer_name'] ?? '',
-                $data['address'] ?? '',
-                $data['phone'] ?? '',
-                $data['locality'] ?? '',
-                $data['title'] ?? '',
-                $data['description'] ?? '',
+                $data['service_for'] ?? '',
+                $data['problem'] ?? '',
                 $data['status'] ?? 'pending',
                 $data['priority'] ?? 'normal',
                 $data['assigned_to'] ?? null,
-                $data['order_date'] ?? null,
-                $data['total_amount'] ?? 0
+                $data['assigned_staff_name'] ?? '',
+                $data['scheduled_date'] ?? null,
+                $data['notes'] ?? '',
+                $data['dispatch_date'] ?? null,
+                $data['dispatch_by'] ?? '',
+                $data['received_name'] ?? '',
+                $data['received_contact'] ?? '',
+                $data['signature'] ?? ''
             ]
         );
         jsonResponse(toCamel($row), 201);
@@ -75,7 +78,7 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        $colMap = ['customer_id', 'customer_name', 'address', 'phone', 'locality', 'title', 'description', 'status', 'priority', 'assigned_to', 'order_date', 'total_amount'];
+        $colMap = ['customer_id', 'customer_name', 'service_for', 'problem', 'status', 'priority', 'assigned_to', 'assigned_staff_name', 'scheduled_date', 'completed_date', 'notes', 'dispatch_date', 'dispatch_by', 'received_name', 'received_contact', 'signature'];
         foreach ($colMap as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = $f;
