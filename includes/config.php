@@ -136,3 +136,13 @@ function cacheBust() {
     $mtime = file_exists($cssFile) ? filemtime($cssFile) : time();
     return dechex($mtime);
 }
+
+function appBaseUrl() {
+    static $base = null;
+    if ($base === null) {
+        $appRoot = realpath(__DIR__ . '/..');
+        $docRoot = realpath($_SERVER['DOCUMENT_ROOT']);
+        $base = str_replace([$docRoot, '\\'], ['', '/'], $appRoot);
+    }
+    return $base;
+}

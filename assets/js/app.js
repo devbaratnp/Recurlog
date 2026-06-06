@@ -288,7 +288,8 @@ window.initWebPush = function(vapidPublicKey) {
   if (Notification.permission !== 'granted') return;
   if (!vapidPublicKey) return;
 
-  navigator.serviceWorker.register('/service-worker.js').then(function(reg) {
+  var swUrl = (window.__APP_BASE || '') + '/sw.js';
+  navigator.serviceWorker.register(swUrl).then(function(reg) {
     return reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: base64UrlToUint8Array(vapidPublicKey)

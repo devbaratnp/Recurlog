@@ -6,7 +6,7 @@ var CACHE_NAMES = {
   images: 'images-v1',
 };
 
-var BASE = '';
+var BASE = self.location.pathname.replace(/\/sw\.js$/, '');
 
 var PRECACHE_ASSETS = [
   BASE + '/offline.html',

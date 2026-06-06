@@ -119,6 +119,7 @@
   </div>
 
   
+  <script>window.__APP_BASE = <?= json_encode(appBaseUrl()) ?>;</script>
   <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/app.js"></script>
 <script>
@@ -140,7 +141,8 @@ lucide.createIcons();
 (function () {
   if (!('serviceWorker' in navigator)) return;
   function registerSW() {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+    var swUrl = (window.__APP_BASE || '') + '/sw.js';
+    navigator.serviceWorker.register(swUrl).catch(function () {});
   }
   if (document.readyState === 'complete') { registerSW(); }
   else { document.addEventListener('DOMContentLoaded', registerSW); }

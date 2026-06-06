@@ -30,28 +30,28 @@
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "View your dashboard",
-      "url": "/Recurlog/pages/dashboard.php",
+      "url": "/pages/dashboard.php",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "New Customer",
       "short_name": "New Customer",
       "description": "Add a new customer",
-      "url": "/Recurlog/pages/customers.php?action=add",
+      "url": "/pages/customers.php?action=add",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "New Task",
       "short_name": "New Task",
       "description": "Create a new one-time task",
-      "url": "/Recurlog/pages/onetime-task.php?action=add",
+      "url": "/pages/onetime-task.php?action=add",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Orders",
       "short_name": "Orders",
       "description": "View all orders",
-      "url": "/Recurlog/pages/orders.php",
+      "url": "/pages/orders.php",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     }
   ],

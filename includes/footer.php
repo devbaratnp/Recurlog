@@ -10,7 +10,8 @@ lucide.createIcons();
   if (!('serviceWorker' in navigator)) return;
 
   function registerSW() {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (reg) {
+    var swUrl = window.__APP_BASE + '/sw.js';
+    navigator.serviceWorker.register(swUrl).then(function (reg) {
       // Update detection
       reg.addEventListener('updatefound', function () {
         var installing = reg.installing;
@@ -63,7 +64,7 @@ lucide.createIcons();
 
 // Embed VAPID public key for web push
 window.__VAPID_PUBLIC_KEY = '<?= defined('VAPID_PUBLIC_KEY') ? VAPID_PUBLIC_KEY : '' ?>';
-// Request permission + init web push on page load
+// Request permission + init web push on page load (reuses the same sw.js SW)
 if ('Notification' in window) {
   if (Notification.permission === 'granted') {
     window.initWebPush(window.__VAPID_PUBLIC_KEY);
