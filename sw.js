@@ -6,27 +6,29 @@ var CACHE_NAMES = {
   images: 'images-v1',
 };
 
+var BASE = '/Recurlog';
+
 var PRECACHE_ASSETS = [
-  '/offline.html',
-  '/assets/css/custom.css',
-  '/assets/js/sidebar.js',
-  '/assets/js/app.js',
-  '/assets/icons/icon-48.png',
-  '/assets/icons/icon-72.png',
-  '/assets/icons/icon-96.png',
-  '/assets/icons/icon-128.png',
-  '/assets/icons/icon-144.png',
-  '/assets/icons/icon-152.png',
-  '/assets/icons/icon-192.png',
-  '/assets/icons/icon-192-maskable.png',
-  '/assets/icons/icon-384.png',
-  '/assets/icons/icon-512.png',
-  '/assets/icons/icon-512-maskable.png',
-  '/assets/icons/apple-icon-152x152.png',
-  '/assets/icons/apple-icon-180x180.png',
-  '/assets/icons/apple-icon.png',
-  '/assets/icons/apple-touch-icon.png',
-  '/favicon.ico',
+  BASE + '/offline.html',
+  BASE + '/assets/css/custom.css',
+  BASE + '/assets/js/sidebar.js',
+  BASE + '/assets/js/app.js',
+  BASE + '/assets/icons/icon-48.png',
+  BASE + '/assets/icons/icon-72.png',
+  BASE + '/assets/icons/icon-96.png',
+  BASE + '/assets/icons/icon-128.png',
+  BASE + '/assets/icons/icon-144.png',
+  BASE + '/assets/icons/icon-152.png',
+  BASE + '/assets/icons/icon-192.png',
+  BASE + '/assets/icons/icon-192-maskable.png',
+  BASE + '/assets/icons/icon-384.png',
+  BASE + '/assets/icons/icon-512.png',
+  BASE + '/assets/icons/icon-512-maskable.png',
+  BASE + '/assets/icons/apple-icon-152x152.png',
+  BASE + '/assets/icons/apple-icon-180x180.png',
+  BASE + '/assets/icons/apple-icon.png',
+  BASE + '/assets/icons/apple-touch-icon.png',
+  BASE + '/favicon.ico',
 ];
 
 self.addEventListener('install', function (event) {
@@ -61,8 +63,8 @@ self.addEventListener('activate', function (event) {
 // ----- Helpers -----
 
 function isStaticAsset(url) {
-  return url.pathname === '/manifest.json' ||
-    url.pathname === '/sw.js' ||
+  return url.pathname === BASE + '/manifest.json' ||
+    url.pathname === BASE + '/sw.js' ||
     PRECACHE_ASSETS.indexOf(url.pathname) !== -1;
 }
 
@@ -82,12 +84,12 @@ function isImageRequest(url) {
 }
 
 function isApiRequest(url) {
-  return url.pathname.indexOf('/api/') !== -1;
+  return url.pathname.indexOf(BASE + '/api/') !== -1;
 }
 
 function isAuthApi(url) {
-  return url.pathname.indexOf('/api/auth') !== -1 ||
-    url.pathname.indexOf('/api/login') !== -1;
+  return url.pathname.indexOf(BASE + '/api/auth') !== -1 ||
+    url.pathname.indexOf(BASE + '/api/login') !== -1;
 }
 
 function isPhpPage(url) {
@@ -216,7 +218,7 @@ self.addEventListener('fetch', function (event) {
 
   // Offline fallback for non-PHP navigation requests
   if (isNavigationRequest(event.request)) {
-    event.respondWith(networkFirst(event.request, CACHE_NAMES.static, '/offline.html'));
+    event.respondWith(networkFirst(event.request, CACHE_NAMES.static, BASE + '/offline.html'));
     return;
   }
 });
@@ -229,8 +231,8 @@ self.addEventListener('push', function (event) {
   var title = data.title || 'Recurlog';
   var options = {
     body: data.body || '',
-    icon: data.icon || '/assets/icons/icon-192.png',
-    badge: '/assets/icons/icon-96.png',
+    icon: data.icon || BASE + '/assets/icons/icon-192.png',
+    badge: BASE + '/assets/icons/icon-96.png',
     vibrate: [200, 100, 200],
     data: data.data || {},
   };
@@ -241,7 +243,7 @@ self.addEventListener('notificationclick', function (event) {
   event.notification.close();
   var url = event.notification.data && event.notification.data.url
     ? event.notification.data.url
-    : '/pages/dashboard.php';
+    : BASE + '/pages/dashboard.php';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
       for (var i = 0; i < clientList.length; i++) {

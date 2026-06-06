@@ -10,7 +10,7 @@ lucide.createIcons();
   if (!('serviceWorker' in navigator)) return;
 
   function registerSW() {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (reg) {
+    navigator.serviceWorker.register('/Recurlog/sw.js', { scope: '/Recurlog/' }).then(function (reg) {
       // Update detection
       reg.addEventListener('updatefound', function () {
         var installing = reg.installing;
