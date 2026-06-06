@@ -2,8 +2,8 @@
   "name": "Recurlog - Field Service CRM",
   "short_name": "Recurlog",
   "description": "Field Service CRM for managing customers, services, tasks, staff, orders, and field operations",
-  "start_url": "/pages/dashboard.php",
-  "scope": "/",
+  "start_url": "/Recurlog/pages/dashboard.php",
+  "scope": "/Recurlog/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "fullscreen", "minimal-ui"],
   "orientation": "any",
@@ -30,28 +30,28 @@
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "View your dashboard",
-      "url": "/pages/dashboard.php",
+      "url": "/Recurlog/pages/dashboard.php",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "New Customer",
       "short_name": "New Customer",
       "description": "Add a new customer",
-      "url": "/pages/customers.php?action=add",
+      "url": "/Recurlog/pages/customers.php?action=add",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "New Task",
       "short_name": "New Task",
       "description": "Create a new one-time task",
-      "url": "/pages/onetime-task.php?action=add",
+      "url": "/Recurlog/pages/onetime-task.php?action=add",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Orders",
       "short_name": "Orders",
       "description": "View all orders",
-      "url": "/pages/orders.php",
+      "url": "/Recurlog/pages/orders.php",
       "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96" }]
     }
   ],
