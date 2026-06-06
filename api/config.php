@@ -98,8 +98,8 @@ function checkRateLimit($key, $maxAttempts = 5, $windowSec = 300) {
 }
 
 // VAPID keys for Web Push
-define('VAPID_PUBLIC_KEY', getenv('VAPID_PUBLIC_KEY') ?: '');
-define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: '');
+define('VAPID_PUBLIC_KEY', getenv('VAPID_PUBLIC_KEY') ?: 'BFrJeUqRee1Bdn_-6DTsnhRxEXzfzsNRSUso09DXwiwWtgDqZoGeCf2Sy1dgHdNOTyUKJKdCvQuEtAk7dFhwtBY');
+define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: 'huYGZ2S20ApmT7mcfsA9PBKneop8t42qaaD7Id2h93M');
 define('VAPID_SUBJECT', getenv('VAPID_SUBJECT') ?: 'mailto:admin@recurlog.com');
 
 function validateCsrfToken($token) {
