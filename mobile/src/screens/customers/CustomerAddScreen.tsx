@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft, Check, Save } from 'lucide-react-native';
 import { customersApi } from '../../api/client';
 import { ServiceChip } from '../../components/ServiceChip';
+import { useToastStore } from '../../store/toastStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS, SERVICE_COLORS } from '../../constants/theme';
 import type { Customer } from '../../types';
 
@@ -23,6 +24,7 @@ export function CustomerAddScreen() {
   const [servicesFor, setServicesFor] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
+  const showToast = useToastStore((s) => s.show);
 
   useEffect(() => {
     if (editId) {
@@ -56,8 +58,10 @@ export function CustomerAddScreen() {
       const payload = { name: name.trim(), address: address.trim(), area: area.trim(), phone: phone.trim(), servicesFor };
       if (editId) {
         await customersApi.update(editId, payload);
+        showToast('Customer updated successfully', 'success');
       } else {
         await customersApi.create(payload);
+        showToast('Customer added successfully', 'success');
       }
       navigation.goBack();
     } catch (err: any) {

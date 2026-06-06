@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { tasksApi, customersApi, staffApi, servicesApi } from '../../api/client';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
+import { useToastStore } from '../../store/toastStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import { todayISO } from '../../utils/date';
 
@@ -29,6 +30,7 @@ export function TaskAddScreen() {
   const [scheduledDate, setScheduledDate] = useState(todayISO());
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const showToast = useToastStore((s) => s.show);
 
   useEffect(() => {
     Promise.all([customersApi.list(), staffApi.list()]).then(([c, s]) => {
@@ -56,6 +58,7 @@ export function TaskAddScreen() {
         payload.recurrence = { value: parseInt(recurrenceValue) || 1, unit: recurrenceUnit, repeatFrom };
       }
       await tasksApi.create(payload);
+      showToast('Task created successfully', 'success');
       navigation.goBack();
     } catch (err: any) {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to create task');

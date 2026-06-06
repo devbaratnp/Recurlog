@@ -6,6 +6,7 @@ import {
 import { X } from 'lucide-react-native';
 import { tasksApi } from '../api/client';
 import { SignaturePad } from './SignaturePad';
+import { useToastStore } from '../store/toastStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../constants/theme';
 import type { Task } from '../types';
 
@@ -22,6 +23,7 @@ export function StaffTaskCompleteModal({ visible, task, onClose, onComplete }: S
   const [receivedContact, setReceivedContact] = useState('');
   const [signature, setSignature] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const showToast = useToastStore((s) => s.show);
 
   const reset = () => {
     setNotes('');
@@ -43,6 +45,7 @@ export function StaffTaskCompleteModal({ visible, task, onClose, onComplete }: S
         completedDate: new Date().toISOString().split('T')[0],
       } as any);
       reset();
+      showToast('Task completed successfully', 'success');
       onComplete();
     } catch { Alert.alert('Error', 'Failed to complete task'); } finally {
       setSubmitting(false);

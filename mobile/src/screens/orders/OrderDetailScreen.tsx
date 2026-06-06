@@ -7,6 +7,7 @@ import { ordersApi, staffApi } from '../../api/client';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { PriorityBadge } from '../../components/PriorityBadge';
 import { StatusBadge } from '../../components/StatusBadge';
+import { useToastStore } from '../../store/toastStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import { formatDate, todayISO } from '../../utils/date';
 import type { Order } from '../../types';
@@ -33,6 +34,7 @@ export function OrderDetailScreen() {
   const [completeNotes, setCompleteNotes] = useState('');
 
   const [saving, setSaving] = useState(false);
+  const showToast = useToastStore((s) => s.show);
 
   useEffect(() => {
     if (!id) { navigation.goBack(); return; }
@@ -53,6 +55,7 @@ export function OrderDetailScreen() {
     try {
       await ordersApi.update(id, { assignedTo: assignStaff, scheduledDate: assignDate, status: 'assigned' });
       setShowAssign(false);
+      showToast('Order assigned successfully', 'success');
       await refreshOrder();
     } catch (err: any) {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to assign');
@@ -72,6 +75,7 @@ export function OrderDetailScreen() {
         notes: completeNotes.trim(),
       });
       setShowComplete(false);
+      showToast('Order completed successfully', 'success');
       await refreshOrder();
     } catch (err: any) {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to complete');
@@ -84,6 +88,7 @@ export function OrderDetailScreen() {
       { text: 'Cancel Order', style: 'destructive', onPress: async () => {
         try {
           await ordersApi.update(id, { status: 'cancelled' });
+          showToast('Order cancelled', 'warning');
           await refreshOrder();
         } catch { Alert.alert('Error', 'Failed to cancel order'); }
       }},

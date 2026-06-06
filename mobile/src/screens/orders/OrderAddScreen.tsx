@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { ordersApi, customersApi, staffApi } from '../../api/client';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
+import { useToastStore } from '../../store/toastStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import { todayISO } from '../../utils/date';
 
@@ -23,6 +24,7 @@ export function OrderAddScreen() {
   const [scheduledDate, setScheduledDate] = useState(todayISO());
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const showToast = useToastStore((s) => s.show);
 
   const [customers, setCustomers] = useState<any[]>([]);
   const [staff, setStaff] = useState<any[]>([]);
@@ -50,6 +52,7 @@ export function OrderAddScreen() {
         notes: notes.trim(),
         status: assignedTo ? 'assigned' : 'pending',
       });
+      showToast('Order created successfully', 'success');
       navigation.goBack();
     } catch (err: any) {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to create order');

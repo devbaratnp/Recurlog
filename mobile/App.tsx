@@ -15,6 +15,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import Toast from './src/components/Toast';
 import { COLORS } from './src/constants/theme';
 import { pushTokenApi } from './src/api/client';
 import { useAuthStore } from './src/store/authStore';
@@ -144,6 +145,7 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <StatusBar style="light" />
           <AppNavigator />
+          <Toast />
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

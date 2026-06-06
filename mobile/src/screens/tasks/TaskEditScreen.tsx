@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react-native';
 import { tasksApi, staffApi } from '../../api/client';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { useAuthStore } from '../../store/authStore';
+import { useToastStore } from '../../store/toastStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 import { todayISO } from '../../utils/date';
 import type { Task } from '../../types';
@@ -26,6 +27,7 @@ export function TaskEditScreen() {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const showToast = useToastStore((s) => s.show);
 
   useEffect(() => {
     if (!taskId) { navigation.goBack(); return; }
@@ -57,6 +59,7 @@ export function TaskEditScreen() {
         scheduledDate,
         notes: notes.trim(),
       });
+      showToast('Task updated successfully', 'success');
       navigation.goBack();
     } catch (err: any) {
       Alert.alert('Error', err?.response?.data?.error || 'Failed to update task');
