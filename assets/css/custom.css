@@ -1455,3 +1455,77 @@ body.sidebar-open {
 .modal-section-body.hidden {
   display: none;
 }
+
+/* ===== PWA: Native-App Polish ===== */
+
+/* Safe area insets for notched devices */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
+/* Disable text selection in standalone mode */
+@media all and (display-mode: standalone) {
+  body {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Allow text selection in inputs and textareas */
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+/* Touch-friendly minimum target sizes */
+button, a, .btn, .clickable {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Smooth momentum scrolling */
+.scroll-container,
+.modal-content,
+.sidebar-nav {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Reduce motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Content visibility for offscreen sections */
+.tab-content:not(.active),
+.section-hidden {
+  content-visibility: auto;
+}
+
+/* Focus visible for keyboard nav only */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* PWA Install Banner */
+#pwa-install-banner {
+  font-family: 'Poppins', sans-serif;
+}
+
+#pwa-install-banner button {
+  font-family: inherit;
+}

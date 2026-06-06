@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Offline - Recurlog</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
+          fontFamily: { sans: ['Poppins', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; -webkit-font-smoothing: antialiased; }
+    .retry-btn { transition: all 150ms; }
+    .retry-btn:hover { background: #16a34a; transform: translateY(-1px); }
+    .retry-btn:active { transform: scale(0.97); }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-[#F9FAFB] p-6">
+  <div class="text-center max-w-sm">
+    <div class="w-20 h-20 bg-navy rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-navy mb-2">You're Offline</h1>
+    <p class="text-gray-500 text-sm mb-8 leading-relaxed">
+      Recurlog needs an internet connection to load this page.<br>
+      Don't worry — once you're back online, everything will work as usual.
+    </p>
+    <button onclick="retryConnection()" class="retry-btn inline-flex items-center gap-2 bg-brand text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-brand/25 cursor-pointer border-none text-base">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Retry Connection
+    </button>
+    <p class="mt-8 text-xs text-gray-400">Recurlog &mdash; Field Service CRM</p>
+  </div>
+  <script>
+    function retryConnection() {
+      var btn = document.querySelector('.retry-btn');
+      btn.disabled = true;
+      btn.textContent = 'Retrying...';
+      window.location.reload();
+    }
+    window.addEventListener('online', function () {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>
