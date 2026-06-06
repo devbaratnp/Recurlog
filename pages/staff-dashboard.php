@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_task'])) {
 
         $notifText = $userName . ' completed "' . $task['title'] . '"';
         createNotification($db, $notifText, 'task_completed', $taskId);
+        setFlash('Task "' . $task['title'] . '" completed successfully');
     }
 
     header('Location: staff-dashboard.php');

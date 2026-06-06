@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt->bind_param('sisssi', $title, $assignedTo, $scheduledDate, $status, $notes, $editId);
       $stmt->execute();
       $db->commit();
+      setFlash('Task "' . $title . '" updated successfully');
       header('Location: task-detail.php?id=' . $editId);
       exit;
     } catch (Exception $e) {

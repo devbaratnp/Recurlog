@@ -69,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       createNotification($db, $notifText, 'service', $serviceId);
 
       $db->commit();
+      setFlash('Task "' . $title . '" created successfully for ' . ($custRow ? $custRow['name'] : 'customer'));
       header('Location: customer-detail.php');
       exit;
     } catch (Exception $e) {

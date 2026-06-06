@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'compl
       $cRow = $custStmt->get_result()->fetch_assoc();
       $notifText = 'Task "' . $tRow['title'] . '" completed for ' . ($cRow ? $cRow['name'] : 'customer');
       createNotification($db, $notifText, 'task', $taskId);
+      setFlash('Task "' . $tRow['title'] . '" marked as completed');
     }
   }
   header('Location: tasks.php' . (isset($_GET['status']) ? '?status=' . urlencode($_GET['status']) : ''));

@@ -118,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       $stmt->bind_param('isssiss', $customerId, $customerName, $problem, $status, $staffId ?: null, $staffName ?: null, $date ?: null);
       $stmt->execute();
       $db->commit();
+      setFlash('Order #' . $db->insert_id . ' created successfully');
     } catch (Exception $e) {
       $db->rollback();
       error_log('Order create failed: ' . $e->getMessage());
@@ -140,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       $stmt = $db->prepare("UPDATE fscrm_orders SET status = 'assigned', assigned_to = ?, assigned_staff_name = ?, scheduled_date = ? WHERE id = ?");
       $stmt->bind_param('issi', $staffId, $staffName, $date, $orderId);
       $stmt->execute();
+      setFlash('Order #' . $orderId . ' assigned to ' . $staffName);
     }
   }
 
@@ -174,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
           }
         }
         $db->commit();
+        setFlash('Order #' . $orderId . ' completed successfully');
       } catch (Exception $e) {
         $db->rollback();
         error_log('Order complete failed: ' . $e->getMessage());
@@ -188,6 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       $stmt = $db->prepare("UPDATE fscrm_orders SET status = 'cancelled' WHERE id = ?");
       $stmt->bind_param('i', $orderId);
       $stmt->execute();
+      setFlash('Order #' . $orderId . ' cancelled');
     }
   }
 

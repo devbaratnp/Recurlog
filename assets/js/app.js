@@ -78,29 +78,16 @@ window.compressSignature = function(base64Data, quality, maxWidth) {
 
 window.showToast = function(message, type) {
   type = type || 'info';
-  var container = document.querySelector('.toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'toast-container';
-    container.style.cssText = 'position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:360px;width:100%;pointer-events:none';
-    document.body.appendChild(container);
-  }
-  var borderColor = type === 'success' ? '#1DB954' : type === 'error' ? '#EF4444' : '#3B82F6';
-  var iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info';
-  var toast = document.createElement('div');
-  toast.className = 'toast toast-' + type;
-  toast.style.cssText = 'background:white;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.12);border-left:4px solid ' + borderColor + ';padding:12px 16px;display:flex;align-items:center;gap:10px;animation:slideIn 0.25s ease-out;pointer-events:auto;font-size:14px';
-  toast.innerHTML = '<i data-lucide="' + iconName + '" class="w-5 h-5" style="color:' + borderColor + ';flex-shrink:0"></i><span style="flex:1">' + message + '</span>';
-  container.appendChild(toast);
-  try { lucide.createIcons(); } catch(e) {}
-  setTimeout(function() {
-    toast.style.animation = 'slideOut 0.25s ease-in forwards';
-    setTimeout(function() {
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    }, 250);
-  }, 2500);
-  var toasts = container.querySelectorAll('.toast');
-  if (toasts.length > 3) container.removeChild(toasts[0]);
+  var iconMap = { success: 'success', error: 'error', info: 'info', warning: 'warning' };
+  Swal.fire({
+    icon: iconMap[type] || 'info',
+    title: message,
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+  });
 };
 
 window.renderStatusPill = function(status) {

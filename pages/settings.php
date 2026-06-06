@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare("INSERT INTO fscrm_service_types (name) VALUES (?)");
             $stmt->bind_param('s', $name);
             $stmt->execute();
+            setFlash('Service type "' . $name . '" added');
         }
         header('Location: settings.php');
         exit;
@@ -28,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
+        setFlash('Service types updated');
         header('Location: settings.php');
         exit;
     }
@@ -40,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $db->prepare("DELETE FROM fscrm_service_types WHERE id = ?");
                 $stmt->bind_param('i', $id);
                 $stmt->execute();
+                setFlash('Service type deleted');
             }
         }
         header('Location: settings.php');

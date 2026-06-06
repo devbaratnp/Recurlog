@@ -114,6 +114,23 @@ define('VAPID_PUBLIC_KEY', getenv('VAPID_PUBLIC_KEY') ?: 'BFrJeUqRee1Bdn_-6DTsnh
 define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: 'huYGZ2S20ApmT7mcfsA9PBKneop8t42qaaD7Id2h93M');
 define('VAPID_SUBJECT', getenv('VAPID_SUBJECT') ?: 'mailto:admin@recurlog.com');
 
+// Flash messages
+function setFlash($message, $type = 'success', $title = '') {
+    $_SESSION['_flash'] = [
+        'type' => $type,
+        'title' => $title ?: ucfirst($type),
+        'text' => $message
+    ];
+}
+
+function getFlash() {
+    $flash = $_SESSION['_flash'] ?? null;
+    if ($flash) {
+        unset($_SESSION['_flash']);
+    }
+    return $flash;
+}
+
 function cacheBust() {
     $cssFile = __DIR__ . '/../assets/css/custom.css';
     $mtime = file_exists($cssFile) ? filemtime($cssFile) : time();

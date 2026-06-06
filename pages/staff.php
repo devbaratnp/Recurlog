@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $db->prepare("INSERT INTO fscrm_staff (name, phone, avatar) VALUES (?, ?, ?)");
       $stmt->bind_param('sss', $name, $phone, $avatar);
       $stmt->execute();
+      setFlash('Staff "' . $name . '" added successfully');
     }
     header('Location: staff.php');
     exit;
@@ -34,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $db->prepare("UPDATE fscrm_staff SET name = ?, phone = ?, avatar = ? WHERE id = ?");
       $stmt->bind_param('sssi', $name, $phone, $avatar, $id);
       $stmt->execute();
+      setFlash('Staff "' . $name . '" updated successfully');
     }
     header('Location: staff.php');
     exit;
@@ -42,12 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrfToken();
     $id = (int)($_POST['id'] ?? 0);
     if ($id) {
+      $stmt = $db->prepare("SELECT name FROM fscrm_staff WHERE id = ?");
+      $stmt->bind_param('i', $id);
+      $stmt->execute();
+      $delRow = $stmt->get_result()->fetch_assoc();
+      $delName = $delRow ? $delRow['name'] : 'Staff';
       $stmt = $db->prepare("DELETE FROM fscrm_users WHERE staff_id = ?");
       $stmt->bind_param('i', $id);
       $stmt->execute();
       $stmt = $db->prepare("DELETE FROM fscrm_staff WHERE id = ?");
       $stmt->bind_param('i', $id);
       $stmt->execute();
+      setFlash('Staff "' . $delName . '" deleted successfully');
     }
     header('Location: staff.php');
     exit;
@@ -76,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           $stmt->bind_param('sssi', $staffRow['name'], $email, $hash, $staffId);
         }
         $stmt->execute();
+        setFlash('Login credentials ' . ($existing ? 'updated' : 'created') . ' for "' . $staffRow['name'] . '"');
       }
     }
     header('Location: staff.php');
