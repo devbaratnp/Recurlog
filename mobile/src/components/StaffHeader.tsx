@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell } from 'lucide-react-native';
 import { COLORS, RADIUS, SPACING, FONT_SIZES } from '../constants/theme';
 
@@ -25,9 +26,10 @@ function getInitials(name: string): string {
 export const StaffHeader = memo(function StaffHeader({ name, unreadCount, onNotificationPress }: StaffHeaderProps) {
   const greeting = useMemo(() => getGreeting(), []);
   const initials = useMemo(() => getInitials(name), [name]);
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
       <View style={styles.left}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{initials}</Text>
@@ -60,7 +62,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING[4],
-    height: 56,
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.neutral100,

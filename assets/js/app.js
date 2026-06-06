@@ -274,3 +274,68 @@ window.goToStaff = goToStaff;
 window.goToTask = goToTask;
 window.goToService = goToService;
 window.showLoadingSkeleton = showLoadingSkeleton;
+
+// ========== NOTIFICATION SOUND (Web Audio API) ==========
+
+window.playNotificationSound = function() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var oscillator = ctx.createOscillator();
+    var gain = ctx.createGain();
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+    oscillator.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+};
+
+// ========== WEB PUSH SETUP ==========
+
+window.initWebPush = function(vapidPublicKey) {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  if (!vapidPublicKey) return;
+
+  navigator.serviceWorker.register('/service-worker.js').then(function(reg) {
+    return reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: base64UrlToUint8Array(vapidPublicKey)
+    });
+  }).then(function(sub) {
+    fetch('../api/push_register.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        platform: 'web',
+        endpoint: sub.endpoint,
+        p256dh: arrayBufferToBase64(sub.getKey('p256dh')),
+        auth: arrayBufferToBase64(sub.getKey('auth')),
+        deviceName: navigator.userAgent
+      })
+    });
+  }).catch(function(err) {
+    if (err.code === 20 && err.name === 'AbortError') return;
+    console.warn('Web push registration:', err.message);
+  });
+};
+
+function base64UrlToUint8Array(base64Url) {
+  var padding = '='.repeat((4 - base64Url.length % 4) % 4);
+  var base64 = (base64Url + padding).replace(/-/g, '+').replace(/_/g, '/');
+  var raw = atob(base64);
+  var arr = new Uint8Array(raw.length);
+  for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+function arrayBufferToBase64(buffer) {
+  var binary = '';
+  var bytes = new Uint8Array(buffer);
+  for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}

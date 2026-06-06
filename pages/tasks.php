@@ -1,6 +1,7 @@
 <?php
 $pageTitle = 'Tasks';
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/notification_helper.php';
 requireAuth();
 $db = getDB();
 
@@ -55,9 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'compl
       $custStmt->execute();
       $cRow = $custStmt->get_result()->fetch_assoc();
       $notifText = 'Task "' . $tRow['title'] . '" completed for ' . ($cRow ? $cRow['name'] : 'customer');
-      $nStmt = $db->prepare("INSERT INTO fscrm_notifications (text, type, related_id) VALUES (?, 'task', ?)");
-      $nStmt->bind_param('si', $notifText, $taskId);
-      $nStmt->execute();
+      createNotification($db, $notifText, 'task', $taskId);
     }
   }
   header('Location: tasks.php' . (isset($_GET['status']) ? '?status=' . urlencode($_GET['status']) : ''));

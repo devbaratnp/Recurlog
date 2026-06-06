@@ -1,8 +1,9 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, LogOut, Bell, Globe, Monitor, Download } from 'lucide-react-native';
 import { useAuthStore } from '../../store/authStore';
+import { useNotificationStore } from '../../store/notificationStore';
 import { COLORS, RADIUS, SPACING, FONT_SIZES, SHADOWS } from '../../constants/theme';
 
 function SettingsRow({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle: string; children?: React.ReactNode }) {
@@ -24,6 +25,7 @@ export function SettingsScreen() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuthStore();
+  const { notificationsEnabled, setNotificationsEnabled } = useNotificationStore();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -59,8 +61,13 @@ export function SettingsScreen() {
 
         <View style={[styles.section, SHADOWS.sm]}>
           <Text style={styles.sectionHeader}>Preferences</Text>
-          <SettingsRow icon={<Bell size={20} color={COLORS.primary} />} title="Notifications" subtitle="Daily reminders and alerts">
-            <View style={styles.toggle} />
+          <SettingsRow icon={<Bell size={20} color={COLORS.primary} />} title="Notifications" subtitle="Push notifications and alert sounds">
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              trackColor={{ false: COLORS.neutral200, true: COLORS.primary }}
+              thumbColor="#fff"
+            />
           </SettingsRow>
           <SettingsRow icon={<Globe size={20} color={COLORS.primary} />} title="Language" subtitle="Select your preferred language">
             <Text style={styles.langText}>English</Text>

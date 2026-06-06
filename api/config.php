@@ -97,6 +97,11 @@ function checkRateLimit($key, $maxAttempts = 5, $windowSec = 300) {
     return true;
 }
 
+// VAPID keys for Web Push
+define('VAPID_PUBLIC_KEY', getenv('VAPID_PUBLIC_KEY') ?: '');
+define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: '');
+define('VAPID_SUBJECT', getenv('VAPID_SUBJECT') ?: 'mailto:admin@recurlog.com');
+
 function validateCsrfToken($token) {
     if (empty($_SESSION['csrf_token']) || empty($token)) return false;
     return hash_equals($_SESSION['csrf_token'], $token);

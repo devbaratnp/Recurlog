@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ArrowLeft, Check, Save } from 'lucide-react-native';
 import { customersApi } from '../../api/client';
@@ -11,6 +12,7 @@ const ALL_SERVICES = ['RO', 'TV', 'Refrigerator', 'AC', 'Washing Machine', 'Othe
 
 export function CustomerAddScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const editId = route.params?.id;
 
@@ -75,7 +77,7 @@ export function CustomerAddScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
@@ -135,8 +137,8 @@ export function CustomerAddScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING[4], height: 56, backgroundColor: COLORS.white,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: SPACING[4], backgroundColor: COLORS.white,
     borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },

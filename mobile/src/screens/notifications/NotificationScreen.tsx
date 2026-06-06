@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, CheckCheck } from 'lucide-react-native';
 import { useNotificationStore } from '../../store/notificationStore';
@@ -23,6 +24,7 @@ function notifConfig(type: string): { icon: string; color: string } {
 
 export function NotificationScreen() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const { notifications, unreadCount, fetchNotifications, markAsRead, markAllRead } = useNotificationStore();
 
   useEffect(() => { fetchNotifications(); }, []);
@@ -48,7 +50,7 @@ export function NotificationScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top, minHeight: 56 + insets.top }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <ArrowLeft size={20} color={COLORS.neutral600} />
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.neutral50 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: SPACING[4], height: 56, backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING[4], backgroundColor: COLORS.white,
     borderBottomWidth: 1, borderBottomColor: COLORS.neutral200,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },

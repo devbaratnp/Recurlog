@@ -28,6 +28,7 @@ export function SearchableDropdown({
 }: SearchableDropdownProps) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const selectedItem = useMemo(
     () => items.find((i) => i.id === selectedId),
@@ -48,7 +49,9 @@ export function SearchableDropdown({
 
   const handleChangeText = (text: string) => {
     setQuery(text);
-    setOpen(text.length > 0);
+    if (text.length > 0 || isFocused) {
+      setOpen(true);
+    }
     if (!text && allowClear && selectedId) {
       onSelect(null);
     }
@@ -66,6 +69,8 @@ export function SearchableDropdown({
         style={styles.input}
         value={query}
         onChangeText={handleChangeText}
+        onFocus={() => { setIsFocused(true); setOpen(true); }}
+        onBlur={() => { setIsFocused(false); }}
         placeholder={placeholder}
         placeholderTextColor={COLORS.neutral400}
       />
@@ -74,6 +79,7 @@ export function SearchableDropdown({
           <ScrollView
             style={styles.list}
             keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
           >
             {filtered.map((item) => (
               <TouchableOpacity
@@ -125,9 +131,8 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     backgroundColor: COLORS.white,
     maxHeight: 200,
-    overflow: 'hidden',
   },
-  list: { maxHeight: 200 },
+  list: { maxHeight: 200, flexGrow: 0 },
   item: {
     flexDirection: 'row',
     alignItems: 'center',

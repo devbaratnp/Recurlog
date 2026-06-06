@@ -1,6 +1,7 @@
 <?php
 $pageTitle = 'Add Service';
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/notification_helper.php';
 requireAuth();
 $db = getDB();
 
@@ -79,9 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $custStmt->execute();
       $custRow = $custStmt->get_result()->fetch_assoc();
       $notifText = 'New service "' . $title . '" added for ' . ($custRow ? $custRow['name'] : 'customer');
-      $notifStmt = $db->prepare("INSERT INTO fscrm_notifications (text, type, related_id) VALUES (?, 'service', ?)");
-      $notifStmt->bind_param('si', $notifText, $serviceId);
-      $notifStmt->execute();
+      createNotification($db, $notifText, 'service', $serviceId);
 
       $db->commit();
       header('Location: customer-detail.php');

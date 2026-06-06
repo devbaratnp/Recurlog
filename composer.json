@@ -1,0 +1,11 @@
+{
+    "name": "recurlog/recurlog",
+    "description": "Recurlog Field Service CRM",
+    "type": "project",
+    "require": {
+        "minishlink/web-push": "^9.0"
+    },
+    "config": {
+        "vendor-dir": "vendor"
+    }
+}

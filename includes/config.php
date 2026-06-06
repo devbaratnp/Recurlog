@@ -108,6 +108,12 @@ function authUser() {
     ];
 }
 
+// VAPID keys for Web Push
+// Generate via: php -r 'require "includes/notification_helper.php"; print_r(generateVapidKeys());'
+define('VAPID_PUBLIC_KEY', getenv('VAPID_PUBLIC_KEY') ?: '');
+define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: '');
+define('VAPID_SUBJECT', getenv('VAPID_SUBJECT') ?: 'mailto:admin@recurlog.com');
+
 function cacheBust() {
     $cssFile = __DIR__ . '/../assets/css/custom.css';
     $mtime = file_exists($cssFile) ? filemtime($cssFile) : time();

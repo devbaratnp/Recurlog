@@ -180,4 +180,18 @@ export const serviceTypesApi = {
   list: () => api.get<ApiResponse<ServiceType[]>>('/service_types.php'),
 };
 
+// ========== PUSH TOKENS ==========
+export const pushTokenApi = {
+  register: (data: { platform: 'android' | 'ios'; expoToken: string; deviceName?: string; appVersion?: string }) =>
+    api.post<ApiResponse<any>>('/push_register.php', data),
+  unregister: (expoToken: string) =>
+    api.delete<ApiResponse<any>>('/push_register.php', { data: { expoToken } }),
+  unregisterAll: () =>
+    api.delete<ApiResponse<any>>('/push_register.php', { data: { all: true } }),
+  updatePreferences: (notificationsEnabled: boolean, tokenId?: number) =>
+    api.put<ApiResponse<any>>('/push_register.php', { notificationsEnabled, tokenId }),
+  listDevices: () =>
+    api.get<ApiResponse<any[]>>('/push_register.php'),
+};
+
 export default api;

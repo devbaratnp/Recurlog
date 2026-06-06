@@ -19,6 +19,16 @@ web-build/
 *.swp
 *.swo
 
+# Android build
+android/.gradle/
+android/build/
+android/app/build/
+android/app/debug.keystore
+.android/
+
+# iOS build
+ios/
+
 # Environment
 .env
 .env.local

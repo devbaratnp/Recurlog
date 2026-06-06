@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/config.php';
+require_once '../includes/notification_helper.php';
 requireAuth();
 
 $staffId = $_SESSION['user_staff_id'] ?? null;
@@ -41,9 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_task'])) {
         $compStmt->execute();
 
         $notifText = $userName . ' completed "' . $task['title'] . '"';
-        $notifStmt = $db->prepare("INSERT INTO fscrm_notifications (text, type, related_id) VALUES (?, 'task_completed', ?)");
-        $notifStmt->bind_param('si', $notifText, $taskId);
-        $notifStmt->execute();
+        createNotification($db, $notifText, 'task_completed', $taskId);
     }
 
     header('Location: staff-dashboard.php');
