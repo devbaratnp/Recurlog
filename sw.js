@@ -6,14 +6,11 @@ var CACHE_NAMES = {
   images: 'images-v1',
 };
 
-var STATIC_ASSETS = [
+var PRECACHE_ASSETS = [
   '/offline.html',
   '/assets/css/custom.css',
   '/assets/js/sidebar.js',
   '/assets/js/app.js',
-];
-
-var ICON_ASSETS = [
   '/assets/icons/icon-48.png',
   '/assets/icons/icon-72.png',
   '/assets/icons/icon-96.png',
@@ -35,7 +32,9 @@ var ICON_ASSETS = [
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAMES.static).then(function (cache) {
-      return cache.addAll(STATIC_ASSETS.concat(ICON_ASSETS));
+      return cache.addAll(PRECACHE_ASSETS);
+    }).catch(function () {
+      // Precache is best-effort
     })
   );
   self.skipWaiting();
@@ -59,23 +58,12 @@ self.addEventListener('activate', function (event) {
   );
 });
 
-function isNavigationRequest(request) {
-  return request.mode === 'navigate';
-}
-
-function isApiRequest(url) {
-  return url.pathname.startsWith('/api/');
-}
-
-function isAuthRequest(url) {
-  return url.pathname.startsWith('/api/auth') || url.pathname.startsWith('/api/login');
-}
+// ----- Helpers -----
 
 function isStaticAsset(url) {
-  return STATIC_ASSETS.some(function (a) { return url.pathname === a; }) ||
-    ICON_ASSETS.some(function (a) { return url.pathname === a; }) ||
-    url.pathname === '/manifest.json' ||
-    url.pathname === '/sw.js';
+  return url.pathname === '/manifest.json' ||
+    url.pathname === '/sw.js' ||
+    PRECACHE_ASSETS.indexOf(url.pathname) !== -1;
 }
 
 function isFontRequest(url) {
@@ -93,31 +81,53 @@ function isImageRequest(url) {
   return /\.(png|jpg|jpeg|gif|svg|webp|ico)$/i.test(url.pathname);
 }
 
+function isApiRequest(url) {
+  return url.pathname.indexOf('/api/') !== -1;
+}
+
+function isAuthApi(url) {
+  return url.pathname.indexOf('/api/auth') !== -1 ||
+    url.pathname.indexOf('/api/login') !== -1;
+}
+
+function isPhpPage(url) {
+  return url.pathname.match(/\.php$/);
+}
+
+function isNavigationRequest(request) {
+  return request.mode === 'navigate';
+}
+
 function isMutationMethod(request) {
   return request.method !== 'GET';
 }
 
+// ----- Strategies -----
+
+function fromCacheOrFallback(request, fallbackUrl) {
+  return caches.match(request).then(function (cached) {
+    if (cached) return cached;
+    if (fallbackUrl) return caches.match(fallbackUrl);
+    return null;
+  });
+}
+
 function networkFirst(request, cacheName, fallbackUrl) {
-  return fetch(request)
-    .then(function (response) {
-      if (response && response.status === 200) {
-        var r = response.clone();
-        caches.open(cacheName).then(function (cache) {
-          cache.put(request, r);
-        });
-      }
-      return response;
-    })
-    .catch(function () {
-      return caches.match(request).then(function (cached) {
-        if (cached) return cached;
-        if (fallbackUrl) return caches.match(fallbackUrl);
-        return new Response(
-          JSON.stringify({ ok: false, error: 'You are offline' }),
-          { status: 503, headers: { 'Content-Type': 'application/json' } }
-        );
-      });
+  return fetch(request).then(function (response) {
+    if (response && response.status === 200) {
+      var r = response.clone();
+      caches.open(cacheName).then(function (cache) { cache.put(request, r); });
+    }
+    return response;
+  }).catch(function () {
+    return fromCacheOrFallback(request, fallbackUrl).then(function (res) {
+      if (res) return res;
+      return new Response(
+        JSON.stringify({ ok: false, error: 'You are offline' }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      );
     });
+  });
 }
 
 function cacheFirst(request, cacheName) {
@@ -126,9 +136,7 @@ function cacheFirst(request, cacheName) {
     return fetch(request).then(function (response) {
       if (response && response.status === 200) {
         var r = response.clone();
-        caches.open(cacheName).then(function (cache) {
-          cache.put(request, r);
-        });
+        caches.open(cacheName).then(function (cache) { cache.put(request, r); });
       }
       return response;
     });
@@ -136,8 +144,7 @@ function cacheFirst(request, cacheName) {
 }
 
 function staleWhileRevalidate(request, cacheName) {
-  var cachePromise = caches.open(cacheName);
-  return cachePromise.then(function (cache) {
+  return caches.open(cacheName).then(function (cache) {
     return cache.match(request).then(function (cached) {
       var fetchPromise = fetch(request).then(function (response) {
         if (response && response.status === 200) {
@@ -145,27 +152,39 @@ function staleWhileRevalidate(request, cacheName) {
         }
         return response;
       }).catch(function () {
-        return cached;
+        return cached || new Response('', { status: 503 });
       });
       return cached || fetchPromise;
     });
   });
 }
 
+// ----- Fetch Handler -----
+
 self.addEventListener('fetch', function (event) {
   var url = new URL(event.request.url);
 
-  // Network Only for non-GET requests
-  if (isMutationMethod(event.request)) {
+  // Only handle same-origin requests
+  if (url.origin !== self.location.origin) {
+    // Cross-origin: just cache fonts and CDN
+    if (isFontRequest(url)) {
+      event.respondWith(cacheFirst(event.request, CACHE_NAMES.fonts));
+    } else if (isCdnScript(url)) {
+      event.respondWith(staleWhileRevalidate(event.request, CACHE_NAMES.dynamic));
+    }
     return;
   }
 
-  // Network Only for auth endpoints
-  if (isAuthRequest(url)) {
-    return;
-  }
+  // Network Only for non-GET
+  if (isMutationMethod(event.request)) return;
 
-  // Cache First for static assets and icons
+  // Network Only for auth APIs
+  if (isAuthApi(url)) return;
+
+  // Do NOT intercept PHP page navigations (dynamic content)
+  if (isNavigationRequest(event.request) && isPhpPage(url)) return;
+
+  // Cache First for known static assets
   if (isStaticAsset(url)) {
     event.respondWith(cacheFirst(event.request, CACHE_NAMES.static));
     return;
@@ -195,20 +214,17 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // Network First with offline fallback for navigations
+  // Offline fallback for non-PHP navigation requests
   if (isNavigationRequest(event.request)) {
     event.respondWith(networkFirst(event.request, CACHE_NAMES.static, '/offline.html'));
     return;
   }
-
-  // Stale While Revalidate for all other GET requests
-  event.respondWith(staleWhileRevalidate(event.request, CACHE_NAMES.dynamic));
 });
 
-// Push notification handling (from service-worker.js)
+// ----- Push Notifications -----
+
 self.addEventListener('push', function (event) {
   if (!event.data) return;
-
   var data = event.data.json();
   var title = data.title || 'Recurlog';
   var options = {
@@ -218,32 +234,23 @@ self.addEventListener('push', function (event) {
     vibrate: [200, 100, 200],
     data: data.data || {},
   };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-
   var url = event.notification.data && event.notification.data.url
     ? event.notification.data.url
     : '/pages/dashboard.php';
-
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
       for (var i = 0; i < clientList.length; i++) {
-        var client = clientList[i];
-        if (client.url.indexOf(self.location.origin) === 0 && 'focus' in client) {
-          return client.focus().then(function (focused) {
-            focused.navigate(url);
-          });
+        var c = clientList[i];
+        if (c.url.indexOf(self.location.origin) === 0 && 'focus' in c) {
+          return c.focus().then(function (f) { f.navigate(url); });
         }
       }
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
+      if (clients.openWindow) return clients.openWindow(url);
     })
   );
 });
