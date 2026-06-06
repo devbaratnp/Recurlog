@@ -140,7 +140,7 @@ lucide.createIcons();
 (function () {
   if (!('serviceWorker' in navigator)) return;
   function registerSW() {
-    navigator.serviceWorker.register('/Recurlog/sw.js', { scope: '/Recurlog/' }).catch(function () {});
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
   }
   if (document.readyState === 'complete') { registerSW(); }
   else { document.addEventListener('DOMContentLoaded', registerSW); }

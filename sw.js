@@ -6,7 +6,7 @@ var CACHE_NAMES = {
   images: 'images-v1',
 };
 
-var BASE = '/Recurlog';
+var BASE = '';
 
 var PRECACHE_ASSETS = [
   BASE + '/offline.html',

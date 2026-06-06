@@ -13,8 +13,8 @@ self.addEventListener('push', function(event) {
   var title = data.title || 'Recurlog';
   var options = {
     body: data.body || '',
-    icon: data.icon || '/Recurlog/assets/icons/icon-192.png',
-    badge: '/Recurlog/assets/icons/icon-96.png',
+    icon: data.icon || '/assets/icons/icon-192.png',
+    badge: '/assets/icons/icon-96.png',
     vibrate: [200, 100, 200],
     data: data.data || {},
   };
@@ -29,7 +29,7 @@ self.addEventListener('notificationclick', function(event) {
 
   var url = event.notification.data && event.notification.data.url
     ? event.notification.data.url
-    : '/Recurlog/pages/dashboard.php';
+    : '/pages/dashboard.php';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
