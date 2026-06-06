@@ -10,10 +10,7 @@
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
-
-use Minishlink\WebPush\WebPush;
-use Minishlink\WebPush\Subscription;
-use Minishlink\WebPush\VAPID;
+require_once __DIR__ . '/vapid_helper.php';
 
 function createNotification($db, $text, $type, $relatedId = null, $userId = null) {
     if (!$userId) $userId = (int)($_SESSION['user_id'] ?? 0);
@@ -118,23 +115,14 @@ function sendPushNotification($db, $userId, $text, $type, $relatedId = null) {
         }
     }
 
-    // Send Web Push via minishlink/web-push library
+    // Send Web Push via custom VAPID helper (no external deps)
     if (!empty($webSubscriptions)) {
-        $publicKey = defined('VAPID_PUBLIC_KEY') ? VAPID_PUBLIC_KEY : '';
-        $privateKey = defined('VAPID_PRIVATE_KEY') ? VAPID_PRIVATE_KEY : '';
-        $subject = defined('VAPID_SUBJECT') ? VAPID_SUBJECT : 'mailto:admin@recurlog.com';
+        $vapidPublic = defined('VAPID_PUBLIC_KEY') ? VAPID_PUBLIC_KEY : '';
+        $vapidPrivate = defined('VAPID_PRIVATE_KEY') ? VAPID_PRIVATE_KEY : '';
 
-        if ($publicKey && $privateKey) {
-            $webPush = new WebPush([
-                'VAPID' => [
-                    'subject' => $subject,
-                    'publicKey' => $publicKey,
-                    'privateKey' => $privateKey,
-                ],
-            ]);
-
+        if ($vapidPublic && $vapidPrivate) {
             $notifUrl = determineNotificationUrl($type, $relatedId);
-            $pushPayload = json_encode([
+            $pushPayload = [
                 'title' => $title,
                 'body' => $text,
                 'icon' => '/assets/icons/icon-192.png',
@@ -144,27 +132,22 @@ function sendPushNotification($db, $userId, $text, $type, $relatedId = null) {
                     'relatedId' => $relatedId,
                     'url' => $notifUrl,
                 ]
-            ]);
+            ];
 
             foreach ($webSubscriptions as $sub) {
-                $webPush->queueNotification(
-                    Subscription::create([
-                        'endpoint' => $sub['endpoint'],
-                        'publicKey' => $sub['p256dh'],
-                        'authToken' => $sub['auth'],
-                    ]),
-                    $pushPayload
+                $result = sendWebPushNotification(
+                    $sub['endpoint'],
+                    $sub['p256dh'],
+                    $sub['auth'],
+                    $pushPayload,
+                    $vapidPublic,
+                    $vapidPrivate
                 );
-            }
 
-            foreach ($webPush->flush() as $report) {
-                if (!$report->isSuccess()) {
-                    $endpoint = $report->getEndpoint();
-                    if ($report->isSubscriptionExpired()) {
-                        $cleanStmt = $db->prepare("DELETE FROM fscrm_push_tokens WHERE endpoint = ?");
-                        $cleanStmt->bind_param('s', $endpoint);
-                        $cleanStmt->execute();
-                    }
+                if ($result['expired']) {
+                    $cleanStmt = $db->prepare("DELETE FROM fscrm_push_tokens WHERE endpoint = ?");
+                    $cleanStmt->bind_param('s', $sub['endpoint']);
+                    $cleanStmt->execute();
                 }
             }
         }
@@ -192,13 +175,14 @@ function determineNotificationUrl($type, $relatedId) {
 }
 
 function generateVapidKeys() {
-    return VAPID::createVapidKeys();
-}
-
-function base64url_encode($data) {
-    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
-}
-
-function base64url_decode($data) {
-    return base64_decode(strtr($data, '-_', '+/'));
+    $key = openssl_pkey_new([
+        'curve_name' => 'prime256v1',
+        'private_key_type' => OPENSSL_KEYTYPE_EC,
+    ]);
+    $details = openssl_pkey_get_details($key);
+    $pubRaw = chr(4) . $details['ec']['x'] . $details['ec']['y'];
+    return [
+        'publicKey' => base64urlEncode($pubRaw),
+        'privateKey' => base64urlEncode($details['ec']['d']),
+    ];
 }
