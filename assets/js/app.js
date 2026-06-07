@@ -312,6 +312,98 @@ window.initWebPush = function(vapidPublicKey) {
   });
 };
 
+// ========== STAFF REASSIGNMENT ==========
+
+window.reassignStaff = function(config) {
+  var entityType = config.entityType;
+  var entityId = config.entityId;
+  var currentStaffId = config.currentStaffId;
+  var onSuccess = config.onSuccess || function() { window.location.reload(); };
+
+  fetch('../api/staff.php')
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res.success || !res.data) throw new Error('Failed to load staff');
+      var staffList = res.data;
+      var currentStaff = staffList.find(function(s) { return String(s.id) === String(currentStaffId); });
+
+      var modalHtml =
+        '<div id="reassign-modal" class="modal-overlay" style="display:flex">' +
+          '<div class="modal-content" onclick="event.stopPropagation()" style="max-width:400px">' +
+            '<div class="flex items-center justify-between mb-4">' +
+              '<h3 class="text-lg font-bold text-gray-900">Change Assignee</h3>' +
+              '<button type="button" onclick="document.getElementById(\'reassign-modal\').remove()" class="text-gray-400 hover:text-gray-600 transition-colors">' +
+                '<i data-lucide="x" class="w-5 h-5"></i>' +
+              '</button>' +
+            '</div>' +
+            '<div class="mb-3 text-sm text-gray-500">' +
+              'Current: <span class="font-medium text-gray-700">' + (currentStaff ? currentStaff.name : 'Unassigned') + '</span>' +
+            '</div>' +
+            '<div class="mb-4">' +
+              '<label class="block text-sm font-semibold text-gray-700 mb-1.5">Assign To</label>' +
+              '<select id="reassign-staff-select" class="form-select w-full">' +
+                '<option value="">Unassigned</option>';
+      staffList.forEach(function(s) {
+        modalHtml += '<option value="' + s.id + '" ' + (String(s.id) === String(currentStaffId) ? 'selected' : '') + '>' + s.name + '</option>';
+      });
+      modalHtml +=
+              '</select>' +
+            '</div>' +
+            '<div class="flex gap-3">' +
+              '<button type="button" onclick="document.getElementById(\'reassign-modal\').remove()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>' +
+              '<button type="button" id="reassign-confirm-btn" class="flex-1 px-4 py-2.5 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow">Save</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      var wrapper = document.createElement('div');
+      wrapper.innerHTML = modalHtml;
+      document.body.appendChild(wrapper);
+      try { lucide.createIcons(); } catch(e) {}
+
+      document.getElementById('reassign-confirm-btn').addEventListener('click', function() {
+        var newStaffId = document.getElementById('reassign-staff-select').value;
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        fetch('../api/reassign.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.querySelector('input[name=\'csrf_token\']')?.value || '' },
+          body: JSON.stringify({
+            entity_type: entityType,
+            entity_id: entityId,
+            new_assignee_id: newStaffId || null
+          })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (res.success) {
+            window.showToast('Assignee changed successfully', 'success');
+            document.getElementById('reassign-modal').remove();
+            if (onSuccess) onSuccess(res.data);
+          } else {
+            window.showToast(res.error || 'Reassignment failed', 'error');
+            btn.disabled = false;
+            btn.textContent = 'Save';
+          }
+        })
+        .catch(function() {
+          window.showToast('Network error', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Save';
+        });
+      });
+
+      document.getElementById('reassign-modal').addEventListener('click', function(e) {
+        if (e.target === this) this.remove();
+      });
+    })
+    .catch(function(err) {
+      window.showToast('Failed to load staff list', 'error');
+    });
+};
+
 function base64UrlToUint8Array(base64Url) {
   var padding = '='.repeat((4 - base64Url.length % 4) % 4);
   var base64 = (base64Url + padding).replace(/-/g, '+').replace(/_/g, '/');

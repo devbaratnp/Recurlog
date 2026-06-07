@@ -189,6 +189,9 @@ function statusPillShort($status) {
                     <td class="px-4 py-3 text-center"><?= statusPillShort($t['status']) ?></td>
                     <td class="px-4 py-3 text-right">
                       <div class="flex items-center justify-end gap-1">
+                        <button class="reassign-ot-btn btn btn-sm btn-ghost p-1.5 text-purple-500 hover:text-purple-700" title="Reassign" data-ot-id="<?= $t['id'] ?>" data-current-staff="<?= $t['assigned_to'] ?? '' ?>">
+                          <i data-lucide="user-switch" class="w-3.5 h-3.5"></i>
+                        </button>
                         <a href="task-edit.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-ghost p-1.5" title="Edit">
                           <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                         </a>
@@ -493,6 +496,17 @@ function statusPillShort($status) {
         document.getElementById('delete-ot-modal').style.display = 'none';
         deleteOtId = null;
       }
+
+      // ========== REASSIGN ONE-TIME TASK ==========
+      document.querySelectorAll('.reassign-ot-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          window.reassignStaff({
+            entityType: 'task',
+            entityId: parseInt(this.dataset.otId, 10),
+            currentStaffId: this.dataset.currentStaff || null
+          });
+        });
+      });
     });
   </script>
   <!-- DELETE CONFIRM MODAL -->

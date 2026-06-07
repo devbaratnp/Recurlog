@@ -356,6 +356,7 @@ function truncate($str, $len = 60) {
             <button class="complete-order-btn px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand/90 transition-colors flex items-center gap-1" data-order-id="<?= $o['id'] ?>"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Complete</button>
             <button class="cancel-btn px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1" data-order-id="<?= $o['id'] ?>"><i data-lucide="x" class="w-3.5 h-3.5"></i> Cancel</button>
             <?php endif; ?>
+            <button class="reassign-order-btn px-3 py-1.5 bg-purple-50 text-purple-600 text-xs font-semibold rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-1.5" data-order-id="<?= $o['id'] ?>" data-current-staff="<?= $o['assigned_to'] ?? '' ?>"><i data-lucide="user-switch" class="w-3.5 h-3.5"></i> Reassign</button>
             <button class="delete-order-btn px-3 py-1.5 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5" data-order-id="<?= $o['id'] ?>" data-order-customer="<?= htmlspecialchars($o['customer_name'] ?? 'Unknown') ?>" data-order-problem="<?= htmlspecialchars($o['problem'] ?? '') ?>" data-order-status="<?= $o['status'] ?>"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete</button>
           </div>
         </div>
@@ -1135,6 +1136,19 @@ function truncate($str, $len = 60) {
       document.getElementById('delete-order-modal').style.display = 'none';
       deleteOrderId = null;
     }
+
+    // ========== REASSIGN ORDER ==========
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.reassign-order-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          window.reassignStaff({
+            entityType: 'order',
+            entityId: parseInt(this.dataset.orderId, 10),
+            currentStaffId: this.dataset.currentStaff || null
+          });
+        });
+      });
+    });
   </script>
 
   <?php if ($totalPages > 1): ?>

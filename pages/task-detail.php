@@ -172,6 +172,13 @@ $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($task['customer_name']
           <a href="tel:<?= htmlspecialchars($task['staff_phone']) ?>" class="text-brand hover:underline ml-auto text-sm"><?= htmlspecialchars($task['staff_phone']) ?></a>
         </div>
         <?php endif; ?>
+        <?php if (!$isStaff): ?>
+        <div class="mt-3 pt-3 border-t border-gray-100">
+          <button class="reassign-detail-btn text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1.5" data-task-id="<?= $task['id'] ?>" data-current-staff="<?= $task['assigned_to'] ?? '' ?>">
+            <i data-lucide="user-switch" class="w-4 h-4"></i> Change Assignee
+          </button>
+        </div>
+        <?php endif; ?>
       </div>
 
       <!-- Service -->
@@ -260,6 +267,9 @@ $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($task['customer_name']
     </div>
     <?php endif; ?>
 
+    <!-- CSRF token for AJAX requests -->
+    <?= csrfHiddenField() ?>
+
   </div>
 </div>
 
@@ -281,6 +291,21 @@ $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($task['customer_name']
 </nav>
 <?php endif; ?>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var reassignBtn = document.querySelector('.reassign-detail-btn');
+    if (reassignBtn) {
+      reassignBtn.addEventListener('click', function () {
+        window.reassignStaff({
+          entityType: 'task',
+          entityId: parseInt(this.dataset.taskId, 10),
+          currentStaffId: this.dataset.currentStaff || null,
+          onSuccess: function () { window.location.reload(); }
+        });
+      });
+    }
+  });
+</script>
 <script>lucide.createIcons();</script>
 </body>
 </html>

@@ -35,6 +35,7 @@ function bindExecute($stmt, $params) {
 }
 
 // Delete in dependency-safe order (children first)
+$db->query("DELETE FROM fscrm_assignment_history");
 $db->query("DELETE FROM fscrm_notifications");
 $db->query("DELETE FROM fscrm_tasks");
 $db->query("DELETE FROM fscrm_orders");
@@ -47,6 +48,7 @@ $db->query("DELETE FROM fscrm_customers");
 $db->query("DELETE FROM fscrm_users");
 
 // Reset auto-increment
+$db->query("ALTER TABLE fscrm_assignment_history AUTO_INCREMENT = 1");
 $db->query("ALTER TABLE fscrm_notifications AUTO_INCREMENT = 1");
 $db->query("ALTER TABLE fscrm_tasks AUTO_INCREMENT = 1");
 $db->query("ALTER TABLE fscrm_orders AUTO_INCREMENT = 1");
