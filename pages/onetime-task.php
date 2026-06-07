@@ -188,9 +188,14 @@ function statusPillShort($status) {
                     <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['scheduled_date']) ?></td>
                     <td class="px-4 py-3 text-center"><?= statusPillShort($t['status']) ?></td>
                     <td class="px-4 py-3 text-right">
-                      <a href="task-edit.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-ghost p-1.5" title="Edit">
-                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                      </a>
+                      <div class="flex items-center justify-end gap-1">
+                        <a href="task-edit.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-ghost p-1.5" title="Edit">
+                          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        </a>
+                        <button class="delete-ot-btn btn btn-sm btn-ghost p-1.5 text-red-500 hover:text-red-700" title="Delete" data-ot-id="<?= $t['id'] ?>" data-ot-title="<?= htmlspecialchars($t['title']) ?>" data-ot-customer="<?= htmlspecialchars($t['customer_name'] ?? '—') ?>" data-ot-date="<?= $t['scheduled_date'] ?>">
+                          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   <?php endforeach; ?>
@@ -449,8 +454,69 @@ function statusPillShort($status) {
           });
         });
       }
+
+      // ========== DELETE ONE-TIME TASK ==========
+      var deleteOtId = null;
+
+      document.querySelectorAll('.delete-ot-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          deleteOtId = parseInt(this.dataset.otId, 10);
+          document.getElementById('del-ot-title').textContent = this.dataset.otTitle;
+          document.getElementById('del-ot-customer').textContent = this.dataset.otCustomer;
+          document.getElementById('del-ot-date').textContent = this.dataset.otDate;
+          document.getElementById('delete-ot-modal').style.display = 'flex';
+        });
+      });
+
+      document.getElementById('delete-ot-confirm-btn').addEventListener('click', async function () {
+        if (!deleteOtId) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+        try {
+          var res = await fetch('../api/tasks.php?id=' + deleteOtId, { method: 'DELETE' });
+          var data = await res.json();
+          if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); btn.disabled = false; btn.textContent = 'Delete'; return; }
+          var row = document.querySelector('.delete-ot-btn[data-ot-id="' + deleteOtId + '"]').closest('tr');
+          if (row) row.remove();
+          showToast('Task deleted successfully', 'success');
+          closeOtDeleteModal();
+          try { lucide.createIcons(); } catch (e) {}
+        } catch (e) {
+          showToast('Network error', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Delete';
+        }
+      });
+
+      function closeOtDeleteModal() {
+        document.getElementById('delete-ot-modal').style.display = 'none';
+        deleteOtId = null;
+      }
     });
   </script>
+  <!-- DELETE CONFIRM MODAL -->
+  <div id="delete-ot-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:420px" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">Delete Task?</h3>
+        <button type="button" onclick="closeOtDeleteModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="delete-ot-body" class="text-sm text-gray-600 mb-1 space-y-1">
+        <p><span class="font-medium">Task:</span> <span id="del-ot-title"></span></p>
+        <p><span class="font-medium">Customer:</span> <span id="del-ot-customer"></span></p>
+        <p><span class="font-medium">Date:</span> <span id="del-ot-date"></span></p>
+      </div>
+      <p class="text-sm text-red-600 font-semibold mt-3 mb-5">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button type="button" onclick="closeOtDeleteModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="delete-ot-confirm-btn" class="flex-1 px-4 py-2.5 bg-danger text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">Delete</button>
+      </div>
+    </div>
+  </div>
+
 <?php require_once '../includes/footer.php'; ?>
 </body>
 </html>

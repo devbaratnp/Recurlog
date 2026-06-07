@@ -118,10 +118,24 @@ switch ($method) {
 
     case 'DELETE':
         if (!$id) jsonError('ID is required');
-        $stmt = $db->prepare("DELETE FROM fscrm_services WHERE id = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        if ($stmt->affected_rows === 0) jsonError('Service not found', 404);
-        jsonResponse(['message' => 'Service deleted']);
+        $db->begin_transaction();
+        try {
+            $stmt = $db->prepare("DELETE FROM fscrm_tasks WHERE service_id = ?");
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+
+            $svcStmt = $db->prepare("DELETE FROM fscrm_services WHERE id = ?");
+            $svcStmt->bind_param('i', $id);
+            $svcStmt->execute();
+            if ($svcStmt->affected_rows === 0) {
+                $db->rollback();
+                jsonError('Service not found', 404);
+            }
+            $db->commit();
+            jsonResponse(['message' => 'Service deleted']);
+        } catch (Exception $e) {
+            $db->rollback();
+            jsonError('Delete failed: ' . $e->getMessage(), 500);
+        }
         break;
 }

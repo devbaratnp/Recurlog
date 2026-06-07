@@ -1,0 +1,1 @@
+Spec written and committed to `docs/superpowers/specs/2026-06-07-delete-system-design.md`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan.

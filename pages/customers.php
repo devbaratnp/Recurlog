@@ -115,6 +115,21 @@ $customerJson = json_encode($customers);
     window.__CUSTOMERS = <?= $customerJson ?>;
   </script>
   <script>
+    // ========== DELETE CUSTOMER ==========
+    var deleteCustId = null;
+
+    function attachCustDeleteHandlers() {
+      document.querySelectorAll('.delete-cust-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          deleteCustId = parseInt(this.dataset.custId, 10);
+          document.getElementById('del-cust-name').textContent = this.dataset.custName;
+          document.getElementById('del-cust-phone').textContent = this.dataset.custPhone || '—';
+          document.getElementById('del-cust-address').textContent = this.dataset.custAddress || '—';
+          document.getElementById('delete-cust-modal').style.display = 'flex';
+        });
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       lucide.createIcons();
 
@@ -136,7 +151,7 @@ $customerJson = json_encode($customers);
         return map[service] || 'bg-gray-100 text-gray-700';
       }
 
-      function renderTable(filter) {
+      var origRender = function(filter) {
         var q = (filter || '').toLowerCase().trim();
         var filtered = q ? allCustomers.filter(function(c) { return c.name.toLowerCase().includes(q); }) : allCustomers;
 
@@ -162,6 +177,9 @@ $customerJson = json_encode($customers);
             '<td data-label="Services"><div class="flex flex-wrap gap-1.5">' + chips + '</div></td>' +
             '<td data-label="" class="text-right">' +
               '<div class="flex items-center justify-end gap-1.5">' +
+              '<button class="delete-cust-btn btn btn-sm btn-ghost p-1.5 text-red-500 hover:text-red-700" title="Delete" data-cust-id="' + c.id + '" data-cust-name="' + c.name.replace(/'/g, "\\'") + '" data-cust-phone="' + (c.phone || '') + '" data-cust-address="' + (c.address || '').replace(/'/g, "\\'") + '">' +
+                '<i data-lucide="trash-2" class="w-3.5 h-3.5"></i>' +
+              '</button>' +
               '<a href="customer-add.php?id=' + c.id + '" class="btn btn-sm btn-ghost p-1.5" title="Edit">' +
                 '<i data-lucide="pencil" class="w-3.5 h-3.5"></i>' +
               '</a>' +
@@ -174,16 +192,75 @@ $customerJson = json_encode($customers);
         }).join('');
 
         try { lucide.createIcons(); } catch(e) {}
-      }
+      };
+
+      window.renderTable = function(filter) {
+        origRender(filter);
+        attachCustDeleteHandlers();
+      };
 
       searchInput.addEventListener('input', function() {
         renderTable(this.value);
       });
 
       renderTable('');
+      attachCustDeleteHandlers();
     })();
+
+      document.getElementById('delete-cust-confirm-btn').addEventListener('click', async function () {
+        if (!deleteCustId) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+        try {
+          var res = await fetch('../api/customers.php?id=' + deleteCustId, { method: 'DELETE' });
+          var data = await res.json();
+          if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); btn.disabled = false; btn.textContent = 'Delete Everything'; return; }
+          var row = document.querySelector('.delete-cust-btn[data-cust-id="' + deleteCustId + '"]').closest('tr');
+          if (row) row.remove();
+          showToast('Customer deleted successfully', 'success');
+          closeCustDeleteModal();
+          try { lucide.createIcons(); } catch (e) {}
+        } catch (e) {
+          showToast('Network error', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Delete Everything';
+        }
+      });
     });
+
+    function closeCustDeleteModal() {
+      document.getElementById('delete-cust-modal').style.display = 'none';
+      deleteCustId = null;
+    }
   </script>
+  <!-- DELETE CUSTOMER CONFIRM MODAL -->
+  <div id="delete-cust-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:420px" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">Delete Customer?</h3>
+        <button type="button" onclick="closeCustDeleteModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="text-sm text-gray-600 mb-1 space-y-1">
+        <p><span class="font-medium">Name:</span> <span id="del-cust-name"></span></p>
+        <p><span class="font-medium">Phone:</span> <span id="del-cust-phone"></span></p>
+        <p><span class="font-medium">Address:</span> <span id="del-cust-address"></span></p>
+      </div>
+      <p class="text-sm text-red-600 font-semibold mt-4 mb-1">This will also delete:</p>
+      <ul class="text-xs text-red-500 list-disc pl-5 mb-4 space-y-0.5">
+        <li>All services and tasks for this customer</li>
+        <li>All orders for this customer</li>
+      </ul>
+      <p class="text-sm text-red-600 font-semibold mb-5">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button type="button" onclick="closeCustDeleteModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="delete-cust-confirm-btn" class="flex-1 px-4 py-2.5 bg-danger text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">Delete Everything</button>
+      </div>
+    </div>
+  </div>
+
 <?php require_once '../includes/footer.php'; ?>
 </body>
 </html>

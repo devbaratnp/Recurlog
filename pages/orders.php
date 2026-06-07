@@ -356,6 +356,7 @@ function truncate($str, $len = 60) {
             <button class="complete-order-btn px-3 py-1.5 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand/90 transition-colors flex items-center gap-1" data-order-id="<?= $o['id'] ?>"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Complete</button>
             <button class="cancel-btn px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1" data-order-id="<?= $o['id'] ?>"><i data-lucide="x" class="w-3.5 h-3.5"></i> Cancel</button>
             <?php endif; ?>
+            <button class="delete-order-btn px-3 py-1.5 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5" data-order-id="<?= $o['id'] ?>" data-order-customer="<?= htmlspecialchars($o['customer_name'] ?? 'Unknown') ?>" data-order-problem="<?= htmlspecialchars($o['problem'] ?? '') ?>" data-order-status="<?= $o['status'] ?>"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete</button>
           </div>
         </div>
         <?php endforeach; ?>
@@ -669,6 +670,28 @@ function truncate($str, $len = 60) {
             <img id="detail-signature" class="border border-gray-200 rounded-lg bg-white max-h-32" alt="Signature">
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE ORDER CONFIRM MODAL -->
+  <div id="delete-order-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:420px" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">Delete Order?</h3>
+        <button type="button" onclick="closeOrderDeleteModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="text-sm text-gray-600 mb-1 space-y-1">
+        <p><span class="font-medium">Customer:</span> <span id="del-order-customer"></span></p>
+        <p><span class="font-medium">Problem:</span> <span id="del-order-problem"></span></p>
+        <p><span class="font-medium">Status:</span> <span id="del-order-status"></span></p>
+      </div>
+      <p class="text-sm text-red-600 font-semibold mt-3 mb-5">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button type="button" onclick="closeOrderDeleteModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="delete-order-confirm-btn" class="flex-1 px-4 py-2.5 bg-danger text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">Delete</button>
       </div>
     </div>
   </div>
@@ -1070,6 +1093,47 @@ function truncate($str, $len = 60) {
     function getSignatureDataURL() {
       if (!sigHasInk || !sigCanvas) return null;
       return sigCanvas.toDataURL('image/png');
+    }
+
+    // ========== DELETE ORDER ==========
+    var deleteOrderId = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.delete-order-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          deleteOrderId = parseInt(this.dataset.orderId, 10);
+          document.getElementById('del-order-customer').textContent = this.dataset.orderCustomer;
+          document.getElementById('del-order-problem').textContent = this.dataset.orderProblem;
+          document.getElementById('del-order-status').textContent = this.dataset.orderStatus;
+          document.getElementById('delete-order-modal').style.display = 'flex';
+        });
+      });
+
+      document.getElementById('delete-order-confirm-btn').addEventListener('click', async function () {
+        if (!deleteOrderId) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+        try {
+          var res = await fetch('../api/orders.php?id=' + deleteOrderId, { method: 'DELETE' });
+          var data = await res.json();
+          if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); btn.disabled = false; btn.textContent = 'Delete'; return; }
+          var card = document.querySelector('.delete-order-btn[data-order-id="' + deleteOrderId + '"]').closest('.order-card');
+          if (card) card.remove();
+          showToast('Order deleted successfully', 'success');
+          closeOrderDeleteModal();
+          try { lucide.createIcons(); } catch (e) {}
+        } catch (e) {
+          showToast('Network error', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Delete';
+        }
+      });
+    });
+
+    function closeOrderDeleteModal() {
+      document.getElementById('delete-order-modal').style.display = 'none';
+      deleteOrderId = null;
     }
   </script>
 

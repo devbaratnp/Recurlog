@@ -192,9 +192,14 @@ function statusPillShort($status) {
                     <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['scheduled_date']) ?></td>
                     <td class="px-4 py-3 text-center"><?= statusPillShort($t['status']) ?></td>
                     <td class="px-4 py-3 text-right">
-                      <a href="task-edit.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-ghost p-1.5" title="Edit">
-                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                      </a>
+                      <div class="flex items-center justify-end gap-1">
+                        <a href="task-edit.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-ghost p-1.5" title="Edit">
+                          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        </a>
+                        <button class="delete-rt-btn btn btn-sm btn-ghost p-1.5 text-red-500 hover:text-red-700" title="Delete" data-rt-id="<?= $t['id'] ?>" data-rt-title="<?= htmlspecialchars($t['title']) ?>" data-rt-customer="<?= htmlspecialchars($t['customer_name'] ?? '—') ?>" data-rt-date="<?= $t['scheduled_date'] ?>">
+                          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   <?php endforeach; ?>
@@ -512,8 +517,69 @@ function statusPillShort($status) {
           });
         });
       }
+
+      // ========== DELETE RECURRING TASK ==========
+      var deleteRtId = null;
+
+      document.querySelectorAll('.delete-rt-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          deleteRtId = parseInt(this.dataset.rtId, 10);
+          document.getElementById('del-rt-title').textContent = this.dataset.rtTitle;
+          document.getElementById('del-rt-customer').textContent = this.dataset.rtCustomer;
+          document.getElementById('del-rt-date').textContent = this.dataset.rtDate;
+          document.getElementById('delete-rt-modal').style.display = 'flex';
+        });
+      });
+
+      document.getElementById('delete-rt-confirm-btn').addEventListener('click', async function () {
+        if (!deleteRtId) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+        try {
+          var res = await fetch('../api/tasks.php?id=' + deleteRtId, { method: 'DELETE' });
+          var data = await res.json();
+          if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); btn.disabled = false; btn.textContent = 'Delete'; return; }
+          var row = document.querySelector('.delete-rt-btn[data-rt-id="' + deleteRtId + '"]').closest('tr');
+          if (row) row.remove();
+          showToast('Task deleted successfully', 'success');
+          closeRtDeleteModal();
+          try { lucide.createIcons(); } catch (e) {}
+        } catch (e) {
+          showToast('Network error', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Delete';
+        }
+      });
+
+      function closeRtDeleteModal() {
+        document.getElementById('delete-rt-modal').style.display = 'none';
+        deleteRtId = null;
+      }
     });
   </script>
+  <!-- DELETE CONFIRM MODAL -->
+  <div id="delete-rt-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:420px" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">Delete Task?</h3>
+        <button type="button" onclick="closeRtDeleteModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="text-sm text-gray-600 mb-1 space-y-1">
+        <p><span class="font-medium">Task:</span> <span id="del-rt-title"></span></p>
+        <p><span class="font-medium">Customer:</span> <span id="del-rt-customer"></span></p>
+        <p><span class="font-medium">Date:</span> <span id="del-rt-date"></span></p>
+      </div>
+      <p class="text-sm text-red-600 font-semibold mt-3 mb-5">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button type="button" onclick="closeRtDeleteModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="delete-rt-confirm-btn" class="flex-1 px-4 py-2.5 bg-danger text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">Delete</button>
+      </div>
+    </div>
+  </div>
+
 <?php require_once '../includes/footer.php'; ?>
 </body>
 </html>

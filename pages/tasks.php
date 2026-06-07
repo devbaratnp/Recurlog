@@ -309,16 +309,40 @@ if (!empty($params)) {
                 <?= statusPill($task['status']) ?>
               </div>
             </div>
-            <div class="mt-3 pt-3 border-t border-gray-100 flex justify-end">
+            <div class="mt-3 pt-3 border-t border-gray-100 flex justify-end gap-2">
               <?php if ($isPending): ?>
                 <button class="complete-btn px-4 py-1.5 bg-brand text-white text-xs font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow flex items-center gap-1.5" data-task-id="<?= $task['id'] ?>"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Mark Complete</button>
               <?php else: ?>
                 <button class="px-4 py-1.5 bg-gray-100 text-gray-400 text-xs font-semibold rounded-lg flex items-center gap-1.5 opacity-50 cursor-not-allowed" disabled><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> <?= $task['status'] === 'completed' ? 'Completed' : 'Missed' ?></button>
               <?php endif; ?>
+              <button class="delete-task-btn px-3 py-1.5 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5" data-task-id="<?= $task['id'] ?>" data-task-title="<?= htmlspecialchars($task['title']) ?>" data-task-customer="<?= htmlspecialchars($task['customer_name'] ?? 'Unknown') ?>" data-task-status="<?= $task['status'] ?>" data-task-date="<?= $task['scheduled_date'] ?>"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete</button>
             </div>
           </div>
           <?php endforeach; ?>
         <?php endif; ?>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM MODAL -->
+  <div id="delete-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:420px" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">Delete Task?</h3>
+        <button type="button" onclick="closeDeleteModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="delete-modal-body" class="text-sm text-gray-600 mb-1 space-y-1">
+        <p><span class="font-medium">Task:</span> <span id="del-task-title"></span></p>
+        <p><span class="font-medium">Customer:</span> <span id="del-task-customer"></span></p>
+        <p><span class="font-medium">Status:</span> <span id="del-task-status"></span></p>
+        <p><span class="font-medium">Date:</span> <span id="del-task-date"></span></p>
+      </div>
+      <p class="text-sm text-red-600 font-semibold mt-3 mb-5">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button type="button" onclick="closeDeleteModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="delete-confirm-btn" class="flex-1 px-4 py-2.5 bg-danger text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">Delete</button>
       </div>
     </div>
   </div>
@@ -406,6 +430,49 @@ if (!empty($params)) {
         closeCompleteModal();
       }
     });
+
+    // ========== DELETE TASK ==========
+    var deleteTaskId = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.delete-task-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          deleteTaskId = parseInt(this.dataset.taskId, 10);
+          document.getElementById('del-task-title').textContent = this.dataset.taskTitle;
+          document.getElementById('del-task-customer').textContent = this.dataset.taskCustomer;
+          document.getElementById('del-task-status').textContent = this.dataset.taskStatus;
+          document.getElementById('del-task-date').textContent = this.dataset.taskDate;
+          document.getElementById('delete-modal').style.display = 'flex';
+        });
+      });
+
+      document.getElementById('delete-confirm-btn').addEventListener('click', async function () {
+        if (!deleteTaskId) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+        try {
+          var res = await fetch('../api/tasks.php?id=' + deleteTaskId, { method: 'DELETE' });
+          var data = await res.json();
+          if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); return; }
+          var card = document.querySelector('.delete-task-btn[data-task-id="' + deleteTaskId + '"]').closest('.task-card');
+          if (card) card.remove();
+          showToast('Task deleted successfully', 'success');
+          closeDeleteModal();
+        } catch (e) {
+          showToast('Network error', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Delete';
+          try { lucide.createIcons(); } catch (e) {}
+        }
+      });
+    });
+
+    function closeDeleteModal() {
+      document.getElementById('delete-modal').style.display = 'none';
+      deleteTaskId = null;
+    }
   </script>
 
   <?php if ($totalPages > 1): ?>

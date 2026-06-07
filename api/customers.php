@@ -75,10 +75,32 @@ switch ($method) {
 
     case 'DELETE':
         if (!$id) jsonError('ID is required');
-        $stmt = $db->prepare("DELETE FROM fscrm_customers WHERE id = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        if ($stmt->affected_rows === 0) jsonError('Customer not found', 404);
-        jsonResponse(['message' => 'Customer deleted']);
+        $db->begin_transaction();
+        try {
+            $stmt = $db->prepare("DELETE FROM fscrm_orders WHERE customer_id = ?");
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+
+            $taskStmt = $db->prepare("DELETE FROM fscrm_tasks WHERE customer_id = ?");
+            $taskStmt->bind_param('i', $id);
+            $taskStmt->execute();
+
+            $svcStmt = $db->prepare("DELETE FROM fscrm_services WHERE customer_id = ?");
+            $svcStmt->bind_param('i', $id);
+            $svcStmt->execute();
+
+            $custStmt = $db->prepare("DELETE FROM fscrm_customers WHERE id = ?");
+            $custStmt->bind_param('i', $id);
+            $custStmt->execute();
+            if ($custStmt->affected_rows === 0) {
+                $db->rollback();
+                jsonError('Customer not found', 404);
+            }
+            $db->commit();
+            jsonResponse(['message' => 'Customer deleted']);
+        } catch (Exception $e) {
+            $db->rollback();
+            jsonError('Delete failed: ' . $e->getMessage(), 500);
+        }
         break;
 }
