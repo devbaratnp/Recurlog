@@ -206,7 +206,7 @@ function _cell($top, $sub, $value, $color, $attrs = '') {
         <div class="grid grid-cols-5 divide-x divide-gray-100">
           <?php _cell('All', 'Customers', $custStat[0], 'text-navy', 'data-act="href" data-href="customers.php"'); ?>
           <?php _cell('Todays', 'Completed', $custStat[1], 'text-navy', 'data-act="tasks" data-status="completed" data-label="Tasks &mdash; Completed Today"'); ?>
-          <?php _cell('To Do', '', $custStat[2], 'text-danger', ''); ?>
+          <?php _cell('To Do', '', $custStat[2], 'text-danger', 'data-act="tasks" data-status="pending" data-label="Tasks &mdash; Pending"'); ?>
           <?php _cell('Today', '', $custStat[3], 'text-brand', 'data-act="tasks" data-status="today" data-label="Tasks &mdash; Today"'); ?>
           <?php _cell('Tomorrow', '', $custStat[4], 'text-brand', ''); ?>
         </div>
@@ -234,7 +234,7 @@ function _cell($top, $sub, $value, $color, $attrs = '') {
         <div class="grid grid-cols-5 divide-x divide-gray-100">
           <?php _cell('All', 'Tasks', $oneStat[0], 'text-navy', 'data-act="tasks" data-type="one-time" data-status="all" data-label="One-Time &mdash; All"'); ?>
           <?php _cell('Todays', 'Completed', $oneStat[1], 'text-navy', 'data-act="tasks" data-type="one-time" data-status="completed" data-label="One-Time &mdash; Completed Today"'); ?>
-          <?php _cell('To Do Task', '', $oneStat[2], 'text-danger', ''); ?>
+          <?php _cell('To Do Task', '', $oneStat[2], 'text-danger', 'data-act="tasks" data-type="one-time" data-status="pending" data-label="One-Time &mdash; Pending"'); ?>
           <?php _cell('Today', '', $oneStat[3], 'text-brand', 'data-act="tasks" data-type="one-time" data-status="today" data-label="One-Time &mdash; Today"'); ?>
           <?php _cell('Tomorrow', '', $oneStat[4], 'text-brand', ''); ?>
         </div>
@@ -248,7 +248,7 @@ function _cell($top, $sub, $value, $color, $attrs = '') {
         <div class="grid grid-cols-5 divide-x divide-gray-100">
           <?php _cell('All', 'Tasks', $recStat[0], 'text-navy', 'data-act="tasks" data-type="recurring" data-status="all" data-label="Recurring &mdash; All"'); ?>
           <?php _cell('Todays', 'Completed', $recStat[1], 'text-navy', 'data-act="tasks" data-type="recurring" data-status="completed" data-label="Recurring &mdash; Completed Today"'); ?>
-          <?php _cell('To Do Task', '', $recStat[2], 'text-danger', ''); ?>
+          <?php _cell('To Do Task', '', $recStat[2], 'text-danger', 'data-act="tasks" data-type="recurring" data-status="pending" data-label="Recurring &mdash; Pending"'); ?>
           <?php _cell('Today', '', $recStat[3], 'text-brand', 'data-act="tasks" data-type="recurring" data-status="today" data-label="Recurring &mdash; Today"'); ?>
           <?php _cell('Tomorrow', '', $recStat[4], 'text-brand', ''); ?>
         </div>
