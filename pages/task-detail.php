@@ -175,7 +175,7 @@ $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($task['customer_name']
         <?php if (!$isStaff): ?>
         <div class="mt-3 pt-3 border-t border-gray-100">
           <button class="reassign-detail-btn text-sm text-purple-600 hover:text-purple-800 font-medium flex items-center gap-1.5" data-task-id="<?= $task['id'] ?>" data-current-staff="<?= $task['assigned_to'] ?? '' ?>">
-            <i data-lucide="user-switch" class="w-4 h-4"></i> Change Assignee
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Change Assignee
           </button>
         </div>
         <?php endif; ?>

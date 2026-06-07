@@ -34,6 +34,7 @@ if ($user) {
     <a href="onetime-task.php" class="sidebar-nav-link <?= isActive('onetime-task.php') ?>"><i data-lucide="calendar-check"></i><span>Onetime Task</span></a>
     <a href="recurring-task.php" class="sidebar-nav-link <?= isActive('recurring-task.php') ?>"><i data-lucide="repeat"></i><span>Recurring Task</span></a>
     <a href="staff.php" class="sidebar-nav-link <?= isActive('staff.php') ?>"><i data-lucide="briefcase"></i><span>Staff</span></a>
+    <a href="localities.php" class="sidebar-nav-link <?= isActive('localities.php') ?>"><i data-lucide="map-pin"></i><span>Locality</span></a>
     <a href="daybook.php" class="sidebar-nav-link <?= isActive('daybook.php') ?>"><i data-lucide="book-open"></i><span>Daybook</span></a>
     <a href="reports.php" class="sidebar-nav-link <?= isActive('reports.php') ?>"><i data-lucide="bar-chart-3"></i><span>Report</span></a>
     <a href="notifications.php" class="sidebar-nav-link <?= isActive('notifications.php') ?>">

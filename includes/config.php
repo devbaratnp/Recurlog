@@ -108,12 +108,6 @@ function authUser() {
     ];
 }
 
-// VAPID keys for Web Push
-// Generate via: php -r 'require "includes/notification_helper.php"; print_r(generateVapidKeys());'
-define('VAPID_PUBLIC_KEY', getenv('VAPID_PUBLIC_KEY') ?: 'BFrJeUqRee1Bdn_-6DTsnhRxEXzfzsNRSUso09DXwiwWtgDqZoGeCf2Sy1dgHdNOTyUKJKdCvQuEtAk7dFhwtBY');
-define('VAPID_PRIVATE_KEY', getenv('VAPID_PRIVATE_KEY') ?: 'huYGZ2S20ApmT7mcfsA9PBKneop8t42qaaD7Id2h93M');
-define('VAPID_SUBJECT', getenv('VAPID_SUBJECT') ?: 'mailto:admin@recurlog.com');
-
 // Flash messages
 function setFlash($message, $type = 'success', $title = '') {
     $_SESSION['_flash'] = [
@@ -135,14 +129,4 @@ function cacheBust() {
     $cssFile = __DIR__ . '/../assets/css/custom.css';
     $mtime = file_exists($cssFile) ? filemtime($cssFile) : time();
     return dechex($mtime);
-}
-
-function appBaseUrl() {
-    static $base = null;
-    if ($base === null) {
-        $appRoot = realpath(__DIR__ . '/..');
-        $docRoot = realpath($_SERVER['DOCUMENT_ROOT']);
-        $base = str_replace([$docRoot, '\\'], ['', '/'], $appRoot);
-    }
-    return $base;
 }

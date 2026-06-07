@@ -281,36 +281,7 @@ window.playNotificationSound = function() {
   } catch(e) {}
 };
 
-// ========== WEB PUSH SETUP ==========
 
-window.initWebPush = function(vapidPublicKey) {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-  if (Notification.permission !== 'granted') return;
-  if (!vapidPublicKey) return;
-
-  var swUrl = (window.__APP_BASE || '') + '/sw.js';
-  navigator.serviceWorker.register(swUrl).then(function(reg) {
-    return reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: base64UrlToUint8Array(vapidPublicKey)
-    });
-  }).then(function(sub) {
-    fetch('../api/push_register.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        platform: 'web',
-        endpoint: sub.endpoint,
-        p256dh: arrayBufferToBase64(sub.getKey('p256dh')),
-        auth: arrayBufferToBase64(sub.getKey('auth')),
-        deviceName: navigator.userAgent
-      })
-    });
-  }).catch(function(err) {
-    if (err.code === 20 && err.name === 'AbortError') return;
-    console.warn('Web push registration:', err.message);
-  });
-};
 
 // ========== STAFF REASSIGNMENT ==========
 
@@ -404,18 +375,4 @@ window.reassignStaff = function(config) {
     });
 };
 
-function base64UrlToUint8Array(base64Url) {
-  var padding = '='.repeat((4 - base64Url.length % 4) % 4);
-  var base64 = (base64Url + padding).replace(/-/g, '+').replace(/_/g, '/');
-  var raw = atob(base64);
-  var arr = new Uint8Array(raw.length);
-  for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
-  return arr;
-}
 
-function arrayBufferToBase64(buffer) {
-  var binary = '';
-  var bytes = new Uint8Array(buffer);
-  for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary);
-}

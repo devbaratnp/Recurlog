@@ -207,7 +207,7 @@ else:
                 <td data-label="Staff" class="text-gray-600">
                   <span><?= $staffName ?></span>
                   <button class="cd-reassign-svc text-purple-500 hover:text-purple-700 ml-1 align-middle" title="Change staff" data-service-id="<?= $s['id'] ?>" data-current-staff="<?= $s['assigned_to'] ?? '' ?>">
-                    <i data-lucide="user-switch" class="w-3 h-3"></i>
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
                   </button>
                 </td>
               </tr>
@@ -263,7 +263,7 @@ else:
                 <td data-label="Assigned To" class="text-gray-600">
                   <span><?= $staffName ?></span>
                   <button class="cd-reassign-task text-purple-500 hover:text-purple-700 ml-1 align-middle" title="Change staff" data-task-id="<?= $t['id'] ?>" data-current-staff="<?= $t['assigned_to'] ?? '' ?>">
-                    <i data-lucide="user-switch" class="w-3 h-3"></i>
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
                   </button>
                 </td>
               </tr>

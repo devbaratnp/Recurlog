@@ -124,6 +124,17 @@ Or open any HTML/PHP file directly (PHP needs Apache/Nginx).
 - POST handler `set_password` creates a `fscrm_users` record (role=staff, staff_id linked) if none exists, or updates email/password if one does.
 - Deleting a staff member now also cleans up the linked `fscrm_users` record.
 
+## Locality management (June 2026)
+
+- `pages/localities.php` — full CRUD page (admin only) for `fscrm_localities`.
+- Uses server-side POST handlers (add/edit/delete) matching the `staff.php` pattern.
+- Linked from sidebar between Staff and Daybook.
+
+## Report color coding (June 2026)
+
+- `pages/reports.php` now applies status-based row colors in all tables:
+  - Completed = green tint, Missed/Overdue = red tint, Pending = amber tint, In Progress = blue tint, Cancelled = gray tint.
+
 ## Database migration
 
 - `migration.sql` — schema-only migration. Run once on the target database before first use:

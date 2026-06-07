@@ -378,10 +378,19 @@ $pageTitle = 'Reports';
       document.getElementById(toId).value = to;
     }
 
+    function rowColor(status) {
+      if (status === 'completed') return 'bg-green-50/50 hover:bg-green-100/50';
+      if (status === 'missed' || status === 'overdue') return 'bg-red-50/50 hover:bg-red-100/50';
+      if (status === 'pending' || status === 'scheduled') return 'bg-amber-50/30 hover:bg-amber-100/30';
+      if (status === 'cancelled') return 'bg-gray-50/50 hover:bg-gray-100/50';
+      if (status === 'in_progress') return 'bg-blue-50/30 hover:bg-blue-100/30';
+      return 'hover:bg-gray-50/50';
+    }
+
     function renderTableBody(tbodyId, tasks) {
       var tbody = document.getElementById(tbodyId);
       tbody.innerHTML = tasks.map(function(t) {
-        return '<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors cursor-pointer" data-task-id="' + t.id + '">' +
+        return '<tr class="border-b border-gray-50 transition-colors cursor-pointer ' + rowColor(t.status) + '" data-task-id="' + t.id + '">' +
           '<td class="px-4 py-3 font-medium text-navy">' + t.title + '</td>' +
           '<td class="px-4 py-3 text-gray-600">' + getCustomerName(t.customerId) + '</td>' +
           '<td class="px-4 py-3 text-gray-600">' + getStaffName(t.assignedTo) + '</td>' +

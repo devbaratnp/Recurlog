@@ -5,16 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Login - Recurlog</title>
-  <meta name="theme-color" content="#1DB954">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Recurlog">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="Recurlog - Field Service CRM">
   <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
-  <link rel="manifest" href="../manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
@@ -109,17 +100,10 @@
       <p class="text-center text-sm text-gray-400 mt-8">
         Don't have an account? <a href="#" class="text-brand hover:underline font-medium">Contact admin</a>
       </p>
-      <div id="pwa-login-install" class="hidden mt-6 pt-6 border-t border-gray-100">
-        <button id="pwa-install-btn" class="btn btn-md btn-secondary w-full !gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
-          Install App
-        </button>
-      </div>
+
     </div>
   </div>
 
-  
-  <script>window.__APP_BASE = <?= json_encode(appBaseUrl()) ?>;</script>
   <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/app.js"></script>
 <script>
@@ -135,57 +119,6 @@ function togglePassword() {
   }
   lucide.createIcons();
 }
-lucide.createIcons();
-
-// ===== PWA: Service Worker Registration =====
-(function () {
-  if (!('serviceWorker' in navigator)) return;
-  function registerSW() {
-    var swUrl = (window.__APP_BASE || '') + '/sw.js';
-    navigator.serviceWorker.register(swUrl).catch(function () {});
-  }
-  if (document.readyState === 'complete') { registerSW(); }
-  else { document.addEventListener('DOMContentLoaded', registerSW); }
-})();
-
-// ===== PWA: Install Prompt (inside login card) =====
-(function () {
-  if (!('serviceWorker' in navigator)) return;
-  var deferredPrompt = null;
-  var container = document.getElementById('pwa-login-install');
-  var btn = document.getElementById('pwa-install-btn');
-  if (!container || !btn) return;
-
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    container.classList.remove('hidden');
-  });
-
-  btn.addEventListener('click', function () {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function () {
-      deferredPrompt = null;
-      container.classList.add('hidden');
-    });
-  });
-
-  window.addEventListener('appinstalled', function () {
-    deferredPrompt = null;
-    container.classList.add('hidden');
-  });
-})();
-
-// ===== PWA: Connection Monitor =====
-(function () {
-  window.addEventListener('online', function () {
-    if (window.Swal) Swal.fire({ icon: 'success', title: 'Back Online', text: 'Your internet connection has been restored.', timer: 3000, timerProgressBar: true, toast: true, position: 'top-end', showConfirmButton: false });
-  });
-  window.addEventListener('offline', function () {
-    if (window.Swal) Swal.fire({ icon: 'warning', title: 'No Connection', text: 'You are currently offline.', timer: 3000, timerProgressBar: true, toast: true, position: 'top-end', showConfirmButton: false });
-  });
-})();
 </script>
 </body>
 </html>

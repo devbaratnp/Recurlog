@@ -315,7 +315,7 @@ if (!empty($params)) {
               <?php else: ?>
                 <button class="px-4 py-1.5 bg-gray-100 text-gray-400 text-xs font-semibold rounded-lg flex items-center gap-1.5 opacity-50 cursor-not-allowed" disabled><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> <?= $task['status'] === 'completed' ? 'Completed' : 'Missed' ?></button>
               <?php endif; ?>
-              <button class="reassign-task-btn px-3 py-1.5 bg-purple-50 text-purple-600 text-xs font-semibold rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-1.5" data-task-id="<?= $task['id'] ?>" data-current-staff="<?= $task['assigned_to'] ?? '' ?>"><i data-lucide="user-switch" class="w-3.5 h-3.5"></i> Reassign</button>
+              <button class="reassign-task-btn px-3 py-1.5 bg-purple-50 text-purple-600 text-xs font-semibold rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-1.5" data-task-id="<?= $task['id'] ?>" data-current-staff="<?= $task['assigned_to'] ?? '' ?>"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reassign</button>
               <button class="delete-task-btn px-3 py-1.5 bg-red-50 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5" data-task-id="<?= $task['id'] ?>" data-task-title="<?= htmlspecialchars($task['title']) ?>" data-task-customer="<?= htmlspecialchars($task['customer_name'] ?? 'Unknown') ?>" data-task-status="<?= $task['status'] ?>" data-task-date="<?= $task['scheduled_date'] ?>"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete</button>
             </div>
           </div>

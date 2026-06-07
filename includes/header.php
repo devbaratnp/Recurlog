@@ -23,17 +23,7 @@ $pageTitle = $pageTitle ?? 'Recurlog';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title><?= htmlspecialchars($pageTitle) ?> - Recurlog</title>
-  <meta name="theme-color" content="#1DB954">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Recurlog">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="Recurlog - Field Service CRM">
   <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png">
-  <link rel="manifest" href="../manifest.json">
-  <script>window.__APP_BASE = <?= json_encode(appBaseUrl()) ?>;</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../assets/css/custom.css">
