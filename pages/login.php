@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Login - Recurlog</title>
   <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="manifest" href="../manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
@@ -101,12 +102,46 @@
         Don't have an account? <a href="#" class="text-brand hover:underline font-medium">Contact admin</a>
       </p>
 
+      <!-- PWA Install Button -->
+      <div id="pwa-install-container" class="hidden mt-8 pt-8 border-t border-gray-100">
+        <button id="pwa-install-btn" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-navy/5 text-navy hover:bg-navy/10 transition-colors font-medium">
+          <i data-lucide="download" class="w-5 h-5"></i>
+          Install Recurlog App
+        </button>
+      </div>
+
     </div>
   </div>
 
   <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/app.js"></script>
 <script>
+// PWA Install Logic
+let deferredPrompt;
+const installContainer = document.getElementById('pwa-install-container');
+const installBtn = document.getElementById('pwa-install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installContainer.classList.remove('hidden');
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    installContainer.classList.add('hidden');
+  }
+  deferredPrompt = null;
+});
+
+window.addEventListener('appinstalled', () => {
+  installContainer.classList.add('hidden');
+  deferredPrompt = null;
+});
+
 function togglePassword() {
   var input = document.getElementById('password');
   var icon = document.getElementById('password-eye-icon');

@@ -1,3 +1,14 @@
+// ========== SERVICE WORKER ==========
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // Determine path based on current location to reach root sw.js
+    const swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : 'sw.js';
+    navigator.serviceWorker.register(swPath)
+      .then(reg => console.log('SW Registered'))
+      .catch(err => console.log('SW Reg Error', err));
+  });
+}
+
 // ========== HELPERS ==========
 
 function todayISO() {

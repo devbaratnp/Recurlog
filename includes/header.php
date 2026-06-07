@@ -24,6 +24,7 @@ $pageTitle = $pageTitle ?? 'Recurlog';
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title><?= htmlspecialchars($pageTitle) ?> - Recurlog</title>
   <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="manifest" href="../manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../assets/css/custom.css">
