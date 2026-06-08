@@ -22,3 +22,6 @@ CREATE TABLE IF NOT EXISTS `fscrm_assignment_history` (
     INDEX `idx_changed_by` (`changed_by`),
     INDEX `idx_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `fscrm_users` ADD COLUMN IF NOT EXISTS `is_active` TINYINT(1) NOT NULL DEFAULT 1 AFTER `role`;
+ALTER TABLE `fscrm_users` ADD COLUMN IF NOT EXISTS `created_by` VARCHAR(100) DEFAULT NULL AFTER `staff_id`;

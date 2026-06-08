@@ -14,6 +14,9 @@ switch ($action) {
     case 'check':
         handleCheck();
         break;
+    case 'me':
+        handleMe();
+        break;
     default:
         jsonError('Unknown action', 404);
 }
@@ -45,7 +48,7 @@ function handleLogin() {
         jsonError('Email and password are required');
     }
 
-    $stmt = $db->prepare("SELECT id, name, email, password, role FROM fscrm_users WHERE email = ?");
+    $stmt = $db->prepare("SELECT id, name, email, password, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE email = ?");
     $stmt->bind_param('s', $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -59,12 +62,16 @@ function handleLogin() {
     $_SESSION['user_name'] = $user['name'];
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['role'];
+    $_SESSION['user_staff_id'] = $user['staff_id'];
 
     jsonResponse([
         'id' => (int)$user['id'],
         'name' => $user['name'],
         'email' => $user['email'],
-        'role' => $user['role']
+        'role' => $user['role'],
+        'staffId' => $user['staff_id'] ? (int)$user['staff_id'] : null,
+        'isActive' => (int)$user['is_active'],
+        'createdAt' => $user['created_at']
     ]);
 }
 
@@ -76,16 +83,49 @@ function handleLogout() {
 
 function handleCheck() {
     if (!empty($_SESSION['user_id'])) {
-        jsonResponse([
-            'authed' => true,
-            'user' => [
-                'id' => $_SESSION['user_id'],
-                'name' => $_SESSION['user_name'],
-                'email' => $_SESSION['user_email'],
-                'role' => $_SESSION['user_role']
-            ]
-        ]);
+        $db = getDB();
+        $stmt = $db->prepare("SELECT id, name, email, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE id = ?");
+        $stmt->bind_param('i', $_SESSION['user_id']);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+        if ($user) {
+            jsonResponse([
+                'authed' => true,
+                'user' => [
+                    'id' => (int)$user['id'],
+                    'name' => $user['name'],
+                    'email' => $user['email'],
+                    'role' => $user['role'],
+                    'staffId' => $user['staff_id'] ? (int)$user['staff_id'] : null,
+                    'isActive' => (int)$user['is_active'],
+                    'createdAt' => $user['created_at'],
+                    'createdBy' => $user['created_by']
+                ]
+            ]);
+        } else {
+            jsonResponse(['authed' => false, 'user' => null]);
+        }
     } else {
         jsonResponse(['authed' => false, 'user' => null]);
     }
+}
+
+function handleMe() {
+    requireAuth();
+    $db = getDB();
+    $stmt = $db->prepare("SELECT id, name, email, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE id = ?");
+    $stmt->bind_param('i', $_SESSION['user_id']);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+    if (!$user) jsonError('User not found', 404);
+    jsonResponse([
+        'id' => (int)$user['id'],
+        'name' => $user['name'],
+        'email' => $user['email'],
+        'role' => $user['role'],
+        'staffId' => $user['staff_id'] ? (int)$user['staff_id'] : null,
+        'isActive' => (int)$user['is_active'],
+        'createdAt' => $user['created_at'],
+        'createdBy' => $user['created_by']
+    ]);
 }
