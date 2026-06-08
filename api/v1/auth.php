@@ -27,7 +27,7 @@ function handleLogin() {
     }
 
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, name, email, password, role, staff_id FROM fscrm_users WHERE email = ?");
+    $stmt = $db->prepare("SELECT id, name, email, password, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE email = ?");
     $stmt->bind_param('s', $email);
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
@@ -61,7 +61,10 @@ function handleLogin() {
             'name' => $user['name'],
             'email' => $user['email'],
             'role' => $user['role'],
-            'staffId' => $staffId
+            'staffId' => $staffId,
+            'isActive' => (int)$user['is_active'],
+            'createdAt' => $user['created_at'],
+            'createdBy' => $user['created_by']
         ]
     ]);
 }
@@ -82,7 +85,7 @@ function handleRefresh() {
     }
 
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, name, email, role, staff_id FROM fscrm_users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, name, email, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE id = ?");
     $stmt->bind_param('i', $payload['userId']);
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
@@ -116,7 +119,10 @@ function handleRefresh() {
             'name' => $user['name'],
             'email' => $user['email'],
             'role' => $user['role'],
-            'staffId' => $staffId
+            'staffId' => $staffId,
+            'isActive' => (int)$user['is_active'],
+            'createdAt' => $user['created_at'],
+            'createdBy' => $user['created_by']
         ]
     ]);
 }
@@ -125,7 +131,7 @@ function handleMe() {
     $auth = requireBearerAuth();
 
     $db = getDB();
-    $stmt = $db->prepare("SELECT id, name, email, role, staff_id FROM fscrm_users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, name, email, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE id = ?");
     $stmt->bind_param('i', $auth['userId']);
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
@@ -141,6 +147,9 @@ function handleMe() {
         'name' => $user['name'],
         'email' => $user['email'],
         'role' => $user['role'],
-        'staffId' => $staffId
+        'staffId' => $staffId,
+        'isActive' => (int)$user['is_active'],
+        'createdAt' => $user['created_at'],
+        'createdBy' => $user['created_by']
     ]);
 }
