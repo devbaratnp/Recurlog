@@ -35,11 +35,31 @@ switch ($method) {
     case 'POST':
         $input = getJsonInput();
         $data = toSnake($input);
+        $email = trim($input['email'] ?? '');
+        $password = $input['password'] ?? '';
+
         $row = insertAndFetch('fscrm_staff',
             ['name', 'phone', 'avatar', 'active_tasks'],
             'sssi',
             [$data['name'] ?? '', $data['phone'] ?? '', $data['avatar'] ?? '', $data['active_tasks'] ?? 0]
         );
+
+        if ($email && $password) {
+            $db = getDB();
+            $check = $db->prepare("SELECT id FROM fscrm_users WHERE email = ?");
+            $check->bind_param('s', $email);
+            $check->execute();
+            if (!$check->get_result()->fetch_assoc()) {
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $auth = getAuthUser();
+                $createdBy = $auth['userName'] ?? '';
+                $staffId = (int)$row['id'];
+                $stmt = $db->prepare("INSERT INTO fscrm_users (name, email, password, role, staff_id, is_active, created_by) VALUES (?, ?, ?, 'staff', ?, 1, ?)");
+                $stmt->bind_param('sssis', $data['name'], $email, $hash, $staffId, $createdBy);
+                $stmt->execute();
+            }
+        }
+
         jsonResponse(toCamel($row), 201);
         break;
 
