@@ -13,7 +13,7 @@ switch ($method) {
     case 'GET':
         if ($id) {
             $db = getDB();
-            $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id WHERE t.id = ?");
+            $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name, sv.is_recurring AS is_recurring FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $row = $stmt->get_result()->fetch_assoc();
@@ -51,7 +51,7 @@ switch ($method) {
         if ($allParams) $stmt->bind_param($types, ...$allParams);
         $stmt->execute();
         $total = (int)$stmt->get_result()->fetch_assoc()['cnt'];
-        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id WHERE 1=1 $searchClause $filterClause ORDER BY t.scheduled_date ASC, t.title ASC LIMIT ? OFFSET ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name, sv.is_recurring AS is_recurring FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE 1=1 $searchClause $filterClause ORDER BY t.scheduled_date ASC, t.title ASC LIMIT ? OFFSET ?");
         $allParams2 = array_merge($allParams, [$perPage, $offset]);
         $types2 = $types . 'ii';
         if ($allParams) $stmt->bind_param($types2, ...$allParams2); else $stmt->bind_param('ii', $perPage, $offset);
@@ -81,7 +81,7 @@ switch ($method) {
                 $data['repeat_from'] ?? null
             ]
         );
-        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id WHERE t.id = ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name, sv.is_recurring AS is_recurring FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
         $stmt->bind_param('i', $insertRow['id']);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
@@ -106,7 +106,7 @@ switch ($method) {
         if (empty($fields)) jsonError('No fields to update', 400, 'VALIDATION_ERROR');
         $updateRow = updateAndFetch('fscrm_tasks', $fields, $types, $vals, $id);
         requireExists($updateRow, 'Task');
-        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id WHERE t.id = ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name, sv.is_recurring AS is_recurring FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
