@@ -2,14 +2,12 @@
 
 Base URL: `/api/v1/`
 
-Base URL: `/api/v1/`
-
 Auth: `Authorization: Bearer <token>`
 
 ## Auth
 
 ### POST `/api/v1/auth.php`
-Login. No auth required. Rate-limited (5 req / 5 min per IP).
+Login. No auth required. Rate-limited (10 req / 60s per IP via `checkRateLimitIp()`).
 
 **Body:**
 ```json
@@ -29,7 +27,7 @@ Login. No auth required. Rate-limited (5 req / 5 min per IP).
 ```
 
 ### POST `/api/v1/auth.php?action=refresh`
-Exchange refresh token for new tokens.
+Exchange refresh token for new tokens. Returns new `token` (7d) + `refreshToken` (30d).
 
 **Body:**
 ```json
@@ -47,13 +45,13 @@ All endpoints below require `Authorization: Bearer <token>`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `customers.php` | List (paginated) |
-| GET | `customers.php?id=N` | Single |
-| POST | `customers.php` | Create |
-| PUT | `customers.php?id=N` | Update |
-| DELETE | `customers.php?id=N` | Delete |
+| GET | `{entity}.php` | List (paginated, searchable) |
+| GET | `{entity}.php?id=N` | Single record |
+| POST | `{entity}.php` | Create |
+| PUT | `{entity}.php?id=N` | Update |
+| DELETE | `{entity}.php?id=N` | Delete |
 
-Same pattern for: `services.php`, `tasks.php`, `orders.php`, `staff.php`, `categories.php`, `localities.php`, `service_types.php`, `notifications.php`.
+Entities: `customers.php`, `services.php`, `tasks.php`, `orders.php`, `staff.php`, `categories.php`, `localities.php`, `service_types.php`, `notifications.php`.
 
 ### Pagination & search
 
@@ -99,19 +97,19 @@ Some endpoints support additional query params:
 | `NOT_FOUND` | 404 | Resource not found |
 | `VALIDATION_ERROR` | 400 | Missing/invalid fields |
 | `INVALID_INPUT` | 400 | Bad JSON body |
-| `RATE_LIMITED` | 429 | Too many requests |
+| `RATE_LIMITED` | 429 | Too many requests (IP-based, 10 req / 60s) |
 | `DB_ERROR` | 500 | Database connection failure |
 | `INTERNAL_ERROR` | 500 | Unhandled server error |
 
 ### Token expiry
 
-- Access token: **7 days**
-- Refresh token: **30 days**
-- Use `?action=refresh` before expiry to get new tokens without re-login
+- Access token: **7 days** (604800 seconds)
+- Refresh token: **30 days** (2592000 seconds)
+- Method: HS256 JWT with custom `generateJWT()` / `validateJWT()` (no external library)
 
 ### Data format
 
-Responses use camelCase (e.g., `customerId`, `assignedTo`). Request bodies can use camelCase or snake_case — both work via the `toSnake()` transformer.
+Responses use camelCase (e.g., `customerId`, `assignedTo`). Request bodies can use camelCase or snake_case — `toSnake()` transformer in `helpers.php` maps fields.
 
 Special fields:
 - `servicesFor` → array of strings (comma-separated in DB)

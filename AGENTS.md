@@ -135,6 +135,52 @@ Or open any HTML/PHP file directly (PHP needs Apache/Nginx).
 - `pages/reports.php` now applies status-based row colors in all tables:
   - Completed = green tint, Missed/Overdue = red tint, Pending = amber tint, In Progress = blue tint, Cancelled = gray tint.
 
+## Task detail & edit pages (June 2026)
+
+- `pages/task-detail.php` — full drill-down view showing customer info, schedule, assignment (with reassign button), service details, problem/notes, completion details (signature, received by/contact), and status pill. Works for both admin and staff portal.
+- `pages/task-edit.php` — form to update title, status, scheduled date, assigned staff, and notes. CSRF + transaction protected.
+
+## Hard delete for admin users (June 2026)
+
+- Delete buttons with confirmation modals added to:
+  - `pages/tasks.php` — delete icon on each task card
+  - `pages/onetime-task.php` — trash icon in table action column
+  - `pages/recurring-task.php` — trash icon in table action column
+  - `pages/orders.php` — delete button on order cards
+  - `pages/customers.php` — trash icon in table action column (cascade deletes services, tasks, orders)
+- Each uses a confirmation modal showing key details and "This action cannot be undone" warning.
+- API cascade deletes fixed in `api/customers.php` and `api/services.php` using transactions.
+
+## Staff reassignment (June 2026)
+
+- `api/reassign.php` — POST endpoint (CSRF protected) supporting entity types: `task`, `order`, `service`.
+- `window.reassignStaff()` in `app.js:297` — reusable modal that loads staff list via API, lets admin pick a new assignee, and calls `reassign.php`.
+- Tracks all changes in `fscrm_assignment_history` table.
+- Notifications sent to both old and new assignee on reassignment.
+
+## PWA support (June 2026)
+
+- `sw.js` — service worker caching login page, CSS, JS, and app icon. Cache-first for assets, network-first for navigations.
+- `manifest.json` — standalone display, portrait orientation, navy background, brand green theme, icon set (48x48 to 512x512).
+- Install button on login page.
+- Icons generated via `scripts/generate-icons.mjs`.
+
+## Push notifications (June 2026)
+
+- **Web Push**: VAPID keys for push notifications. Uses a custom VAPID helper for PHP 8.1+ compatibility (avoids web-token/jwt-library).
+- **Expo Push**: Server-side integration for React Native mobile push notifications.
+- **Sound**: `playNotificationSound()` in `app.js:278` — Web Audio API beep on new notifications.
+
+## v1 REST API (June 2026)
+
+- JWT-authenticated (HS256) REST API at `api/v1/`.
+- Access token: 7 days; refresh token: 30 days.
+- Auto-refresh via Axios interceptor in mobile app.
+- Pagination (page/per_page), search, and entity-specific filters.
+- CRUD for all entities: customers, services, tasks, orders, staff, categories, notifications, localities, service_types.
+- Rate limiting: 10 requests per 60 seconds per IP.
+- Error codes: `UNAUTHORIZED` (401), `TOKEN_EXPIRED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `VALIDATION_ERROR` (400), `RATE_LIMITED` (429), `DB_ERROR`/`INTERNAL_ERROR` (500).
+
 ## Database migration
 
 - `migration.sql` — schema-only migration. Run once on the target database before first use:
@@ -142,9 +188,12 @@ Or open any HTML/PHP file directly (PHP needs Apache/Nginx).
   SOURCE /path/to/migration.sql;
   ```
   or import via phpMyAdmin / MySQL CLI. Creates all tables with `IF NOT EXISTS` (safe to re-run).
+  Includes `fscrm_assignment_history` and `fscrm_users.staff_id` column.
 - `db.sql` — raw SQLyog dump with schema + demo data (local dev backup).
 - Seeding with demo data is done via `api/seed.php` or Settings > Reset Demo Data.
 
 ## Deployment
 
 Push to `main` → `.github/workflows/static.yml` deploys repo root to GitHub Pages. PHP files won't execute on Pages (static only) — deploys client-side version.
+
+For PHP production deployment, see `PRODUCTION.md`.

@@ -41,10 +41,30 @@
 - [ ] Staff accounts were seeded locally — recreate on production
 - [ ] Each staff user: `{firstname}@demo.com` / `demo123`
 
-## 8. Verify
+## 8. v1 REST API
+- [ ] Set `JWT_SECRET` environment variable (or change default in `api/v1/config.php`)
+- [ ] Verify JWT auth: `POST /api/v1/auth.php` returns token
+- [ ] Test CRUD endpoints with Bearer token
+- [ ] Rate limiting at 10 req / 60s per IP — adjust if needed
+
+## 9. Push notifications
+- [ ] Generate VAPID keys (see `vendor/` custom helper) if not using defaults
+- [ ] Set Expo Push token endpoint if using mobile push
+- [ ] Verify `playNotificationSound()` works on target browsers
+
+## 10. PWA
+- [ ] Verify `sw.js` caches login page + assets correctly
+- [ ] Check `manifest.json` icons exist in `assets/icons/`
+- [ ] Test install prompt on supporting browsers (Chrome/Edge)
+- [ ] Regenerate icons if branding changes: `node scripts/generate-icons.mjs`
+
+## 11. Verify
 - [ ] `/pages/login.php` — both admin and staff login work
 - [ ] `/pages/dashboard.php` — admin dashboard renders
 - [ ] `/pages/staff-dashboard.php` — staff dashboard renders
 - [ ] Create / edit / delete customers, tasks, orders
+- [ ] Staff reassignment modal works for tasks, services, and orders
 - [ ] Signature capture works
 - [ ] Notifications display and mark-as-read work
+- [ ] Task detail (`task-detail.php?id=N`) and task edit (`task-edit.php?id=N`) render correctly
+- [ ] Locality CRUD at `/pages/localities.php`
