@@ -39,6 +39,7 @@ function handleLogin() {
     $now = time();
     $token = generateJWT([
         'userId' => (int)$user['id'],
+        'userName' => $user['name'],
         'userRole' => $user['role'],
         'iat' => $now,
         'exp' => $now + 604800
@@ -97,6 +98,7 @@ function handleRefresh() {
     $now = time();
     $token = generateJWT([
         'userId' => (int)$user['id'],
+        'userName' => $user['name'],
         'userRole' => $user['role'],
         'iat' => $now,
         'exp' => $now + 604800

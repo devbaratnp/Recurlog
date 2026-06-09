@@ -59,6 +59,11 @@ switch ($method) {
         break;
 
     case 'PUT':
+        if (isset($_GET['action']) && $_GET['action'] === 'mark_all_read') {
+            $stmt = $db->prepare("UPDATE fscrm_notifications SET is_read = 1 WHERE is_read = 0");
+            $stmt->execute();
+            jsonResponse(['message' => 'All notifications marked as read']);
+        }
         if (!$id) jsonError('ID is required', 400, 'VALIDATION_ERROR');
         $input = getJsonInput();
         $data = toSnake($input);

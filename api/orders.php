@@ -35,6 +35,11 @@ switch ($method) {
                 $types .= 's';
                 $vals[] = $_GET['priority'];
             }
+            if (!empty($_GET['assigned_to'])) {
+                $where[] = 'o.assigned_to = ?';
+                $types .= 'i';
+                $vals[] = intval($_GET['assigned_to']);
+            }
             $sql = "SELECT o.*, s.name AS assigned_staff_name FROM fscrm_orders o LEFT JOIN fscrm_staff s ON o.assigned_to = s.id";
             if (!empty($where)) {
                 $sql .= " WHERE " . implode(' AND ', $where);

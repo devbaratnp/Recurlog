@@ -25,7 +25,7 @@ switch ($method) {
         [$searchClause, $searchParams] = buildSearchClause($search, ['o.problem', 'o.customer_name']);
         $filters = [];
         $filterParams = [];
-        foreach (['status', 'customer_id', 'priority', 'scheduled_date'] as $f) {
+        foreach (['status', 'customer_id', 'priority', 'scheduled_date', 'assigned_to'] as $f) {
             $v = $_GET[$f] ?? null;
             if ($v !== null && $v !== '') {
                 $filters[] = "o.$f = ?";
