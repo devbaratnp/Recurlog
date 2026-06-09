@@ -65,7 +65,7 @@ switch ($method) {
         $data = toSnake($input);
         $insertRow = insertAndFetch('fscrm_tasks',
             ['service_id', 'customer_id', 'title', 'status', 'scheduled_date', 'assigned_to', 'notes', 'category_id', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'],
-            'iisssisiisiis',
+            'iisssisiiiss',
             [
                 $data['service_id'] ?? null,
                 $data['customer_id'] ?? null,
