@@ -24,6 +24,7 @@ function getDB() {
     global $DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $DB_PORT;
     static $conn = null;
     if ($conn === null) {
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
         $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $DB_PORT);
         if ($conn->connect_error) {
             error_log('DB connection failed: ' . $conn->connect_error);

@@ -40,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'Please select a service.';
   } elseif (!$problem) {
     $error = 'Please enter the problem description.';
+  } elseif (!$firstDate) {
+    $error = 'Please select a scheduled date.';
   }
 
   if (!$error) {
