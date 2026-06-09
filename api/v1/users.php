@@ -89,6 +89,12 @@ switch ($method) {
             }
         }
 
+        if (array_key_exists('password', $input) && !empty(trim($input['password']))) {
+            $fields[] = 'password';
+            $types .= 's';
+            $vals[] = password_hash(trim($input['password']), PASSWORD_DEFAULT);
+        }
+
         if (empty($fields)) jsonError('No fields to update', 400, 'VALIDATION_ERROR');
         $row = updateAndFetch('fscrm_users', $fields, $types, $vals, $id);
         requireExists($row, 'User');

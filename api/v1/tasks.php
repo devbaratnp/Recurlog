@@ -64,8 +64,8 @@ switch ($method) {
         $input = getJsonInput();
         $data = toSnake($input);
         $insertRow = insertAndFetch('fscrm_tasks',
-            ['service_id', 'customer_id', 'title', 'status', 'scheduled_date', 'assigned_to', 'notes', 'category_id'],
-            'iisssisi',
+            ['service_id', 'customer_id', 'title', 'status', 'scheduled_date', 'assigned_to', 'notes', 'category_id', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'],
+            'iisssisiisiis',
             [
                 $data['service_id'] ?? null,
                 $data['customer_id'] ?? null,
@@ -74,7 +74,11 @@ switch ($method) {
                 $data['scheduled_date'] ?? null,
                 $data['assigned_to'] ?? null,
                 $data['notes'] ?? '',
-                $data['category_id'] ?? null
+                $data['category_id'] ?? null,
+                $data['is_recurring'] ?? 0,
+                $data['rec_value'] ?? null,
+                $data['rec_unit'] ?? null,
+                $data['repeat_from'] ?? null
             ]
         );
         $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id WHERE t.id = ?");
@@ -91,11 +95,11 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        $colMap = ['service_id', 'customer_id', 'title', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature'];
+        $colMap = ['service_id', 'customer_id', 'title', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'];
         foreach ($colMap as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = $f;
-                $types .= in_array($f, ['service_id', 'customer_id', 'assigned_to', 'category_id']) ? 'i' : 's';
+                $types .= in_array($f, ['service_id', 'customer_id', 'assigned_to', 'category_id', 'is_recurring', 'rec_value']) ? 'i' : 's';
                 $vals[] = $data[$f];
             }
         }
