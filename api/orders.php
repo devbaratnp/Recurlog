@@ -63,6 +63,10 @@ switch ($method) {
             $sRow = $sStmt->get_result()->fetch_assoc();
             $data['assigned_staff_name'] = $sRow ? $sRow['name'] : '';
         }
+        $dateFields = ['scheduled_date', 'completed_date', 'dispatch_date'];
+        foreach ($dateFields as $f) {
+            if (isset($data[$f]) && $data[$f] === '') $data[$f] = null;
+        }
         $stmt = $db->prepare("INSERT INTO fscrm_orders (customer_id, customer_name, service_for, problem, status, priority, assigned_to, assigned_staff_name, scheduled_date, completed_date, notes, dispatch_date, dispatch_by, received_name, received_contact, signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param('isssssisssssssss',
             $data['customer_id'],
@@ -95,6 +99,9 @@ switch ($method) {
         if (!$id) jsonError('ID is required');
         $input = getJsonInput();
         $data = toSnake($input);
+        foreach (['scheduled_date', 'completed_date', 'dispatch_date'] as $f) {
+            if (isset($data[$f]) && $data[$f] === '') $data[$f] = null;
+        }
         if (!empty($data['assigned_to']) && empty($data['assigned_staff_name'])) {
             $sStmt = $db->prepare("SELECT name FROM fscrm_staff WHERE id = ?");
             $sStmt->bind_param('i', $data['assigned_to']);

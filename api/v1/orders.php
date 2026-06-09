@@ -51,6 +51,9 @@ switch ($method) {
     case 'POST':
         $input = getJsonInput();
         $data = toSnake($input);
+        foreach (['scheduled_date', 'completed_date', 'dispatch_date'] as $f) {
+            if (isset($data[$f]) && $data[$f] === '') $data[$f] = null;
+        }
         if (!empty($data['assigned_to']) && empty($data['assigned_staff_name'])) {
             $sStmt = $db->prepare("SELECT name FROM fscrm_staff WHERE id = ?");
             $sStmt->bind_param('i', $data['assigned_to']);
@@ -86,6 +89,9 @@ switch ($method) {
         if (!$id) jsonError('ID is required', 400, 'VALIDATION_ERROR');
         $input = getJsonInput();
         $data = toSnake($input);
+        foreach (['scheduled_date', 'completed_date', 'dispatch_date'] as $f) {
+            if (isset($data[$f]) && $data[$f] === '') $data[$f] = null;
+        }
         if (!empty($data['assigned_to']) && empty($data['assigned_staff_name'])) {
             $sStmt = $db->prepare("SELECT name FROM fscrm_staff WHERE id = ?");
             $sStmt->bind_param('i', $data['assigned_to']);

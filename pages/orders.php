@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
       $staffName = $staffRow ? $staffRow['name'] : '';
 
       $stmt = $db->prepare("UPDATE fscrm_orders SET status = 'assigned', assigned_to = ?, assigned_staff_name = ?, scheduled_date = ? WHERE id = ?");
-      $stmt->bind_param('issi', $staffId, $staffName, $date, $orderId);
+      $stmt->bind_param('issi', $staffId, $staffName, $date ?: null, $orderId);
       $stmt->execute();
       setFlash('Order #' . $orderId . ' assigned to ' . $staffName);
     }
