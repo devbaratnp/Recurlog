@@ -65,7 +65,7 @@ switch ($method) {
         $data = toSnake($input);
         $insertRow = insertAndFetch('fscrm_tasks',
             ['service_id', 'recurring_task_id', 'customer_id', 'title', 'problem', 'status', 'scheduled_date', 'assigned_to', 'notes', 'category_id', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'],
-            'iiiissssiiiss',
+            'iiississiiiss',
             [
                 $data['service_id'] ?? null,
                 $data['recurring_task_id'] ?? null,
@@ -109,26 +109,44 @@ switch ($method) {
         $updateRow = updateAndFetch('fscrm_tasks', $fields, $types, $vals, $id);
         requireExists($updateRow, 'Task');
 
-        // Recurrence engine: if completed and linked to template, generate next instance
+        // Recurrence engine: if completed and has recurrence config, generate next instance
         if (!empty($data['status']) && $data['status'] === 'completed') {
-            $stmt2 = $db->prepare("SELECT t.id AS task_id, t.recurring_task_id, t.customer_id, t.title, t.problem, t.assigned_to, t.notes, t.scheduled_date, t.completed_date, rt.rec_value, rt.rec_unit, rt.repeat_from, rt.next_due_date FROM fscrm_tasks t JOIN fscrm_recurring_tasks rt ON t.recurring_task_id = rt.id WHERE t.id = ?");
-            $stmt2->bind_param('i', $id);
-            $stmt2->execute();
-            $rtRow = $stmt2->get_result()->fetch_assoc();
-            if ($rtRow) {
-                $baseDate = $rtRow['repeat_from'] === 'last-done' ? ($rtRow['completed_date'] ?: $rtRow['scheduled_date']) : $rtRow['next_due_date'];
+            $taskInfo = fetchSingle('fscrm_tasks', $id);
+            if ($taskInfo && $taskInfo['recurring_task_id']) {
+                // Template-linked recurring task
+                $stmt2 = $db->prepare("SELECT t.id AS task_id, t.recurring_task_id, t.customer_id, t.title, t.problem, t.assigned_to, t.notes, t.scheduled_date, t.completed_date, rt.rec_value, rt.rec_unit, rt.repeat_from, rt.next_due_date FROM fscrm_tasks t JOIN fscrm_recurring_tasks rt ON t.recurring_task_id = rt.id WHERE t.id = ?");
+                $stmt2->bind_param('i', $id);
+                $stmt2->execute();
+                $rtRow = $stmt2->get_result()->fetch_assoc();
+                if ($rtRow) {
+                    $baseDate = $rtRow['repeat_from'] === 'last-done' ? ($rtRow['completed_date'] ?: $rtRow['scheduled_date']) : $rtRow['next_due_date'];
+                    if ($baseDate) {
+                        $dt = new DateTime($baseDate);
+                        $unitMap = ['days' => 'D', 'weeks' => 'W', 'months' => 'M', 'years' => 'Y'];
+                        $unit = $unitMap[$rtRow['rec_unit']] ?? 'D';
+                        $dt->add(new DateInterval('P' . $rtRow['rec_value'] . $unit));
+                        $nextDue = $dt->format('Y-m-d');
+
+                        $uRt = $db->prepare("UPDATE fscrm_recurring_tasks SET last_completed_date = ?, next_due_date = ? WHERE id = ?");
+                        $uRt->bind_param('ssi', $rtRow['completed_date'], $nextDue, $rtRow['recurring_task_id']);
+                        $uRt->execute();
+                        $iTask = $db->prepare("INSERT INTO fscrm_tasks (recurring_task_id, customer_id, title, problem, status, scheduled_date, assigned_to, notes) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)");
+                        $iTask->bind_param('iisssis', $rtRow['recurring_task_id'], $rtRow['customer_id'], $rtRow['title'], $rtRow['problem'], $nextDue, $rtRow['assigned_to'], $rtRow['notes']);
+                        $iTask->execute();
+                    }
+                }
+            } elseif ($taskInfo && !empty($taskInfo['is_recurring']) && !empty($taskInfo['rec_value'])) {
+                // Standalone recurring task (no template)
+                $baseDate = $taskInfo['repeat_from'] === 'last-done' ? ($taskInfo['completed_date'] ?: $taskInfo['scheduled_date']) : $taskInfo['scheduled_date'];
                 if ($baseDate) {
                     $dt = new DateTime($baseDate);
                     $unitMap = ['days' => 'D', 'weeks' => 'W', 'months' => 'M', 'years' => 'Y'];
-                    $unit = $unitMap[$rtRow['rec_unit']] ?? 'D';
-                    $dt->add(new DateInterval('P' . $rtRow['rec_value'] . $unit));
+                    $unit = $unitMap[$taskInfo['rec_unit']] ?? 'D';
+                    $dt->add(new DateInterval('P' . $taskInfo['rec_value'] . $unit));
                     $nextDue = $dt->format('Y-m-d');
 
-                    $uRt = $db->prepare("UPDATE fscrm_recurring_tasks SET last_completed_date = ?, next_due_date = ? WHERE id = ?");
-                    $uRt->bind_param('ssi', $rtRow['completed_date'], $nextDue, $rtRow['recurring_task_id']);
-                    $uRt->execute();
-                    $iTask = $db->prepare("INSERT INTO fscrm_tasks (recurring_task_id, customer_id, title, problem, status, scheduled_date, assigned_to, notes) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)");
-                    $iTask->bind_param('iisssis', $rtRow['recurring_task_id'], $rtRow['customer_id'], $rtRow['title'], $rtRow['problem'], $nextDue, $rtRow['assigned_to'], $rtRow['notes']);
+                    $iTask = $db->prepare("INSERT INTO fscrm_tasks (customer_id, title, problem, status, scheduled_date, assigned_to, notes, is_recurring, rec_value, rec_unit, repeat_from) SELECT customer_id, title, problem, 'pending', ?, assigned_to, notes, is_recurring, rec_value, rec_unit, repeat_from FROM fscrm_tasks WHERE id = ?");
+                    $iTask->bind_param('si', $nextDue, $id);
                     $iTask->execute();
                 }
             }
