@@ -10,7 +10,7 @@ $db = getDB();
 switch ($method) {
     case 'GET':
         if ($id) {
-            $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
+            $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem, rt.title AS recurrence_title FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id LEFT JOIN fscrm_recurring_tasks rt ON t.recurring_task_id = rt.id WHERE t.id = ?");
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $row = $stmt->get_result()->fetch_assoc();
@@ -55,7 +55,7 @@ switch ($method) {
                 $types .= 's';
                 $vals[] = $_GET['end_date'];
             }
-            $sql = "SELECT t.*, c.name AS customer_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id";
+            $sql = "SELECT t.*, c.name AS customer_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem, rt.title AS recurrence_title FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id LEFT JOIN fscrm_recurring_tasks rt ON t.recurring_task_id = rt.id";
             if (!empty($where)) {
                 $sql .= " WHERE " . implode(' AND ', $where);
             }
@@ -76,9 +76,10 @@ switch ($method) {
     case 'POST':
         $input = getJsonInput();
         $data = toSnake($input);
-        $stmt = $db->prepare("INSERT INTO fscrm_tasks (service_id, customer_id, title, problem, status, scheduled_date, completed_date, assigned_to, notes, category_id, completed_by, received_name, received_contact, signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param('iissssissssss',
+        $stmt = $db->prepare("INSERT INTO fscrm_tasks (service_id, recurring_task_id, customer_id, title, problem, status, scheduled_date, completed_date, assigned_to, notes, category_id, completed_by, received_name, received_contact, signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param('iiissssissssss',
             $data['service_id'],
+            $data['recurring_task_id'],
             $data['customer_id'],
             $data['title'],
             $data['problem'] ?? '',
@@ -95,7 +96,7 @@ switch ($method) {
         );
         $stmt->execute();
         $newId = $db->insert_id;
-        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, rt.title AS recurrence_title FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_recurring_tasks rt ON t.recurring_task_id = rt.id WHERE t.id = ?");
         $stmt->bind_param('i', $newId);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
@@ -109,7 +110,7 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        $colMap = ['service_id', 'customer_id', 'title', 'problem', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature'];
+        $colMap = ['service_id', 'recurring_task_id', 'customer_id', 'title', 'problem', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature'];
         foreach ($colMap as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = "$f = ?";
@@ -130,7 +131,7 @@ switch ($method) {
         $stmt = $db->prepare("UPDATE fscrm_tasks SET " . implode(', ', $fields) . " WHERE id = ?");
         $stmt->bind_param($types, ...$vals);
         $stmt->execute();
-        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem, rt.title AS recurrence_title FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id LEFT JOIN fscrm_recurring_tasks rt ON t.recurring_task_id = rt.id WHERE t.id = ?");
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();

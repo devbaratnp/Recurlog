@@ -21,7 +21,7 @@ $entityId = intval($input['entity_id'] ?? 0);
 $newAssigneeId = $input['new_assignee_id'] !== null && $input['new_assignee_id'] !== '' ? intval($input['new_assignee_id']) : null;
 $changedBy = intval($_SESSION['user_id'] ?? 0);
 
-$allowedTypes = ['task', 'order', 'service'];
+$allowedTypes = ['task', 'order', 'service', 'recurring-task'];
 if (!in_array($entityType, $allowedTypes)) {
     jsonError('Invalid entity_type. Allowed: ' . implode(', ', $allowedTypes));
 }
@@ -75,6 +75,24 @@ try {
         $stmt->bind_param('isi', $newAssigneeId, $staffName, $entityId);
         $stmt->execute();
 
+    } elseif ($entityType === 'recurring-task') {
+        $stmt = $db->prepare("SELECT rt.assigned_to, rt.title, c.name AS customer_name FROM fscrm_recurring_tasks rt LEFT JOIN fscrm_customers c ON rt.customer_id = c.id WHERE rt.id = ?");
+        $stmt->bind_param('i', $entityId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        if (!$row) throw new Exception('Recurring task not found');
+        $previousAssigneeId = $row['assigned_to'];
+        $title = $row['title'];
+        $customerName = $row['customer_name'] ?? '';
+
+        $stmt = $db->prepare("UPDATE fscrm_recurring_tasks SET assigned_to = ? WHERE id = ?");
+        $stmt->bind_param('ii', $newAssigneeId, $entityId);
+        $stmt->execute();
+
+        $stmt = $db->prepare("UPDATE fscrm_tasks SET assigned_to = ? WHERE recurring_task_id = ? AND status = 'pending'");
+        $stmt->bind_param('ii', $newAssigneeId, $entityId);
+        $stmt->execute();
+
     } elseif ($entityType === 'service') {
         $stmt = $db->prepare("SELECT s.assigned_to, s.title, c.name AS customer_name FROM fscrm_services s LEFT JOIN fscrm_customers c ON s.customer_id = c.id WHERE s.id = ?");
         $stmt->bind_param('i', $entityId);
@@ -99,7 +117,8 @@ try {
     $stmt->execute();
     $historyId = $db->insert_id;
 
-    $typeLabel = $entityType === 'order' ? 'Order' : ($entityType === 'service' ? 'Service' : 'Task');
+    $typeLabels = ['order' => 'Order', 'service' => 'Service', 'recurring-task' => 'Recurring Task'];
+    $typeLabel = $typeLabels[$entityType] ?? 'Task';
     $entityLabel = $typeLabel . ' "' . ($title ?: '#' . $entityId) . '"' . ($customerName ? ' for ' . $customerName : '');
 
     if ($newAssigneeId) {

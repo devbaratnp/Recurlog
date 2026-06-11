@@ -19,7 +19,7 @@ function statusPill($status) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   requireCsrfToken();
   $customerId = intval($_POST['customer_id'] ?? 0);
-  $serviceFor = trim($_POST['service_for'] ?? '');
+  $title = trim($_POST['title'] ?? '');
   $problem = trim($_POST['problem'] ?? '');
   $assignedTo = !empty($_POST['assigned_to']) ? intval($_POST['assigned_to']) : null;
   $firstDate = $_POST['first_scheduled_date'] ?? '';
@@ -36,10 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (!$customerId) {
     $error = 'Please select a customer.';
-  } elseif (!$serviceFor) {
-    $error = 'Please select a service.';
-  } elseif (!$problem) {
-    $error = 'Please enter the problem description.';
+  } elseif (!$title) {
+    $error = 'Please enter the task title.';
   } elseif (!$firstDate) {
     $error = 'Please select a scheduled date.';
   }
@@ -51,16 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $custStmt->bind_param('i', $customerId);
       $custStmt->execute();
       $custRow = $custStmt->get_result()->fetch_assoc();
-      $title = $serviceFor . ($custRow ? ' - ' . $custRow['name'] : '');
 
-      $stmt = $db->prepare("INSERT INTO fscrm_services (customer_id, category_id, service_for, title, problem, is_recurring, first_scheduled_date, assigned_to, notes, rec_value, rec_unit, repeat_from) VALUES (?, NULL, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)");
-      $stmt->bind_param('issssiisss', $customerId, $serviceFor, $title, $problem, $firstDate, $assignedTo, $notes, $recValue, $recUnit, $repeatFrom);
-      $stmt->execute();
-      $serviceId = $db->insert_id;
+      $rtStmt = $db->prepare("INSERT INTO fscrm_recurring_tasks (customer_id, title, problem, assigned_to, notes, rec_value, rec_unit, repeat_from, next_due_date, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+      $rtStmt->bind_param('issiisiss', $customerId, $title, $problem, $assignedTo, $notes, $recValue, $recUnit, $repeatFrom, $firstDate);
+      $rtStmt->execute();
+      $rtId = $db->insert_id;
 
-      $taskTitle = $title;
-      $taskStmt = $db->prepare("INSERT INTO fscrm_tasks (service_id, customer_id, title, status, scheduled_date, assigned_to, notes) VALUES (?, ?, ?, 'pending', ?, ?, ?)");
-      $taskStmt->bind_param('iissis', $serviceId, $customerId, $taskTitle, $firstDate, $assignedTo, $notes);
+      $taskStmt = $db->prepare("INSERT INTO fscrm_tasks (customer_id, recurring_task_id, title, problem, status, scheduled_date, assigned_to, notes) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)");
+      $taskStmt->bind_param('iississ', $customerId, $rtId, $title, $problem, $firstDate, $assignedTo, $notes);
       $taskStmt->execute();
       $taskId = $db->insert_id;
 
@@ -69,14 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $compStmt = $db->prepare("UPDATE fscrm_tasks SET status='completed', completed_date=?, completed_by=?, received_name=?, received_contact=?, signature=? WHERE id=?");
         $compStmt->bind_param('sssssi', $compDate, $completedBy, $recName, $recContact, $signature, $taskId);
         $compStmt->execute();
+
+        $lcStmt = $db->prepare("UPDATE fscrm_recurring_tasks SET last_completed_date = ? WHERE id = ?");
+        $lcStmt->bind_param('si', $compDate, $rtId);
+        $lcStmt->execute();
       }
 
       $notifText = 'New recurring task "' . $title . '" added for ' . ($custRow ? $custRow['name'] : 'customer');
-      createNotification($db, $notifText, 'service', $serviceId);
+      createNotification($db, $notifText, 'recurring-task', $rtId);
 
       $db->commit();
       setFlash('Recurring task "' . $title . '" added successfully for ' . ($custRow ? $custRow['name'] : 'customer'));
-      header('Location: customer-detail.php');
+      header('Location: recurring-task.php');
       exit;
     } catch (Exception $e) {
       $db->rollback();
@@ -88,18 +88,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Load data
 $customers = $db->query("SELECT id, name FROM fscrm_customers ORDER BY name")->fetch_all(MYSQLI_ASSOC);
-$serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 $staffList = $db->query("SELECT id, name FROM fscrm_staff ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 
-// Fetch recurring tasks
+// Fetch recurring tasks from dedicated table
 $rtResult = $db->query("
-  SELECT t.*, c.name AS customer_name, s.name AS staff_name
-  FROM fscrm_tasks t
-  LEFT JOIN fscrm_customers c ON t.customer_id = c.id
-  LEFT JOIN fscrm_staff s ON t.assigned_to = s.id
-  LEFT JOIN fscrm_services sv ON t.service_id = sv.id
-  WHERE sv.is_recurring = 1
-  ORDER BY t.scheduled_date DESC
+  SELECT rt.*, c.name AS customer_name, s.name AS staff_name,
+    (SELECT COUNT(*) FROM fscrm_tasks WHERE recurring_task_id = rt.id) AS instance_count
+  FROM fscrm_recurring_tasks rt
+  LEFT JOIN fscrm_customers c ON rt.customer_id = c.id
+  LEFT JOIN fscrm_staff s ON rt.assigned_to = s.id
+  ORDER BY rt.next_due_date DESC
   LIMIT 100
 ");
 $recurringTasks = $rtResult ? $rtResult->fetch_all(MYSQLI_ASSOC) : [];
@@ -166,20 +164,20 @@ function statusPillShort($status) {
         <?php if (empty($recurringTasks)): ?>
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center mb-4">
             <i data-lucide="repeat" class="w-10 h-10 text-gray-300 mx-auto mb-3"></i>
-            <p class="text-gray-500 mb-3">No recurring tasks yet.</p>
-            <button onclick="document.getElementById('show-add-form').click()" class="btn btn-sm btn-primary">Create First Task</button>
+            <p class="text-gray-500 mb-3">No recurring tasks defined yet.</p>
+            <button onclick="document.getElementById('show-add-form').click()" class="btn btn-sm btn-primary">Define Recurring Task</button>
           </div>
         <?php else: ?>
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
             <div class="overflow-x-auto">
-              <table id="task-table" class="w-full text-sm">
+                  <table id="task-table" class="w-full text-sm">
                 <thead>
                   <tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Task</th>
+                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Recurring Task</th>
                     <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Customer</th>
                     <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Staff</th>
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Date</th>
-                    <th class="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Status</th>
+                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Next Due</th>
+                    <th class="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Active</th>
                     <th class="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Action</th>
                   </tr>
                 </thead>
@@ -187,21 +185,25 @@ function statusPillShort($status) {
                   <?php foreach ($recurringTasks as $t): ?>
                   <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                     <td class="px-4 py-3">
-                      <a href="task-detail.php?id=<?= $t['id'] ?>" class="font-medium text-navy hover:text-brand transition-colors"><?= htmlspecialchars($t['title']) ?></a>
+                      <a href="customer-detail.php?id=<?= $t['customer_id'] ?>" class="font-medium text-navy hover:text-brand transition-colors"><?= htmlspecialchars($t['title']) ?></a>
+                      <div class="text-xs text-gray-400 mt-0.5"><?= $t['instance_count'] ?> instance(s)</div>
                     </td>
                     <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['customer_name'] ?: '—') ?></td>
                     <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['staff_name'] ?: '—') ?></td>
-                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['scheduled_date']) ?></td>
-                    <td class="px-4 py-3 text-center"><?= statusPillShort($t['status']) ?></td>
+                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['next_due_date']) ?></td>
+                    <td class="px-4 py-3 text-center">
+                      <?php if ($t['is_active']): ?>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>
+                      <?php else: ?>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactive</span>
+                      <?php endif; ?>
+                    </td>
                     <td class="px-4 py-3 text-right">
                       <div class="flex items-center justify-end gap-1">
                         <button class="reassign-rt-btn btn btn-sm btn-ghost p-1.5 text-purple-500 hover:text-purple-700" title="Reassign" data-rt-id="<?= $t['id'] ?>" data-current-staff="<?= $t['assigned_to'] ?? '' ?>">
                           <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                         </button>
-                        <a href="task-edit.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-ghost p-1.5" title="Edit">
-                          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                        </a>
-                        <button class="delete-rt-btn btn btn-sm btn-ghost p-1.5 text-red-500 hover:text-red-700" title="Delete" data-rt-id="<?= $t['id'] ?>" data-rt-title="<?= htmlspecialchars($t['title']) ?>" data-rt-customer="<?= htmlspecialchars($t['customer_name'] ?? '—') ?>" data-rt-date="<?= $t['scheduled_date'] ?>">
+                        <button class="delete-rt-btn btn btn-sm btn-ghost p-1.5 text-red-500 hover:text-red-700" title="Delete" data-rt-id="<?= $t['id'] ?>" data-rt-title="<?= htmlspecialchars($t['title']) ?>" data-rt-customer="<?= htmlspecialchars($t['customer_name'] ?? '—') ?>" data-rt-date="<?= $t['next_due_date'] ?>">
                           <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                         </button>
                       </div>
@@ -248,32 +250,15 @@ function statusPillShort($status) {
             </div>
           </div>
 
-          <!-- Service For -->
+          <!-- Title -->
           <div>
-            <label for="rt-service" class="block text-sm font-semibold text-gray-700 mb-1.5">Service For <span class="text-danger">*</span></label>
-            <div class="flex gap-2 items-center">
-              <select id="rt-service" name="service_for" class="form-select flex-1">
-                <option value="">Select Service</option>
-                <?php foreach ($serviceTypeRows as $st): ?>
-                  <option value="<?= htmlspecialchars($st['name']) ?>"><?= htmlspecialchars($st['name']) ?></option>
-                <?php endforeach; ?>
-              </select>
-              <button type="button" id="rt-service-add-btn" class="px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 flex items-center gap-1 whitespace-nowrap" title="Add service type">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-              </button>
-            </div>
-            <div id="rt-service-add-row" class="mt-2 hidden">
-              <div class="flex gap-2">
-                <input type="text" id="rt-new-service" class="form-input flex-1" placeholder="New service type (e.g. Water Heater)">
-                <button type="button" id="rt-service-save" class="px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold">Save</button>
-                <button type="button" id="rt-service-cancel" class="px-4 py-2 border border-gray-200 rounded-lg text-sm">Cancel</button>
-              </div>
-            </div>
+            <label for="rt-title" class="block text-sm font-semibold text-gray-700 mb-1.5">Task Title <span class="text-danger">*</span></label>
+            <input type="text" id="rt-title" name="title" class="form-input" placeholder="e.g. Battery Inverter Service" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>" maxlength="200">
           </div>
 
           <!-- Problem Description -->
           <div>
-            <label for="rt-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem Description <span class="text-danger">*</span></label>
+            <label for="rt-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem Description</label>
              <textarea id="rt-problem" name="problem" rows="3" class="form-textarea" placeholder="Describe the problem or work to be done..." maxlength="1000"><?= htmlspecialchars($_POST['problem'] ?? '') ?></textarea>
           </div>
 
@@ -402,7 +387,7 @@ function statusPillShort($status) {
         listSection.classList.add('hidden'); formSection.classList.remove('hidden');
         if (!formInited) {
           formInited = true;
-          var now = new Date();
+            var now = new Date();
           var d = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
           var dateInput = document.getElementById('rt-date');
           if (dateInput) dateInput.value = d;
@@ -410,6 +395,9 @@ function statusPillShort($status) {
           // Trigger recurrence preview
           var updateFn = document.getElementById('rt-rec-preview');
           if (updateFn) updateFn.textContent = 'Every 1 days from Last Done Date';
+          // Focus title
+          var titleInput = document.getElementById('rt-title');
+          if (titleInput) setTimeout(function() { titleInput.focus(); }, 100);
         }
       });
       if (hideBtn) hideBtn.addEventListener('click', function () {
@@ -480,35 +468,6 @@ function statusPillShort($status) {
       });
       updatePreview();
 
-      // ===== Add service type inline =====
-      var row = document.getElementById('rt-service-add-row');
-      document.getElementById('rt-service-add-btn').addEventListener('click', function () {
-        row.classList.remove('hidden');
-        document.getElementById('rt-new-service').focus();
-      });
-      document.getElementById('rt-service-cancel').addEventListener('click', function () {
-        row.classList.add('hidden');
-        document.getElementById('rt-new-service').value = '';
-      });
-      document.getElementById('rt-service-save').addEventListener('click', function () {
-        var name = document.getElementById('rt-new-service').value.trim();
-        if (!name) { window.showToast('Enter a service type name.', 'error'); return; }
-
-        fetch('../api/service_types.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name })
-        }).then(function (r) { return r.json(); }).then(function (res) {
-          if (res.success) {
-            window.location.reload();
-          } else {
-            window.showToast(res.error || 'Failed to save.', 'error');
-          }
-        }).catch(function () {
-          window.showToast('Network error.', 'error');
-        });
-      });
-
       // ===== Search filter =====
       var searchInput = document.getElementById('task-search');
       var table = document.getElementById('task-table');
@@ -542,7 +501,7 @@ function statusPillShort($status) {
         btn.disabled = true;
         btn.textContent = 'Deleting...';
         try {
-          var res = await fetch('../api/tasks.php?id=' + deleteRtId, { method: 'DELETE' });
+          var res = await fetch('../api/recurring_tasks.php?id=' + deleteRtId, { method: 'DELETE' });
           var data = await res.json();
           if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); btn.disabled = false; btn.textContent = 'Delete'; return; }
           var row = document.querySelector('.delete-rt-btn[data-rt-id="' + deleteRtId + '"]').closest('tr');
@@ -566,7 +525,7 @@ function statusPillShort($status) {
       document.querySelectorAll('.reassign-rt-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
           window.reassignStaff({
-            entityType: 'task',
+            entityType: 'recurring-task',
             entityId: parseInt(this.dataset.rtId, 10),
             currentStaffId: this.dataset.currentStaff || null
           });
