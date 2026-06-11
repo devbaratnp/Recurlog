@@ -9,6 +9,15 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : null;
 
 $db = getDB();
 
+// Auto-mark overdue pending tasks as missed
+if (isset($_GET['action']) && $_GET['action'] === 'auto_miss') {
+    $stmt = $db->prepare("UPDATE fscrm_tasks SET status = 'missed' WHERE status = 'pending' AND scheduled_date < CURDATE()");
+    $stmt->execute();
+    $count = $stmt->affected_rows;
+    jsonResponse(['missed_count' => $count, 'message' => "$count tasks marked as missed"]);
+    exit;
+}
+
 switch ($method) {
     case 'GET':
         if ($id) {
