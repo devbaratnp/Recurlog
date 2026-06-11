@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 09, 2026 at 07:42 AM
+-- Generation Time: Jun 11, 2026 at 10:54 AM
 -- Server version: 10.11.18-MariaDB
 -- PHP Version: 8.4.21
 
@@ -25,7 +25,7 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`cpses_ekakl8d6c4`@`localhost` PROCEDURE `TruncateAllTables` ()   BEGIN
+CREATE DEFINER=`cpses_eklhnyw8bb`@`localhost` PROCEDURE `TruncateAllTables` ()   BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE t_name VARCHAR(255);
     
@@ -166,7 +166,12 @@ INSERT INTO `fscrm_customers` (`id`, `name`, `address`, `area`, `phone`, `servic
 (18, 'MADHAB LOHANI', 'TERAUTA', 'Ghorahi', '9857830377', '', NULL, NULL, '2026-06-09 04:43:35', '2026-06-09 04:43:35'),
 (19, 'KISHAN KHADKA', 'GHORAHI', 'Ghorahi', '9851284577', '', NULL, NULL, '2026-06-09 04:46:01', '2026-06-09 04:46:01'),
 (20, 'Puspa Paudel', 'Ghorahi', 'Ghorahi', '984-794-1248', '', NULL, NULL, '2026-06-09 05:00:24', '2026-06-09 05:00:24'),
-(21, 'Sangam Hotel', 'Narayanpur', 'Narayanpur', '974-9264436', '', NULL, NULL, '2026-06-09 05:45:33', '2026-06-09 05:45:33');
+(21, 'Sangam Hotel', 'Narayanpur', 'Narayanpur', '974-9264436', '', NULL, NULL, '2026-06-09 05:45:33', '2026-06-09 05:45:33'),
+(22, 'Bhandari Hardwares', 'Tulsipur', 'Tulsipur', '9705224303', '', NULL, NULL, '2026-06-09 07:57:53', '2026-06-09 11:14:27'),
+(23, 'Binu Malla', 'Balmandir Nera', 'Ghorahi', '980-977-2009', '', NULL, NULL, '2026-06-09 11:34:24', '2026-06-09 11:34:24'),
+(24, 'Drona Basnet', 'Tulsipur', 'Tulsipur', '9847853373', '', NULL, NULL, '2026-06-09 11:46:58', '2026-06-09 11:46:58'),
+(25, 'Robar Lamichane', 'Badaraha', 'Narayanpur', '9844997872', '', NULL, NULL, '2026-06-10 01:23:29', '2026-06-10 01:23:29'),
+(26, 'Drv', 'Hh  h', 'Narayanpur', '+977-9811144402', '', NULL, NULL, '2026-06-10 07:03:16', '2026-06-10 07:03:16');
 
 -- --------------------------------------------------------
 
@@ -270,15 +275,20 @@ CREATE TABLE `fscrm_orders` (
 --
 
 INSERT INTO `fscrm_orders` (`id`, `customer_id`, `customer_name`, `service_for`, `problem`, `status`, `priority`, `assigned_to`, `assigned_staff_name`, `scheduled_date`, `completed_date`, `notes`, `dispatch_date`, `dispatch_by`, `received_name`, `received_contact`, `signature`, `created_at`, `updated_at`) VALUES
-(16, 12, 'Deva Giri', 'Water Pump', 'NEPA flo 1hp 1 pcs Rs7000', 'assigned', '', 12, '', '2026-06-09', NULL, 'no', NULL, '', '', '', '', '2026-06-08 23:18:21', '2026-06-08 23:26:08'),
-(17, 12, 'Deva Giri', 'Cooler', 'ultra 130 L Rs.26000', 'assigned', '', 12, '', '0000-00-00', NULL, 'No', NULL, '', '', '', '', '2026-06-08 23:21:57', '2026-06-08 23:21:57'),
-(18, 12, 'Deva Giri', 'Washing Machine', 'Lg 8 KG Rs.80000', 'assigned', '', 11, '', '0000-00-00', NULL, '2026/06/01', NULL, '', '', '', '', '2026-06-08 23:38:00', '2026-06-08 23:38:00'),
-(19, 12, 'Deva Giri', 'Celing Fan', 'Ultra celing 5 pcs ×2500= 12500', 'assigned', '', 11, '', '0000-00-00', NULL, '2026-06-20', NULL, '', '', '', '', '2026-06-08 23:40:13', '2026-06-08 23:40:13'),
-(20, 15, 'Bibek Agrovate', 'Mantinanc!', 'Battery Inverter', 'assigned', '', 13, '', '0000-00-00', NULL, 'No', NULL, '', '', '', '', '2026-06-09 00:01:19', '2026-06-09 00:01:19'),
-(21, 15, 'Bibek Agrovate', 'Service', 'Battery Inverter', 'assigned', '', 13, '', '0000-00-00', NULL, '2026-06-08', NULL, '', '', '', '', '2026-06-09 00:04:24', '2026-06-09 00:04:24'),
-(25, 19, 'KISHAN KHADKA', 'Chimney problem', 'Chimney', 'assigned', '', 11, '', '0000-00-00', NULL, '', NULL, '', '', '', '', '2026-06-09 04:57:50', '2026-06-09 04:57:50'),
-(26, 16, 'Sandesh KC', 'RO Problem', 'Ro Service', 'assigned', '', 11, '', '0000-00-00', NULL, '', NULL, '', '', '', '', '2026-06-09 04:59:23', '2026-06-09 04:59:23'),
-(29, 21, 'Sangam Hotel', 'BATTERY', 'GOODYEAR 160 Ah Re.32000\npurano return Rs 5000', 'assigned', '', 11, '', '0000-00-00', NULL, '', NULL, '', '', '', '', '2026-06-09 05:47:38', '2026-06-09 05:47:38');
+(16, 12, 'Deva Giri', 'Water Pump', 'NEPA flo 1hp 1 pcs Rs7000', 'assigned', 'normal', 12, 'Sabin Chaudhary', '2026-06-30', '2026-06-10', '', '2026-06-10', '', '', '', '', '2026-06-08 23:18:21', '2026-06-10 15:24:26'),
+(17, 12, 'Deva Giri', 'Cooler', 'ultra 130 L Rs.26000', 'assigned', '', 12, 'Sabin Chaudhary', '2026-06-13', NULL, 'No', NULL, '', '', '', '', '2026-06-08 23:21:57', '2026-06-09 12:51:50'),
+(18, 12, 'Deva Giri', 'Washing Machine', 'Lg 8 KG Rs.80000', 'assigned', '', 11, 'Gobind Chaudhary', '2026-06-10', NULL, '2026/06/01', NULL, '', '', '', '', '2026-06-08 23:38:00', '2026-06-09 12:51:50'),
+(19, 12, 'Deva Giri', 'Celing Fan', 'Ultra celing 5 pcs ×2500= 12500', 'assigned', '', 11, 'Gobind Chaudhary', '2026-06-12', NULL, '2026-06-20', NULL, '', '', '', '', '2026-06-08 23:40:13', '2026-06-09 12:51:50'),
+(20, 15, 'Bibek Agrovate', 'Mantinanc!', 'Battery Inverter', 'assigned', 'normal', 13, 'Bijaya Acharya', '2026-06-11', NULL, 'No', NULL, '', '', '', '', '2026-06-09 00:01:19', '2026-06-09 12:51:50'),
+(21, 15, 'Bibek Agrovate', 'Service', 'Battery Inverter', 'assigned', '', 13, 'Bijaya Acharya', '2026-06-12', NULL, '2026-06-08', NULL, '', '', '', '', '2026-06-09 00:04:24', '2026-06-09 12:51:50'),
+(25, 19, 'KISHAN KHADKA', 'Chimney problem', 'Chimney', 'assigned', '', 11, 'Gobind Chaudhary', '2026-06-10', NULL, '', NULL, '', '', '', '', '2026-06-09 04:57:50', '2026-06-09 12:51:50'),
+(26, 16, 'Sandesh KC', 'RO Problem', 'Ro Service', 'assigned', '', 11, 'Gobind Chaudhary', '2026-06-14', NULL, '', NULL, '', '', '', '', '2026-06-09 04:59:23', '2026-06-09 12:51:50'),
+(29, 21, 'Sangam Hotel', 'BATTERY', 'GOODYEAR 160 Ah Re.32000\npurano return Rs 5000', 'assigned', 'normal', 13, 'Bijaya Acharya', '2026-06-12', NULL, '', NULL, '', '', '', '', '2026-06-09 05:47:38', '2026-06-09 12:51:50'),
+(30, 22, '', 'Moter', 'Nepa flo 10*6200\n2\"         3 pcs *', 'completed', 'normal', 13, 'Bijaya Acharya', '2083-02-28', '2026-06-10', 'Bnbn', '2026-06-10', '', '', '', '', '2026-06-09 07:58:44', '2026-06-10 09:35:19'),
+(31, 23, '', 'TV', 'Led Tv 39\" Konka Rs 35000', 'completed', 'normal', 13, 'Bijaya Acharya', NULL, '2026-06-10', '', '2026-06-10', '', '', '', '', '2026-06-09 11:35:04', '2026-06-10 09:34:29'),
+(32, 24, 'Drona Basnet', 'Ro', 'Ro service', 'completed', '', 13, 'Bijaya Acharya', NULL, '2026-06-09', '', '2026-06-09', '', '', '', '', '2026-06-09 12:06:01', '2026-06-09 13:10:11'),
+(34, 15, 'Bibek Agrovate', 'Chrome web store', 'I want codex', 'assigned', 'urgent', 14, '0', '2026-06-12', NULL, 'This is a tejs', NULL, '', '', '', '', '2026-06-10 06:44:42', '2026-06-10 06:44:42'),
+(35, 15, 'Bibek Agrovate', 'J  h h', 'J u u', 'assigned', 'urgent', 14, '0', '2026-06-11', NULL, 'J j u', NULL, '', '', '', '', '2026-06-10 06:59:11', '2026-06-10 06:59:11');
 
 -- --------------------------------------------------------
 
@@ -310,6 +320,47 @@ INSERT INTO `fscrm_push_tokens` (`id`, `user_id`, `platform`, `expo_token`, `end
 (2, 1, 'web', NULL, 'https://fcm.googleapis.com/fcm/send/dwzK8_GvKxY:APA91bFoWu2hEgx4Y3Hi7q_vZw-pW8gP_XzLViHEgFUxgskxeBAPtstlISzxNj-RRSvCNGJNzaiHHBPvr-z_n9Z7fPCGmajjDdZJRBwcX8DavHmikSsqxeKCQMmmrLFLGjXA5TknB4v4', 'BPRivDRIuSuwDx0IcvhwGa8GEftxvqBmCYM6VkzpE5urJ+9aGJMe3FDmhbHCkwCpBC1nRopGWvlCfLceNnyiXWo=', 'CMnbfFz8lW2pYU7BHaxv5A==', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', '', 1, '2026-06-07 09:13:18', '2026-06-07 11:59:23'),
 (3, 1, 'web', NULL, 'https://fcm.googleapis.com/fcm/send/fiZ8WvfYs2g:APA91bEtIQzTr3LnVBdyZyZNV5BwvF2bZYErDe9vAP9wXR2LA_lyIyvBzmSofI2LqcvmPCPB00kPORnF0nYg9AJucyaYEUsZjJuVW8y9EyZ-nYtXtPg_KzQQP0AcuCcsITWqBp1ZWneB', 'BOXIvvpkIxCJYeiSw3j66Oq3+7EzEVehjX59yTMXvNkK0gpI4T832ckJEZ+/X8Rwsn5CQ/h4YGDAAGN4JZghSEQ=', 'HFyH+3GOuwJCxEE2mBO/pw==', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36', '', 1, '2026-06-07 09:14:42', '2026-06-07 09:14:44'),
 (4, 1, 'web', NULL, 'https://fcm.googleapis.com/fcm/send/f9ngoikn6Qw:APA91bGYrXvTu_WVrMfs_CNonIJBn9dUKoSkZKxb8hl24ONZ4F_65QvE1gcems5NAq2XJo9VKlviYVirPk1Hj5-Sf9gjiAM1VKQTIKdtzjrGTfVgYAVYNaFyWlnIxLX0Mjp0mdR_R7oN', 'BN2zXrxIXJuhquiZOxF699CTEsaYyCxy5oMBZdebVfbwXEw+rzgDSxgpF5JFSbB111Jwa9Abe+jM9XZYa6MVvgw=', 'u2MqzbRXx9tZo39vfCa3zw==', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36', '', 1, '2026-06-07 09:15:18', '2026-06-07 14:32:04');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fscrm_recurring_tasks`
+--
+
+CREATE TABLE `fscrm_recurring_tasks` (
+  `id` int(11) NOT NULL,
+  `customer_id` int(11) NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `problem` text DEFAULT NULL,
+  `assigned_to` int(11) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `rec_value` int(11) NOT NULL DEFAULT 1,
+  `rec_unit` enum('days','weeks','months','years') NOT NULL DEFAULT 'days',
+  `repeat_from` enum('last-done','fixed-schedule') NOT NULL DEFAULT 'last-done',
+  `next_due_date` date DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `last_completed_date` date DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `fscrm_recurring_tasks`
+--
+
+INSERT INTO `fscrm_recurring_tasks` (`id`, `customer_id`, `title`, `problem`, `assigned_to`, `notes`, `rec_value`, `rec_unit`, `repeat_from`, `next_due_date`, `is_active`, `last_completed_date`, `created_at`, `updated_at`) VALUES
+(1, 12, 'Prod Recurring Test 020712', '', 11, 'Vvbh', 1, 'days', 'last-done', '2026-06-09', 1, '2026-06-09', '2026-06-09 02:06:13', '2026-06-11 08:10:26'),
+(2, 14, 'Battery Inverter', 'Ro service', 13, 'fffg', 6, 'months', 'last-done', '2026-06-10', 1, '2026-06-10', '2026-06-10 09:05:02', '2026-06-11 08:10:26'),
+(3, 15, 'Chimney', 'H h u uyv', 14, 'Hello', 1, 'weeks', 'last-done', '2026-06-10', 1, NULL, '2026-06-10 07:02:25', '2026-06-11 08:10:26'),
+(4, 20, 'RO', 'Ro service', 13, '', 6, 'months', 'last-done', '2026-06-11', 1, NULL, '2026-06-10 15:26:26', '2026-06-11 08:10:26'),
+(5, 22, 'Battery Inverter', '', 14, 'This is recuring task', 1, 'weeks', 'last-done', '2026-06-10', 1, NULL, '2026-06-10 09:04:04', '2026-06-11 08:10:26'),
+(6, 22, 'RO', 'Magna livpure', 13, 'fcffg', 6, 'months', 'last-done', '2026-06-10', 1, '2026-06-10', '2026-06-10 09:32:42', '2026-06-11 08:10:26'),
+(7, 23, 'Battery Inverter', 'RO service', 13, 'ffffg', 6, 'months', 'last-done', '2026-06-10', 1, '2026-06-10', '2026-06-10 09:01:44', '2026-06-11 08:10:26'),
+(8, 23, 'Battery Inverter', 'Thibvg', 14, 'This is additional notes', 1, 'weeks', 'last-done', '2026-06-12', 1, NULL, '2026-06-10 08:10:11', '2026-06-11 08:10:26'),
+(9, 23, 'Battery Inverter', 'This is a recuring task 202992k2b', 14, 'Thsisnk', 1, 'weeks', 'last-done', '2026-06-12', 1, NULL, '2026-06-11 07:36:10', '2026-06-11 08:10:26'),
+(10, 23, 'Battery Inverter', 'This is a recuring task night task test', 14, 'This is is a note for Ramesh', 1, 'months', 'last-done', '2026-06-10', 1, NULL, '2026-06-10 15:30:01', '2026-06-11 08:10:26'),
+(11, 23, 'RO', 'Service', 13, '', 6, 'months', 'last-done', '2026-06-10', 1, NULL, '2026-06-10 12:27:14', '2026-06-11 08:10:26'),
+(12, 25, 'RO', 'Ro problem', 11, '', 6, 'months', 'last-done', '2026-06-10', 1, NULL, '2026-06-10 01:26:42', '2026-06-11 08:10:26');
 
 -- --------------------------------------------------------
 
@@ -379,7 +430,8 @@ CREATE TABLE `fscrm_staff` (
 INSERT INTO `fscrm_staff` (`id`, `name`, `phone`, `avatar`, `active_tasks`, `created_at`, `updated_at`) VALUES
 (11, 'Gobind Chaudhary', '9868282417', '', 0, '2026-06-08 22:31:52', '2026-06-08 22:31:52'),
 (12, 'Sabin Chaudhary', '9860620168', '', 0, '2026-06-08 22:33:48', '2026-06-08 22:33:48'),
-(13, 'Bijaya Acharya', '9847835149', '', 0, '2026-06-08 23:50:29', '2026-06-08 23:50:29');
+(13, 'Bijaya Acharya', '9847835149', '', 0, '2026-06-08 23:50:29', '2026-06-08 23:50:29'),
+(14, 'Ramesh', '9811144402', '', 0, '2026-06-10 06:38:08', '2026-06-10 06:38:08');
 
 -- --------------------------------------------------------
 
@@ -390,8 +442,10 @@ INSERT INTO `fscrm_staff` (`id`, `name`, `phone`, `avatar`, `active_tasks`, `cre
 CREATE TABLE `fscrm_tasks` (
   `id` int(11) NOT NULL,
   `service_id` int(11) DEFAULT NULL,
+  `recurring_task_id` int(11) DEFAULT NULL,
   `customer_id` int(11) NOT NULL,
   `title` varchar(200) NOT NULL,
+  `problem` text DEFAULT NULL,
   `status` enum('pending','completed','missed') DEFAULT 'pending',
   `scheduled_date` date DEFAULT NULL,
   `completed_date` date DEFAULT NULL,
@@ -414,10 +468,26 @@ CREATE TABLE `fscrm_tasks` (
 -- Dumping data for table `fscrm_tasks`
 --
 
-INSERT INTO `fscrm_tasks` (`id`, `service_id`, `customer_id`, `title`, `status`, `scheduled_date`, `completed_date`, `assigned_to`, `notes`, `category_id`, `is_recurring`, `rec_value`, `rec_unit`, `repeat_from`, `completed_by`, `received_name`, `received_contact`, `signature`, `created_at`, `updated_at`) VALUES
-(171, NULL, 12, 'RO', 'pending', '2026-06-01', NULL, 11, 'sales By Gautam Traders', 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-08 23:01:03', '2026-06-08 23:01:03'),
-(190, NULL, 12, 'Prod Simple Test 020711', 'pending', '2026-06-09', NULL, 11, 'Prod test', 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-09 02:06:13', '2026-06-09 02:06:13'),
-(191, NULL, 12, 'Prod Recurring Test 020712', 'pending', '2026-06-09', NULL, 11, 'Prod recurring', 1, 1, 1, 'days', 'last-done', NULL, NULL, NULL, NULL, '2026-06-09 02:06:13', '2026-06-09 02:06:13');
+INSERT INTO `fscrm_tasks` (`id`, `service_id`, `recurring_task_id`, `customer_id`, `title`, `problem`, `status`, `scheduled_date`, `completed_date`, `assigned_to`, `notes`, `category_id`, `is_recurring`, `rec_value`, `rec_unit`, `repeat_from`, `completed_by`, `received_name`, `received_contact`, `signature`, `created_at`, `updated_at`) VALUES
+(171, NULL, NULL, 12, 'RO', NULL, 'pending', '2026-06-01', NULL, 11, 'sales By Gautam Traders', 1, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-08 23:01:03', '2026-06-08 23:01:03'),
+(191, NULL, 1, 12, 'Prod Recurring Test 020712', NULL, 'completed', '2026-06-09', '2026-06-09', 11, 'Vvbh', 1, 1, 1, 'days', 'last-done', NULL, NULL, NULL, NULL, '2026-06-09 02:06:13', '2026-06-11 08:16:16'),
+(198, NULL, NULL, 23, 'Battery Inverter', NULL, 'pending', '2026-06-09', NULL, 12, 'Dnjdj', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-09 15:59:16', '2026-06-09 15:59:16'),
+(199, NULL, NULL, 12, 'Battery Inverter', NULL, 'pending', '2026-06-09', NULL, 13, 'Dbdjj', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-09 16:06:05', '2026-06-09 16:06:05'),
+(200, NULL, NULL, 15, 'Battery Inverter', NULL, 'pending', '2026-06-09', NULL, 11, 'Ghhuu', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-09 16:25:37', '2026-06-09 16:25:37'),
+(203, NULL, 12, 25, 'RO', 'Ro problem', 'pending', '2026-06-10', NULL, 11, '', NULL, 1, 6, 'months', 'last-done', NULL, NULL, NULL, NULL, '2026-06-10 01:26:42', '2026-06-11 08:16:16'),
+(205, NULL, NULL, 25, 'Battery Inverter', 'This is description', 'completed', '2026-06-07', '2026-06-10', 13, 'Ggv', NULL, 0, NULL, NULL, NULL, NULL, 'Ffff', '55', NULL, '2026-06-10 06:36:31', '2026-06-10 16:08:08'),
+(206, NULL, NULL, 23, 'Battery Inverter', '4his si s sjdj', 'completed', '2026-06-10', '2026-06-10', 14, 'Completed via mobile', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-10 06:45:00', '2026-06-10 06:55:33'),
+(207, NULL, 3, 15, 'Chimney', 'H h u uyv', 'pending', '2026-06-10', NULL, 14, 'Hello', NULL, 1, 1, 'weeks', 'last-done', NULL, NULL, NULL, NULL, '2026-06-10 07:02:25', '2026-06-11 08:16:16'),
+(208, NULL, 7, 23, 'Battery Inverter', 'Thibvg', 'pending', '2026-06-12', NULL, 14, 'This is additional notes', NULL, 1, 1, 'weeks', 'last-done', NULL, NULL, NULL, NULL, '2026-06-10 08:10:11', '2026-06-11 08:16:16'),
+(209, NULL, 7, 23, 'Battery Inverter', 'RO service', 'completed', '2026-06-10', '2026-06-10', 13, 'ffffg', NULL, 1, 6, 'months', 'last-done', NULL, 'Ffff', '88555', NULL, '2026-06-10 09:01:44', '2026-06-11 08:16:16'),
+(210, NULL, 5, 22, 'Battery Inverter', '', 'pending', '2026-06-10', NULL, 14, 'This is recuring task', NULL, 1, 1, 'weeks', 'last-done', NULL, NULL, NULL, NULL, '2026-06-10 09:04:04', '2026-06-11 08:16:16'),
+(211, NULL, 2, 14, 'Battery Inverter', 'Ro service', 'completed', '2026-06-10', '2026-06-10', 13, 'fffg', NULL, 1, 6, 'months', 'last-done', NULL, 'Fffgg', '45585', NULL, '2026-06-10 09:05:02', '2026-06-11 08:16:16'),
+(212, NULL, 6, 22, 'RO', 'Magna livpure', 'completed', '2026-06-10', '2026-06-10', 13, 'fcffg', NULL, 1, 6, 'months', 'last-done', NULL, 'Fffff', '55555', NULL, '2026-06-10 09:32:42', '2026-06-11 08:16:16'),
+(213, NULL, 11, 23, 'RO', 'Service', 'pending', '2026-06-10', NULL, 13, '', NULL, 1, 6, 'months', 'last-done', NULL, NULL, NULL, NULL, '2026-06-10 12:27:14', '2026-06-11 08:16:16'),
+(214, NULL, 4, 20, 'RO', 'Ro service', 'pending', '2026-06-11', NULL, 13, '', NULL, 1, 6, 'months', 'last-done', NULL, NULL, NULL, NULL, '2026-06-10 15:26:26', '2026-06-11 08:16:16'),
+(215, NULL, 7, 23, 'Battery Inverter', 'This is a recuring task night task test', 'pending', '2026-06-10', NULL, 14, 'This is is a note for Ramesh', NULL, 1, 1, 'months', 'last-done', NULL, NULL, NULL, NULL, '2026-06-10 15:30:01', '2026-06-11 08:16:16'),
+(216, NULL, 7, 23, 'Battery Inverter', 'This is a recuring task 202992k2b', 'pending', '2026-06-12', NULL, 14, 'Thsisnk', NULL, 1, 1, 'weeks', 'last-done', NULL, NULL, NULL, NULL, '2026-06-11 07:36:10', '2026-06-11 08:16:16'),
+(217, NULL, NULL, 15, 'Battery Inverter', 'U h h', 'pending', '2026-06-11', NULL, 11, 'H  uu', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-06-11 08:20:34', '2026-06-11 08:20:34');
 
 -- --------------------------------------------------------
 
@@ -444,16 +514,12 @@ CREATE TABLE `fscrm_users` (
 
 INSERT INTO `fscrm_users` (`id`, `name`, `email`, `password`, `role`, `is_active`, `staff_id`, `created_by`, `avatar`, `created_at`) VALUES
 (1, 'Admin User', 'admin@demo.com', '$2y$10$q.p/TdZb0fIhn0gkoCA2A.DTSjjdEGMI.oKgI10.LjKd0NNy/rky.', 'admin', 1, NULL, NULL, NULL, '2026-06-07 17:25:13'),
-(2, 'Ramesh Yadav', 'ramesh@demo.com', '$2y$10$q.p/TdZb0fIhn0gkoCA2A.DTSjjdEGMI.oKgI10.LjKd0NNy/rky.', 'staff', 1, 1, NULL, NULL, '2026-06-07 17:25:13'),
-(3, 'Suresh Thakur', 'suresh@demo.com', '$2y$10$q.p/TdZb0fIhn0gkoCA2A.DTSjjdEGMI.oKgI10.LjKd0NNy/rky.', 'staff', 1, 2, NULL, NULL, '2026-06-07 17:25:13'),
-(4, 'Bikash Sah', 'bikash@demo.com', '$2y$10$q.p/TdZb0fIhn0gkoCA2A.DTSjjdEGMI.oKgI10.LjKd0NNy/rky.', 'staff', 1, 3, NULL, NULL, '2026-06-07 17:25:13'),
-(5, 'Anita Devi', 'anita@demo.com', '$2y$10$q.p/TdZb0fIhn0gkoCA2A.DTSjjdEGMI.oKgI10.LjKd0NNy/rky.', 'staff', 1, 4, NULL, NULL, '2026-06-07 17:25:13'),
-(6, 'Manoj Kumar', 'manoj@demo.com', '$2y$10$q.p/TdZb0fIhn0gkoCA2A.DTSjjdEGMI.oKgI10.LjKd0NNy/rky.', 'staff', 1, 5, NULL, NULL, '2026-06-07 17:25:13'),
 (7, 'Gobind Chaudhari', 'gobindchaudhary963@gmail.com', '$2y$10$JmMHFoE6t6bFXBSA9Kd6L.isCRodZsjSGL/rISri8kNwhr0ORXAi2', 'staff', 1, 10, '', NULL, '2026-06-08 22:28:01'),
 (8, 'Sabin Chaudhary', 'csabin470@gmail.com', '$2y$10$Uq9UGHbRzosHaBeucv/Mauj.hz06RFTQEJyF266QnSzSTf4BSyvqm', 'staff', 1, 12, '', NULL, '2026-06-08 22:33:48'),
 (9, 'Nikesh Gautam', 'gnikesh459@gmail.com', '$2y$10$oE8OwAzKmsfNJ8a5rscKluRXrTBIPukloedwGQVrloGgPv40t4HTW', 'admin', 1, NULL, '', NULL, '2026-06-08 22:41:00'),
 (10, 'Nitesh Gsutam', 'omnamaste321@gmail.com', '$2y$10$Z4JUGfpbr.mzXnI0dnoaV.Nx0WihrAw4x6Ad3HvxxxzBPf.wDvvo.', 'admin', 1, NULL, '', NULL, '2026-06-08 22:44:24'),
-(11, 'Bijaya Acharya', 'raptiecoblock@gmail.com', '$2y$10$FTywsco/XACPxxCubJ5Se.JqEAOTrqMB8ag9tsxNICKiLm81J9er2', 'staff', 1, 13, '', NULL, '2026-06-08 23:50:29');
+(11, 'Bijaya Acharya', 'raptiecoblock@gmail.com', '$2y$10$FTywsco/XACPxxCubJ5Se.JqEAOTrqMB8ag9tsxNICKiLm81J9er2', 'staff', 1, 13, '', NULL, '2026-06-08 23:50:29'),
+(12, 'Ramesh', 'ramesh@demo.com', '$2y$10$nnfnY2z6HdheXI/SkgIXO.GuJZ3vscJkJjBKdrjYPDzoNbQluLNwu', 'staff', 1, 14, '', NULL, '2026-06-10 06:38:08');
 
 -- --------------------------------------------------------
 
@@ -641,6 +707,14 @@ ALTER TABLE `fscrm_push_tokens`
   ADD KEY `idx_platform` (`platform`);
 
 --
+-- Indexes for table `fscrm_recurring_tasks`
+--
+ALTER TABLE `fscrm_recurring_tasks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `customer_id` (`customer_id`),
+  ADD KEY `assigned_to` (`assigned_to`);
+
+--
 -- Indexes for table `fscrm_services`
 --
 ALTER TABLE `fscrm_services`
@@ -670,7 +744,8 @@ ALTER TABLE `fscrm_tasks`
   ADD KEY `service_id` (`service_id`),
   ADD KEY `customer_id` (`customer_id`),
   ADD KEY `assigned_to` (`assigned_to`),
-  ADD KEY `category_id` (`category_id`);
+  ADD KEY `category_id` (`category_id`),
+  ADD KEY `recurring_task_id` (`recurring_task_id`);
 
 --
 -- Indexes for table `fscrm_users`
@@ -763,7 +838,7 @@ ALTER TABLE `fscrm_categories`
 -- AUTO_INCREMENT for table `fscrm_customers`
 --
 ALTER TABLE `fscrm_customers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `fscrm_localities`
@@ -781,13 +856,19 @@ ALTER TABLE `fscrm_notifications`
 -- AUTO_INCREMENT for table `fscrm_orders`
 --
 ALTER TABLE `fscrm_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `fscrm_push_tokens`
 --
 ALTER TABLE `fscrm_push_tokens`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `fscrm_recurring_tasks`
+--
+ALTER TABLE `fscrm_recurring_tasks`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `fscrm_services`
@@ -805,19 +886,19 @@ ALTER TABLE `fscrm_service_types`
 -- AUTO_INCREMENT for table `fscrm_staff`
 --
 ALTER TABLE `fscrm_staff`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `fscrm_tasks`
 --
 ALTER TABLE `fscrm_tasks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=194;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=218;
 
 --
 -- AUTO_INCREMENT for table `fscrm_users`
 --
 ALTER TABLE `fscrm_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -873,6 +954,13 @@ ALTER TABLE `fscrm_orders`
   ADD CONSTRAINT `fscrm_orders_ibfk_2` FOREIGN KEY (`assigned_to`) REFERENCES `fscrm_staff` (`id`) ON DELETE SET NULL;
 
 --
+-- Constraints for table `fscrm_recurring_tasks`
+--
+ALTER TABLE `fscrm_recurring_tasks`
+  ADD CONSTRAINT `fk_recurring_customer` FOREIGN KEY (`customer_id`) REFERENCES `fscrm_customers` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_recurring_staff` FOREIGN KEY (`assigned_to`) REFERENCES `fscrm_staff` (`id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `fscrm_services`
 --
 ALTER TABLE `fscrm_services`
@@ -884,6 +972,7 @@ ALTER TABLE `fscrm_services`
 -- Constraints for table `fscrm_tasks`
 --
 ALTER TABLE `fscrm_tasks`
+  ADD CONSTRAINT `fk_task_recurring` FOREIGN KEY (`recurring_task_id`) REFERENCES `fscrm_recurring_tasks` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fscrm_tasks_ibfk_1` FOREIGN KEY (`service_id`) REFERENCES `fscrm_services` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fscrm_tasks_ibfk_2` FOREIGN KEY (`customer_id`) REFERENCES `fscrm_customers` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fscrm_tasks_ibfk_3` FOREIGN KEY (`assigned_to`) REFERENCES `fscrm_staff` (`id`) ON DELETE SET NULL,
