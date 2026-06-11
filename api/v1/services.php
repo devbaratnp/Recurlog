@@ -15,7 +15,10 @@ $db = getDB();
 switch ($method) {
     case 'GET':
         if ($id) {
-            $row = fetchSingle('fscrm_services', $id);
+            $stmt = $db->prepare("SELECT s.*, c.name AS customer_name, st.name AS assigned_staff_name, cat.name AS category_name FROM fscrm_services s LEFT JOIN fscrm_customers c ON s.customer_id = c.id LEFT JOIN fscrm_staff st ON s.assigned_to = st.id LEFT JOIN fscrm_categories cat ON s.category_id = cat.id WHERE s.id = ?");
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+            $row = $stmt->get_result()->fetch_assoc();
             requireExists($row, 'Service');
             jsonResponse(toCamel($row));
         }
@@ -34,7 +37,7 @@ switch ($method) {
         if ($allParams) $stmt->bind_param($types, ...$allParams);
         $stmt->execute();
         $total = (int)$stmt->get_result()->fetch_assoc()['cnt'];
-        $stmt = $db->prepare("SELECT s.* FROM fscrm_services s WHERE 1=1 $searchClause $filterClause ORDER BY s.title ASC LIMIT ? OFFSET ?");
+        $stmt = $db->prepare("SELECT s.*, c.name AS customer_name, st.name AS assigned_staff_name, cat.name AS category_name FROM fscrm_services s LEFT JOIN fscrm_customers c ON s.customer_id = c.id LEFT JOIN fscrm_staff st ON s.assigned_to = st.id LEFT JOIN fscrm_categories cat ON s.category_id = cat.id WHERE 1=1 $searchClause $filterClause ORDER BY s.title ASC LIMIT ? OFFSET ?");
         $allParams2 = array_merge($allParams, [$perPage, $offset]);
         $types2 = $types . 'ii';
         if ($allParams) $stmt->bind_param($types2, ...$allParams2); else $stmt->bind_param('ii', $perPage, $offset);

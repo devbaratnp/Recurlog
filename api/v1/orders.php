@@ -13,7 +13,7 @@ switch ($method) {
     case 'GET':
         if ($id) {
             $db = getDB();
-            $stmt = $db->prepare("SELECT o.*, s.name AS assigned_staff_name FROM fscrm_orders o LEFT JOIN fscrm_staff s ON o.assigned_to = s.id WHERE o.id = ?");
+            $stmt = $db->prepare("SELECT o.*, c.name AS customer_name, s.name AS assigned_staff_name FROM fscrm_orders o LEFT JOIN fscrm_customers c ON o.customer_id = c.id LEFT JOIN fscrm_staff s ON o.assigned_to = s.id WHERE o.id = ?");
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $row = $stmt->get_result()->fetch_assoc();
@@ -39,7 +39,7 @@ switch ($method) {
         if ($allParams) $stmt->bind_param($types, ...$allParams);
         $stmt->execute();
         $total = (int)$stmt->get_result()->fetch_assoc()['cnt'];
-        $stmt = $db->prepare("SELECT o.*, s.name AS assigned_staff_name FROM fscrm_orders o LEFT JOIN fscrm_staff s ON o.assigned_to = s.id WHERE 1=1 $searchClause $filterClause ORDER BY o.created_at DESC LIMIT ? OFFSET ?");
+        $stmt = $db->prepare("SELECT o.*, c.name AS customer_name, s.name AS assigned_staff_name FROM fscrm_orders o LEFT JOIN fscrm_customers c ON o.customer_id = c.id LEFT JOIN fscrm_staff s ON o.assigned_to = s.id WHERE 1=1 $searchClause $filterClause ORDER BY o.created_at DESC LIMIT ? OFFSET ?");
         $allParams2 = array_merge($allParams, [$perPage, $offset]);
         $types2 = $types . 'ii';
         if ($allParams) $stmt->bind_param($types2, ...$allParams2); else $stmt->bind_param('ii', $perPage, $offset);
