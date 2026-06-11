@@ -63,7 +63,7 @@ switch ($method) {
         }
         $row = insertAndFetch('fscrm_orders',
             ['customer_id', 'customer_name', 'service_for', 'problem', 'status', 'priority', 'assigned_to', 'assigned_staff_name', 'scheduled_date', 'notes', 'dispatch_date', 'dispatch_by', 'received_name', 'received_contact', 'signature'],
-            'isssssiisssssss',
+            'isssssissssssss',
             [
                 $data['customer_id'] ?? null,
                 $data['customer_name'] ?? '',

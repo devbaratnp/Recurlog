@@ -83,7 +83,7 @@ switch ($method) {
                 $data['repeat_from'] ?? null
             ]
         );
-        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name, sv.is_recurring AS is_recurring, sv.problem AS service_problem FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
+        $stmt = $db->prepare("SELECT t.*, c.name AS customer_name, s.name AS assigned_staff_name, sv.problem AS service_problem FROM fscrm_tasks t LEFT JOIN fscrm_customers c ON t.customer_id = c.id LEFT JOIN fscrm_staff s ON t.assigned_to = s.id LEFT JOIN fscrm_services sv ON t.service_id = sv.id WHERE t.id = ?");
         $stmt->bind_param('i', $insertRow['id']);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();

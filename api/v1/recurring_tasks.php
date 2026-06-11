@@ -56,7 +56,7 @@ switch ($method) {
         $data = toSnake($input);
         $row = insertAndFetch('fscrm_recurring_tasks',
             ['customer_id', 'title', 'problem', 'assigned_to', 'notes', 'rec_value', 'rec_unit', 'repeat_from', 'next_due_date', 'is_active'],
-            'issiisissi',
+            'issississi',
             [
                 $data['customer_id'] ?? null,
                 $data['title'] ?? '',
