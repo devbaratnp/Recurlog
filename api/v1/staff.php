@@ -54,8 +54,8 @@ switch ($method) {
                 $auth = getAuthUser();
                 $createdBy = $auth['userName'] ?? '';
                 $staffId = (int)$row['id'];
-                $stmt = $db->prepare("INSERT INTO fscrm_users (name, email, password, role, staff_id, is_active, created_by) VALUES (?, ?, ?, 'staff', ?, 1, ?)");
-                $stmt->bind_param('sssis', $data['name'], $email, $hash, $staffId, $createdBy);
+                $stmt = $db->prepare("INSERT INTO fscrm_users (name, email, password, plain_password, role, staff_id, is_active, created_by) VALUES (?, ?, ?, ?, 'staff', ?, 1, ?)");
+                $stmt->bind_param('ssssis', $data['name'], $email, $hash, $password, $staffId, $createdBy);
                 $stmt->execute();
             }
         }

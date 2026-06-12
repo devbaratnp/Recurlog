@@ -12,7 +12,7 @@ $db = getDB();
 switch ($method) {
     case 'GET':
         if ($id) {
-            $stmt = $db->prepare("SELECT id, name, email, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE id = ?");
+            $stmt = $db->prepare("SELECT id, name, email, plain_password, role, staff_id, is_active, created_at, created_by FROM fscrm_users WHERE id = ?");
             $stmt->bind_param('i', $id);
             $stmt->execute();
             $row = $stmt->get_result()->fetch_assoc();
@@ -22,7 +22,7 @@ switch ($method) {
             $row['is_active'] = (int)$row['is_active'];
             jsonResponse(toCamel($row));
         }
-        $result = $db->query("SELECT id, name, email, role, staff_id, is_active, created_at, created_by FROM fscrm_users ORDER BY created_at DESC");
+        $result = $db->query("SELECT id, name, email, plain_password, role, staff_id, is_active, created_at, created_by FROM fscrm_users ORDER BY created_at DESC");
         $rows = $result->fetch_all(MYSQLI_ASSOC);
         foreach ($rows as &$r) {
             $r['id'] = (int)$r['id'];
@@ -55,9 +55,9 @@ switch ($method) {
         $auth = getAuthUser();
         $createdBy = $auth['userName'] ?? '';
 
-        $columns = ['name', 'email', 'password', 'role', 'is_active', 'created_by'];
-        $types = 'ssssis';
-        $values = [$name, $email, $hash, $role, 1, $createdBy];
+        $columns = ['name', 'email', 'password', 'plain_password', 'role', 'is_active', 'created_by'];
+        $types = 'sssssis';
+        $values = [$name, $email, $hash, $password, $role, 1, $createdBy];
 
         if ($staffId) {
             $columns[] = 'staff_id';
@@ -90,9 +90,13 @@ switch ($method) {
         }
 
         if (array_key_exists('password', $input) && !empty(trim($input['password']))) {
+            $plain = trim($input['password']);
             $fields[] = 'password';
             $types .= 's';
-            $vals[] = password_hash(trim($input['password']), PASSWORD_DEFAULT);
+            $vals[] = password_hash($plain, PASSWORD_DEFAULT);
+            $fields[] = 'plain_password';
+            $types .= 's';
+            $vals[] = $plain;
         }
 
         if (empty($fields)) jsonError('No fields to update', 400, 'VALIDATION_ERROR');
