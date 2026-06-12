@@ -73,13 +73,14 @@ switch ($method) {
         $input = getJsonInput();
         $data = toSnake($input);
         $insertRow = insertAndFetch('fscrm_tasks',
-            ['service_id', 'recurring_task_id', 'customer_id', 'title', 'problem', 'status', 'scheduled_date', 'assigned_to', 'notes', 'category_id', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'],
-            'iiissssisiiiss',
+            ['service_id', 'recurring_task_id', 'customer_id', 'title', 'priority', 'problem', 'status', 'scheduled_date', 'assigned_to', 'notes', 'category_id', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'],
+            'iiisssssisiiiss',
             [
                 $data['service_id'] ?? null,
                 $data['recurring_task_id'] ?? null,
                 $data['customer_id'] ?? null,
                 $data['title'] ?? '',
+                $data['priority'] ?? 'normal',
                 $data['problem'] ?? '',
                 $data['status'] ?? 'pending',
                 $data['scheduled_date'] ?? null,
@@ -106,7 +107,7 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        $colMap = ['service_id', 'recurring_task_id', 'customer_id', 'title', 'problem', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'];
+        $colMap = ['service_id', 'recurring_task_id', 'customer_id', 'title', 'priority', 'problem', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'];
         foreach ($colMap as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = $f;
