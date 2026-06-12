@@ -5,31 +5,6 @@ require_once __DIR__ . '/../includes/notification_helper.php';
 requireAuth();
 $db = getDB();
 
-function statusPill($status) {
-  $configs = [
-    'pending' => ['bg' => '#FEF3C7', 'text' => '#92400E', 'icon' => 'clock', 'label' => 'Pending'],
-    'completed' => ['bg' => '#D1FAE5', 'text' => '#065F46', 'icon' => 'check-circle', 'label' => 'Completed'],
-    'missed' => ['bg' => '#FEE2E2', 'text' => '#991B1B', 'icon' => 'alert-circle', 'label' => 'Missed']
-  ];
-  $cfg = $configs[$status] ?? $configs['pending'];
-  return '<span class="status-pill" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:500;background:' . $cfg['bg'] . ';color:' . $cfg['text'] . '"><i data-lucide="' . $cfg['icon'] . '" class="w-3 h-3"></i> ' . $cfg['label'] . '</span>';
-}
-
-function formatRelative($date) {
-  if (!$date) return '';
-  $d = new DateTime($date);
-  $now = new DateTime();
-  $now->setTime(0, 0, 0);
-  $d->setTime(0, 0, 0);
-  $diff = (int) $now->diff($d)->format('%r%a');
-  if ($diff === 0) return 'Today';
-  if ($diff === -1) return 'Yesterday';
-  if ($diff === 1) return 'Tomorrow';
-  if ($diff > 1 && $diff <= 7) return 'In ' . $diff . ' days';
-  if ($diff < 0 && $diff >= -7) return abs($diff) . ' days ago';
-  return $d->format('M j, Y');
-}
-
 // Handle POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   requireCsrfToken();
@@ -99,35 +74,7 @@ $customers = $db->query("SELECT id, name FROM fscrm_customers ORDER BY name")->f
 $categories = $db->query("SELECT id, name FROM fscrm_categories ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 $staffList = $db->query("SELECT id, name, avatar FROM fscrm_staff ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY name")->fetch_all(MYSQLI_ASSOC);
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Add Service - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: '#1DB954',
-            navy: '#0B1E3D',
-            amber: '#F59E0B',
-            danger: '#EF4444'
-          },
-          fontFamily: {
-            sans: ['Poppins', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
+?>
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
 <div class="page-content">
     <header class="page-header">
@@ -158,7 +105,7 @@ $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY nam
 
           <!-- Customer Dropdown -->
           <div>
-            <label for="service-customer" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer</label>
+            <label for="service-customer" class="form-label">Customer</label>
             <select id="service-customer" name="customer_id" class="form-select">
               <option value="">Select Customer</option>
               <option value="__add_new__">+ Add New Customer</option>
@@ -170,7 +117,7 @@ $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY nam
 
           <!-- Service For -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Service For</label>
+            <label class="form-label">Service For</label>
             <div id="service-for-chips" class="flex flex-wrap gap-2">
               <?php foreach ($serviceTypeRows as $st): ?>
                 <button type="button" data-value="<?= htmlspecialchars($st['name']) ?>" class="chip-btn px-4 py-2 rounded-full text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:border-brand hover:text-brand transition-colors"><?= htmlspecialchars($st['name']) ?></button>
@@ -180,13 +127,13 @@ $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY nam
 
           <!-- Problem / Issue Description -->
           <div>
-            <label for="service-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem / Issue Description</label>
+            <label for="service-problem" class="form-label">Problem / Issue Description</label>
              <textarea id="service-problem" name="problem" rows="3" class="form-textarea" placeholder="Describe the customer's problem or issue in detail..." maxlength="1000"><?= htmlspecialchars($_POST['problem'] ?? '') ?></textarea>
           </div>
 
           <!-- Category -->
           <div>
-            <label for="service-category" class="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
+            <label for="service-category" class="form-label">Category</label>
             <select id="service-category" name="category_id" class="form-select">
               <option value="">Select Category</option>
               <?php foreach ($categories as $cat): ?>
@@ -197,7 +144,7 @@ $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY nam
 
           <!-- Service Type Toggle -->
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
+            <label class="form-label">Service Type</label>
             <div class="flex rounded-lg border border-gray-300 overflow-hidden w-fit">
               <button type="button" id="service-type-onetime" data-value="onetime" class="px-5 py-2 text-sm font-medium transition-colors">One Time</button>
               <button type="button" id="service-type-recurring" data-value="recurring" class="px-5 py-2 text-sm font-medium transition-colors bg-brand text-white">Recurring</button>
@@ -223,7 +170,7 @@ $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY nam
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Repeat From</label>
+              <label class="form-label">Repeat From</label>
               <div class="flex gap-4">
                 <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                   <input type="radio" name="repeat_from" value="last-done" checked class="accent-brand">
@@ -243,13 +190,13 @@ $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY nam
 
           <!-- First Scheduled Date -->
           <div>
-            <label for="service-first-date" class="block text-sm font-semibold text-gray-700 mb-1.5">First Scheduled Date</label>
+            <label for="service-first-date" class="form-label">First Scheduled Date</label>
             <input type="date" id="service-first-date" name="first_scheduled_date" class="form-input max-w-xs">
           </div>
 
           <!-- Assign To -->
           <div>
-            <label for="service-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Assign To</label>
+            <label for="service-staff" class="form-label">Assign To</label>
             <select id="service-staff" name="assigned_to" class="form-select max-w-xs">
               <option value="">Select Staff</option>
               <?php foreach ($staffList as $s): ?>
@@ -260,7 +207,7 @@ $serviceTypeRows = $db->query("SELECT name FROM fscrm_service_types ORDER BY nam
 
           <!-- Notes -->
           <div>
-            <label for="service-notes" class="block text-sm font-semibold text-gray-700 mb-1.5">Notes</label>
+            <label for="service-notes" class="form-label">Notes</label>
              <textarea id="service-notes" name="notes" rows="4" class="form-textarea" placeholder="Any additional notes..." maxlength="1000"><?= htmlspecialchars($_POST['notes'] ?? '') ?></textarea>
           </div>
 

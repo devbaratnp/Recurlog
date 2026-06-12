@@ -33,10 +33,10 @@ foreach ($notifications as $n) {
 
 function notifIcon($type) {
     $map = array(
-        'task_completed' => array('check-circle', '#1DB954'),
+        'task_completed' => array('check-circle', '#22C55E'),
         'task_missed' => array('alert-circle', '#EF4444'),
         'service_added' => array('plus-circle', '#0EA5E9'),
-        'customer_added' => array('user-plus', '#1DB954'),
+        'customer_added' => array('user-plus', '#22C55E'),
         'order_created' => array('clipboard-list', '#3B82F6'),
         'order_assigned' => array('user-check', '#8B5CF6'),
         'order_completed' => array('check-circle', '#22C55E'),
@@ -55,28 +55,7 @@ function relativeTime($dateStr) {
 }
 
 $pageTitle = 'Notifications';
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Notifications - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen">
+?>
 <?php require_once '../includes/header.php'; ?>
   <div class="page-content">
     <header class="page-header">

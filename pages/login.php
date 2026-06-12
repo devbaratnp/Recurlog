@@ -15,14 +15,14 @@
     tailwind.config = {
       theme: {
         extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
+          colors: { brand: '#22C55E', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
           fontFamily: { sans: ['Poppins', 'sans-serif'] }
         }
       }
     }
   </script>
 </head>
-<body class="min-h-screen flex font-sans bg-white">
+<body class="min-h-screen flex font-sans bg-[#F2F2F7]">
   <div class="hidden lg:flex lg:w-1/2 bg-navy flex-col justify-between p-12 relative overflow-hidden">
     <div class="absolute inset-0 opacity-[0.04]">
       <div class="absolute top-20 left-20 w-72 h-72 bg-brand rounded-full blur-3xl"></div>
@@ -30,7 +30,7 @@
     </div>
     <div class="relative z-10">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-11 h-11 bg-brand rounded-xl flex items-center justify-center">
+        <div class="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/25">
           <i data-lucide="wrench" class="w-6 h-6 text-white"></i>
         </div>
         <span class="text-2xl font-bold text-white tracking-tight">Recurlog</span>
@@ -48,75 +48,73 @@
           <span class="text-white/70 text-sm">Active now</span>
         </div>
         <div class="space-y-3">
-          <div class="flex justify-between text-sm">
-            <span class="text-white/50">Today's Tasks</span>
-            <span class="text-white font-semibold">17</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-white/50">Completed</span>
-            <span class="text-brand font-semibold">12</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-white/50">Field Staff</span>
-            <span class="text-white font-semibold">5</span>
-          </div>
+          <div class="flex justify-between text-sm"><span class="text-white/50">Today's Tasks</span><span class="text-white font-semibold">17</span></div>
+          <div class="flex justify-between text-sm"><span class="text-white/50">Completed</span><span class="text-brand font-semibold">12</span></div>
+          <div class="flex justify-between text-sm"><span class="text-white/50">Field Staff</span><span class="text-white font-semibold">5</span></div>
         </div>
       </div>
     </div>
     <div class="relative z-10 text-white/30 text-xs">2025 Recurlog Enterprise</div>
   </div>
 
-  <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+  <div class="w-full lg:w-1/2 flex items-center justify-center p-6">
     <div class="w-full max-w-sm">
       <div class="flex lg:hidden items-center gap-3 mb-10 justify-center">
-        <div class="w-10 h-10 bg-brand rounded-xl flex items-center justify-center">
+        <div class="w-10 h-10 bg-brand rounded-xl flex items-center justify-center shadow-lg shadow-brand/25">
           <i data-lucide="wrench" class="w-5 h-5 text-white"></i>
         </div>
         <span class="text-xl font-bold text-navy tracking-tight">Recurlog</span>
       </div>
-      <?php if ($error): ?><div class="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4"><?= htmlspecialchars($error) ?></div><?php endif; ?>
-<h2 class="text-2xl font-bold text-navy mb-1">Welcome back</h2>
-      <p class="text-gray-500 text-sm mb-8">Sign in to your account to continue</p>
-      <form method="POST" action="" class="space-y-5"><?= csrfHiddenField() ?>
-        <div>
-          <label class="form-label" for="email">Email</label>
-           <input id="email" name="email" type="email" placeholder="admin@demo.com" class="form-input" maxlength="255" />
-        </div>
-        <div>
-          <label class="form-label" for="password">Password</label>
-          <div class="relative">
-            <input id="password" name="password" type="password" placeholder="Enter password" class="form-input w-full pr-10" maxlength="255" />
-            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1" tabindex="-1" aria-label="Toggle password visibility">
-              <i data-lucide="eye" id="password-eye-icon" class="w-5 h-5"></i>
-            </button>
+
+      <?php if ($error): ?>
+      <div class="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4 flex items-center gap-2 border border-red-100">
+        <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+        <?= htmlspecialchars($error) ?>
+      </div>
+      <?php endif; ?>
+
+      <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+        <h2 class="text-2xl font-bold text-navy mb-1">Welcome back</h2>
+        <p class="text-gray-500 text-sm mb-7">Sign in to your account to continue</p>
+        <form method="POST" action="" class="space-y-5"><?= csrfHiddenField() ?>
+          <div>
+            <label class="form-label" for="email">Email</label>
+            <input id="email" name="email" type="email" placeholder="admin@demo.com" class="form-input" maxlength="255" />
           </div>
-        </div>
-        <div class="flex justify-end">
-          <a href="#" class="text-sm text-brand hover:underline font-medium">Forgot password?</a>
-        </div>
-        <button type="submit" class="btn btn-lg btn-primary w-full brand-glow">
-          Login
-        </button>
+          <div>
+            <label class="form-label" for="password">Password</label>
+            <div class="relative">
+              <input id="password" name="password" type="password" placeholder="Enter password" class="form-input w-full pr-10" maxlength="255" />
+              <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1" tabindex="-1" aria-label="Toggle password visibility">
+                <i data-lucide="eye" id="password-eye-icon" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <a href="#" class="text-sm text-brand hover:underline font-medium">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn btn-lg btn-primary w-full brand-glow">
+            Login
+          </button>
         </form>
-      <p class="text-center text-sm text-gray-400 mt-8">
-        Don't have an account? <a href="#" class="text-brand hover:underline font-medium">Contact admin</a>
-      </p>
+        <p class="text-center text-sm text-gray-400 mt-6">
+          Don't have an account? <a href="#" class="text-brand hover:underline font-medium">Contact admin</a>
+        </p>
+      </div>
 
       <!-- PWA Install Button -->
-      <div id="pwa-install-container" class="hidden mt-8 pt-8 border-t border-gray-100">
-        <button id="pwa-install-btn" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-navy/5 text-navy hover:bg-navy/10 transition-colors font-medium">
-          <i data-lucide="download" class="w-5 h-5"></i>
+      <div id="pwa-install-container" class="hidden mt-6">
+        <button id="pwa-install-btn" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white border border-gray-200 text-navy hover:bg-gray-50 transition-colors font-medium shadow-sm">
+          <i data-lucide="download" class="w-4 h-4"></i>
           Install Recurlog App
         </button>
       </div>
-
     </div>
   </div>
 
   <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/app.js"></script>
 <script>
-// PWA Install Logic
 let deferredPrompt;
 const installContainer = document.getElementById('pwa-install-container');
 const installBtn = document.getElementById('pwa-install-btn');
@@ -131,9 +129,7 @@ installBtn.addEventListener('click', async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') {
-    installContainer.classList.add('hidden');
-  }
+  if (outcome === 'accepted') installContainer.classList.add('hidden');
   deferredPrompt = null;
 });
 

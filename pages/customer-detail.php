@@ -57,36 +57,8 @@ function catBadge($cats, $catId, $serviceFor) {
     if ($catId && isset($cats[$catId])) return '<span class="badge badge-info">' . htmlspecialchars($cats[$catId]['name']) . '</span>';
     return '<span class="badge badge-pending">' . htmlspecialchars($serviceFor ?: '—') . '</span>';
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title><?= htmlspecialchars($customer['name']) ?> - Customer Detail</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' }
-        }
-      }
-    }
-  </script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>" />
-  <style>
-    body { font-family: 'Poppins', sans-serif; }
-  </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-<?php $pageTitle = htmlspecialchars($customer['name']); require_once '../includes/header.php'; ?>
-<div class="page-content">
+?><?php $pageTitle = htmlspecialchars($customer['name']); require_once '../includes/header.php'; ?>
+<div class="page-content" id="page-content">
     <header class="page-header">
       <div class="page-header-inner">
         <div class="flex items-center gap-2">
@@ -107,6 +79,7 @@ function catBadge($cats, $catId, $serviceFor) {
         <div class="flex items-start justify-between mb-4">
           <h2 class="text-lg font-semibold text-navy">Customer Information</h2>
           <div class="flex items-center gap-2">
+            <button onclick="openCdDelete(<?= $customerId ?>)" class="btn btn-sm btn-ghost p-1.5 text-red-500 hover:text-red-700" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             <a href="customer-add.php?id=<?= $customerId ?>" class="btn btn-sm btn-secondary"><i data-lucide="pencil" class="w-4 h-4"></i> Edit</a>
             <a href="customer-report.php?id=<?= $customerId ?>" class="btn btn-sm btn-secondary"><i data-lucide="file-text" class="w-4 h-4"></i> Report</a>
             <span class="inline-flex items-center gap-1 px-3 py-1 bg-brand/10 text-brand text-xs font-medium rounded-full">
@@ -121,7 +94,7 @@ function catBadge($cats, $catId, $serviceFor) {
           </div>
           <div>
             <span class="block text-gray-400 text-xs uppercase tracking-wider font-medium mb-1">Phone</span>
-            <span class="text-gray-900"><?= htmlspecialchars($customer['phone']) ?></span>
+            <a href="tel:<?= htmlspecialchars($customer['phone']) ?>" class="text-brand hover:text-green-700 transition-colors font-medium"><?= htmlspecialchars($customer['phone']) ?></a>
           </div>
           <div class="sm:col-span-2">
             <span class="block text-gray-400 text-xs uppercase tracking-wider font-medium mb-1">Address</span>
@@ -274,6 +247,47 @@ else:
 <?php endif; ?>
       </div>
 
+      <!-- Quick Actions -->
+      <h2 class="text-lg font-semibold text-navy mb-4">Quick Actions</h2>
+      <div class="flex flex-wrap gap-3 mb-8">
+        <a href="service-add.php?customer_id=<?= $customerId ?>" class="btn btn-sm btn-primary brand-glow">
+          <i data-lucide="plus" class="w-4 h-4"></i> + Order
+        </a>
+        <a href="onetime-task.php?customer_id=<?= $customerId ?>" class="btn btn-sm btn-primary brand-glow">
+          <i data-lucide="calendar" class="w-4 h-4"></i> + One-Time Task
+        </a>
+        <a href="recurring-task.php?customer_id=<?= $customerId ?>" class="btn btn-sm btn-primary brand-glow">
+          <i data-lucide="repeat" class="w-4 h-4"></i> + Recurring Task
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Delete Customer Modal -->
+  <div id="cd-delete-modal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:420px" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">Delete Customer?</h3>
+        <button type="button" onclick="closeCdDelete()" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="text-sm text-gray-600 mb-1 space-y-1">
+        <p><span class="font-medium">Name:</span> <span id="cd-del-name"><?= htmlspecialchars($customer['name']) ?></span></p>
+        <p><span class="font-medium">Phone:</span> <span id="cd-del-phone"><?= htmlspecialchars($customer['phone'] ?: '—') ?></span></p>
+        <p><span class="font-medium">Address:</span> <span id="cd-del-address"><?= htmlspecialchars($customer['address'] ?: '—') ?></span></p>
+      </div>
+      <p class="text-sm text-red-600 font-semibold mt-4 mb-1">This will also delete:</p>
+      <ul class="text-xs text-red-500 list-disc pl-5 mb-4 space-y-0.5">
+        <li>All services and tasks for this customer</li>
+        <li>All orders for this customer</li>
+      </ul>
+      <p class="text-sm text-red-600 font-semibold mb-5">This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button type="button" onclick="closeCdDelete()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+        <button type="button" id="cd-delete-confirm-btn" class="flex-1 px-4 py-2.5 bg-danger text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">Delete Everything</button>
+      </div>
     </div>
   </div>
 
@@ -288,11 +302,11 @@ else:
       <input type="hidden" id="cd-complete-task-id" value="">
       <div class="space-y-4">
         <div>
-          <label for="cd-complete-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Date</label>
+          <label for="cd-complete-date" class="form-label">Date</label>
           <input type="date" id="cd-complete-date" class="form-input">
         </div>
         <div>
-          <label for="cd-complete-note" class="block text-sm font-semibold text-gray-700 mb-1.5">Note</label>
+          <label for="cd-complete-note" class="form-label">Note</label>
           <textarea id="cd-complete-note" rows="3" class="form-textarea" placeholder="e.g. changed RO housing, pre filter — rs 1500"></textarea>
         </div>
         <div class="flex gap-3 pt-1">
@@ -389,6 +403,40 @@ $servicesJson = json_encode($services);
         btn.addEventListener('click', function() { cdOpenComplete(this.getAttribute('data-task-id')); });
       });
 
+      // ====== Delete Customer Modal ======
+      var cdDeleteCustId = <?= $customerId ?>;
+
+      window.openCdDelete = function(id) {
+        cdDeleteCustId = id;
+        document.getElementById('cd-delete-modal').style.display = 'flex';
+      };
+
+      window.closeCdDelete = function() {
+        document.getElementById('cd-delete-modal').style.display = 'none';
+      };
+
+      document.getElementById('cd-delete-confirm-btn').addEventListener('click', async function() {
+        if (!cdDeleteCustId) return;
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+        try {
+          var res = await fetch('../api/customers.php?id=' + cdDeleteCustId, { method: 'DELETE' });
+          var data = await res.json();
+          if (!res.ok) { window.showToast(data.error || 'Delete failed', 'error'); btn.disabled = false; btn.textContent = 'Delete Everything'; return; }
+          window.showToast('Customer deleted successfully', 'success');
+          window.location.href = 'customers.php';
+        } catch (e) {
+          window.showToast('Network error', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Delete Everything';
+        }
+      });
+
+      document.getElementById('cd-delete-modal').addEventListener('click', function(e) {
+        if (e.target === this) window.closeCdDelete();
+      });
+
       try { lucide.createIcons(); } catch(e) {}
 
       // ========== REASSIGN SERVICE ==========
@@ -417,6 +465,5 @@ $servicesJson = json_encode($services);
     })();
     });
   </script>
+</main>
 <?php require_once '../includes/footer.php'; ?>
-</body>
-</html>

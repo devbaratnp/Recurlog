@@ -55,30 +55,8 @@ while ($row = $result->fetch_assoc()) {
 }
 $localitiesJson = json_encode($localities);
 $totalLoc = count($localities);
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Localities - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen">
-<?php $pageTitle = 'Localities'; require_once '../includes/header.php'; ?>
+$pageTitle = 'Localities'; ?>
+<?php require_once '../includes/header.php'; ?>
   <div class="page-content">
     <header class="page-header">
       <div class="page-header-inner">

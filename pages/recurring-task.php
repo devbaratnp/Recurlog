@@ -6,13 +6,10 @@ requireAuth();
 $db = getDB();
 
 function statusPill($status) {
-  $configs = [
-    'pending' => ['bg' => '#FEF3C7', 'text' => '#92400E', 'icon' => 'clock', 'label' => 'Pending'],
-    'completed' => ['bg' => '#D1FAE5', 'text' => '#065F46', 'icon' => 'check-circle', 'label' => 'Completed'],
-    'missed' => ['bg' => '#FEE2E2', 'text' => '#991B1B', 'icon' => 'alert-circle', 'label' => 'Missed']
-  ];
-  $cfg = $configs[$status] ?? $configs['pending'];
-  return '<span class="status-pill" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:500;background:' . $cfg['bg'] . ';color:' . $cfg['text'] . '"><i data-lucide="' . $cfg['icon'] . '" class="w-3 h-3"></i> ' . $cfg['label'] . '</span>';
+  $icons = ['pending'=>'clock','completed'=>'check-circle','missed'=>'alert-circle'];
+  $labels = ['pending'=>'Pending','completed'=>'Completed','missed'=>'Missed'];
+  $s = $status ?: 'pending';
+  return '<span class="badge badge-' . $s . '"><i data-lucide="' . $icons[$s] . '" class="w-3 h-3"></i> ' . $labels[$s] . '</span>';
 }
 
 // Handle POST
@@ -103,39 +100,14 @@ $rtResult = $db->query("
 $recurringTasks = $rtResult ? $rtResult->fetch_all(MYSQLI_ASSOC) : [];
 
 function statusPillShort($status) {
-  $map = ['pending'=>'#FEF3C7:#92400E','completed'=>'#D1FAE5:#065F46','missed'=>'#FEE2E2:#991B1B'];
-  $cfg = explode(':', $map[$status] ?? $map['pending']);
-  return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:'.$cfg[0].';color:'.$cfg[1].'">'.ucfirst($status).'</span>';
+  $s = $status ?: 'pending';
+  return '<span class="badge badge-' . $s . '">' . ucfirst($s) . '</span>';
 }
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Recurring Tasks - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-  <style>
-    .signature-pad {
-      width: 100%; height: 160px; border: 1px dashed #cbd5e1; border-radius: 10px;
-      background: #fff; touch-action: none; cursor: crosshair; display: block;
-    }
-  </style>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
+?>
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
+<style>
+.signature-pad { width:100%;height:160px;border:1px dashed #cbd5e1;border-radius:10px;background:#fff;touch-action:none;cursor:crosshair;display:block; }
+</style>
 <div class="page-content">
       <header class="page-header">
         <div class="page-header-inner">
@@ -162,43 +134,43 @@ function statusPillShort($status) {
       <!-- Task List -->
       <div id="task-list-section">
         <?php if (empty($recurringTasks)): ?>
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center mb-4">
-            <i data-lucide="repeat" class="w-10 h-10 text-gray-300 mx-auto mb-3"></i>
-            <p class="text-gray-500 mb-3">No recurring tasks defined yet.</p>
-            <button onclick="document.getElementById('show-add-form').click()" class="btn btn-sm btn-primary">Define Recurring Task</button>
+          <div class="empty-state">
+            <i data-lucide="repeat" class="w-10 h-10"></i>
+            <p>No recurring tasks defined yet.</p>
+            <button onclick="document.getElementById('show-add-form').click()" class="btn btn-sm btn-primary mt-3">Define Recurring Task</button>
           </div>
         <?php else: ?>
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
             <div class="overflow-x-auto">
-                  <table id="task-table" class="w-full text-sm">
+              <table id="task-table" class="data-table">
                 <thead>
-                  <tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Recurring Task</th>
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Customer</th>
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Staff</th>
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Next Due</th>
-                    <th class="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Active</th>
-                    <th class="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Action</th>
+                  <tr>
+                    <th>Recurring Task</th>
+                    <th>Customer</th>
+                    <th>Staff</th>
+                    <th>Next Due</th>
+                    <th class="text-center">Active</th>
+                    <th class="text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   <?php foreach ($recurringTasks as $t): ?>
-                  <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td class="px-4 py-3">
+                  <tr>
+                    <td data-label="Task">
                       <a href="customer-detail.php?id=<?= $t['customer_id'] ?>" class="font-medium text-navy hover:text-brand transition-colors"><?= htmlspecialchars($t['title']) ?></a>
                       <div class="text-xs text-gray-400 mt-0.5"><?= $t['instance_count'] ?> instance(s)</div>
                     </td>
-                    <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['customer_name'] ?: '—') ?></td>
-                    <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['staff_name'] ?: '—') ?></td>
-                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['next_due_date']) ?></td>
-                    <td class="px-4 py-3 text-center">
+                    <td data-label="Customer"><?= htmlspecialchars($t['customer_name'] ?: '—') ?></td>
+                    <td data-label="Staff"><?= htmlspecialchars($t['staff_name'] ?: '—') ?></td>
+                    <td data-label="Next Due"><?= htmlspecialchars($t['next_due_date']) ?></td>
+                    <td data-label="Status" class="text-center">
                       <?php if ($t['is_active']): ?>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>
+                        <span class="badge badge-completed">Active</span>
                       <?php else: ?>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Inactive</span>
+                        <span class="badge badge-order-cancelled">Inactive</span>
                       <?php endif; ?>
                     </td>
-                    <td class="px-4 py-3 text-right">
+                    <td data-label="" class="text-right">
                       <div class="flex items-center justify-end gap-1">
                         <button class="reassign-rt-btn btn btn-sm btn-ghost p-1.5 text-purple-500 hover:text-purple-700" title="Reassign" data-rt-id="<?= $t['id'] ?>" data-current-staff="<?= $t['assigned_to'] ?? '' ?>">
                           <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
@@ -236,7 +208,7 @@ function statusPillShort($status) {
 
           <!-- Customer -->
           <div>
-            <label for="rt-customer" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
+            <label for="rt-customer" class="form-label">Customer <span class="text-danger">*</span></label>
             <div class="flex gap-2 items-center">
               <select id="rt-customer" name="customer_id" class="form-select flex-1">
                 <option value="">Select Customer</option>
@@ -252,19 +224,19 @@ function statusPillShort($status) {
 
           <!-- Title -->
           <div>
-            <label for="rt-title" class="block text-sm font-semibold text-gray-700 mb-1.5">Task Title <span class="text-danger">*</span></label>
+            <label for="rt-title" class="form-label">Task Title <span class="text-danger">*</span></label>
             <input type="text" id="rt-title" name="title" class="form-input" placeholder="e.g. Battery Inverter Service" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>" maxlength="200">
           </div>
 
           <!-- Problem Description -->
           <div>
-            <label for="rt-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem Description</label>
+            <label for="rt-problem" class="form-label">Problem Description</label>
              <textarea id="rt-problem" name="problem" rows="3" class="form-textarea" placeholder="Describe the problem or work to be done..." maxlength="1000"><?= htmlspecialchars($_POST['problem'] ?? '') ?></textarea>
           </div>
 
           <!-- Assign To -->
           <div>
-            <label for="rt-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Assign To</label>
+            <label for="rt-staff" class="form-label">Order Assign To</label>
             <select id="rt-staff" name="assigned_to" class="form-select">
               <option value="">Select Staff</option>
               <?php foreach ($staffList as $s): ?>
@@ -275,7 +247,7 @@ function statusPillShort($status) {
 
           <!-- Schedule -->
           <div>
-            <label for="rt-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Schedule Task</label>
+            <label for="rt-date" class="form-label">Schedule Task</label>
             <input type="date" id="rt-date" name="first_scheduled_date" class="form-input max-w-xs">
           </div>
 
@@ -298,7 +270,7 @@ function statusPillShort($status) {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Repeat From</label>
+              <label class="form-label">Repeat From</label>
               <div class="flex gap-4 flex-wrap">
                 <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                   <input type="radio" name="repeat_from" value="last-done" checked class="accent-brand"> Last Done Date
@@ -314,7 +286,7 @@ function statusPillShort($status) {
             </div>
 
             <div>
-              <label for="rt-note" class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+              <label for="rt-note" class="form-label">Note</label>
                <textarea id="rt-note" name="notes" rows="3" class="form-textarea" placeholder="Any additional notes..." maxlength="1000"><?= htmlspecialchars($_POST['notes'] ?? '') ?></textarea>
             </div>
           </div>
@@ -328,11 +300,11 @@ function statusPillShort($status) {
 
             <div class="space-y-4">
               <div>
-                <label for="rt-completed-by" class="block text-sm font-medium text-gray-600 mb-1">Task Completed By</label>
+                <label for="rt-completed-by" class="form-label">Task Completed By</label>
                  <input type="text" id="rt-completed-by" name="completed_by" class="form-input" placeholder="Staff / person name" maxlength="100">
               </div>
               <div>
-                <label for="rt-completed-date" class="block text-sm font-medium text-gray-600 mb-1">Task Completed Date</label>
+                <label for="rt-completed-date" class="form-label">Task Completed Date</label>
                 <input type="date" id="rt-completed-date" name="completed_date" class="form-input max-w-xs">
               </div>
 
@@ -340,11 +312,11 @@ function statusPillShort($status) {
                 <p class="text-sm font-bold text-navy mb-2">Received By</p>
                 <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label for="rt-rec-name" class="block text-xs font-medium text-gray-500 mb-1">Name</label>
+                    <label for="rt-rec-name" class="form-label text-xs">Name</label>
                      <input type="text" id="rt-rec-name" name="rec_name" class="form-input" placeholder="Receiver name" maxlength="100">
                   </div>
                   <div>
-                    <label for="rt-rec-contact" class="block text-xs font-medium text-gray-500 mb-1">Contact</label>
+                    <label for="rt-rec-contact" class="form-label text-xs">Contact</label>
                      <input type="text" id="rt-rec-contact" name="rec_contact" class="form-input" placeholder="Phone" maxlength="20">
                   </div>
                 </div>
@@ -555,6 +527,5 @@ function statusPillShort($status) {
     </div>
   </div>
 
+</main>
 <?php require_once '../includes/footer.php'; ?>
-</body>
-</html>

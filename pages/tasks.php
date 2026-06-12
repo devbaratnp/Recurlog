@@ -10,13 +10,9 @@ $perPage = 50;
 $offset = ($page - 1) * $perPage;
 
 function statusPill($status) {
-  $configs = [
-    'pending' => ['bg' => '#FEF3C7', 'text' => '#92400E', 'icon' => 'clock', 'label' => 'Pending'],
-    'completed' => ['bg' => '#D1FAE5', 'text' => '#065F46', 'icon' => 'check-circle', 'label' => 'Completed'],
-    'missed' => ['bg' => '#FEE2E2', 'text' => '#991B1B', 'icon' => 'alert-circle', 'label' => 'Missed']
-  ];
-  $cfg = $configs[$status] ?? $configs['pending'];
-  return '<span class="status-pill" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:500;background:' . $cfg['bg'] . ';color:' . $cfg['text'] . '"><i data-lucide="' . $cfg['icon'] . '" class="w-3 h-3"></i> ' . $cfg['label'] . '</span>';
+  $labels = ['pending'=>'Pending','completed'=>'Completed','missed'=>'Missed'];
+  $s = $status ?: 'pending';
+  return '<span class="badge badge-' . $s . '">' . ($labels[$s] ?? 'Pending') . '</span>';
 }
 
 function formatRelative($date) {
@@ -177,35 +173,7 @@ if (!empty($params)) {
 } else {
   $tasks = $db->query($sql)->fetch_all(MYSQLI_ASSOC);
 }
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Tasks - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: '#1DB954',
-            navy: '#0B1E3D',
-            amber: '#F59E0B',
-            danger: '#EF4444'
-          },
-          fontFamily: {
-            sans: ['Poppins', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
+?>
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
 <div class="page-content">
     <header class="page-header">
@@ -257,27 +225,12 @@ if (!empty($params)) {
       <!-- Tasks Container -->
       <div id="tasks-container" class="space-y-3">
         <?php if (empty($tasks)): ?>
-          <div class="flex flex-col items-center justify-center py-16 text-center">
-            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <?php
-              $iconMap = ['today' => 'calendar', 'upcoming' => 'calendar-plus', 'missed' => 'alert-triangle'];
-              $icon = $iconMap[$currentTab] ?? 'calendar';
-              ?>
-              <i data-lucide="<?= $icon ?>" class="w-8 h-8 text-gray-400"></i>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-700 mb-1">No <?= htmlspecialchars($currentTab) ?> tasks</h3>
-            <p class="text-sm text-gray-500 mb-5">
-              <?php
-              $msgs = [
-                'today' => 'No tasks scheduled for today. Create a new service to get started.',
-                'upcoming' => 'No upcoming tasks. Schedule a recurring service to see tasks here.',
-                'missed' => 'No missed tasks. Great job keeping up!'
-              ];
-              echo htmlspecialchars($msgs[$currentTab] ?? '');
-              ?>
-            </p>
+          <div class="empty-state">
+            <i data-lucide="<?= $iconMap[$currentTab] ?? 'calendar' ?>"></i>
+            <p>No <?= htmlspecialchars($currentTab) ?> tasks</p>
+            <p class="empty-sub"><?= htmlspecialchars($msgs[$currentTab] ?? '') ?></p>
             <?php if ($currentTab !== 'missed'): ?>
-              <a href="service-add.php" class="px-5 py-2.5 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow inline-flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Add Service</a>
+              <a href="service-add.php" class="btn btn-sm btn-primary mt-3"><i data-lucide="plus" class="w-4 h-4"></i> Add Service</a>
             <?php endif; ?>
           </div>
         <?php else: ?>
@@ -362,16 +315,16 @@ if (!empty($params)) {
         </div>
         <div class="space-y-4">
           <div>
-            <label for="modal-complete-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Completion Date</label>
-            <input type="date" id="modal-complete-date" name="completed_date" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand text-sm">
+            <label for="modal-complete-date" class="form-label">Completion Date</label>
+            <input type="date" id="modal-complete-date" name="completed_date" class="form-input">
           </div>
           <div>
-            <label for="modal-complete-notes" class="block text-sm font-semibold text-gray-700 mb-1.5">Completion Notes</label>
-             <textarea id="modal-complete-notes" name="notes" rows="3" class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand text-sm resize-y" placeholder="Notes about the completion..." maxlength="1000"></textarea>
+            <label for="modal-complete-notes" class="form-label">Completion Notes</label>
+             <textarea id="modal-complete-notes" name="notes" rows="3" class="form-textarea" placeholder="Notes about the completion..." maxlength="1000"></textarea>
           </div>
           <div class="flex gap-3 pt-2">
             <button type="button" onclick="closeCompleteModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" class="flex-1 px-4 py-2.5 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow">Confirm</button>
+            <button type="submit" class="btn btn-md btn-primary">Confirm</button>
           </div>
         </div>
       </div>

@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone = trim($_POST['phone'] ?? '');
     $avatar = trim($_POST['avatar'] ?? '');
     if (!$avatar) {
-      $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=1DB954&color=fff&size=200';
+      $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=22C55E&color=fff&size=200';
     }
     if ($name) {
       $stmt = $db->prepare("INSERT INTO fscrm_staff (name, phone, avatar) VALUES (?, ?, ?)");
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $avatar = trim($_POST['avatar'] ?? '');
     if ($id && $name) {
       if (!$avatar) {
-        $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=1DB954&color=fff&size=200';
+        $avatar = 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=22C55E&color=fff&size=200';
       }
       $stmt = $db->prepare("UPDATE fscrm_staff SET name = ?, phone = ?, avatar = ? WHERE id = ?");
       $stmt->bind_param('sssi', $name, $phone, $avatar, $id);
@@ -107,30 +107,7 @@ while ($row = $result->fetch_assoc()) {
   $staff[] = $row;
 }
 $staffJson = json_encode($staff);
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Staff - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen">
-<?php $pageTitle = 'Staff'; require_once '../includes/header.php'; ?>
+?><?php $pageTitle = 'Staff'; require_once '../includes/header.php'; ?>
   <div class="page-content">
     <header class="page-header">
       <div class="page-header-inner">
@@ -147,6 +124,13 @@ $staffJson = json_encode($staff);
     </header>
 
     <div class="p-4 sm:p-6">
+      <?php if (empty($staff)): ?>
+      <div class="empty-state">
+        <i data-lucide="users"></i>
+        <p>No staff found</p>
+        <p class="empty-sub">Add your first staff member to get started</p>
+      </div>
+      <?php else: ?>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <?php foreach ($staff as $s): ?>
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all fade-in relative group">
@@ -175,7 +159,7 @@ $staffJson = json_encode($staff);
           <div class="flex items-center justify-between">
             <a href="staff-detail.php?id=<?= $s['id'] ?>" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand/80 transition-colors">View Profile <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
             <div class="flex items-center gap-2">
-              <span class="text-xs px-2 py-0.5 rounded-full font-medium <?= $s['user_id'] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' ?>">
+              <span class="badge <?= $s['user_id'] ? 'badge-completed' : 'badge-pending' ?>">
                 <?= $s['user_id'] ? 'Has Login' : 'No Login' ?>
               </span>
               <button onclick="openPasswordModal(<?= $s['id'] ?>, '<?= htmlspecialchars($s['name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($s['user_email'] ?? '', ENT_QUOTES) ?>')" class="text-xs font-medium text-navy hover:text-brand transition-colors">
@@ -186,6 +170,7 @@ $staffJson = json_encode($staff);
         </div>
         <?php endforeach; ?>
       </div>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -380,5 +365,3 @@ $staffJson = json_encode($staff);
     });
   </script>
   <?php require_once '../includes/footer.php'; ?>
-</body>
-</html>

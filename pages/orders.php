@@ -1,39 +1,8 @@
 <?php require_once '../includes/config.php'; ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Orders - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-  <style>
-    .signature-pad {
-      width: 100%;
-      height: 160px;
-      border: 1px dashed #cbd5e1;
-      border-radius: 10px;
-      background: #fff;
-      touch-action: none;
-      cursor: crosshair;
-      display: block;
-    }
-  </style>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
 <?php $pageTitle = 'Orders'; require_once '../includes/header.php'; ?>
+<style>
+.signature-pad { width:100%;height:160px;border:1px dashed #cbd5e1;border-radius:10px;background:#fff;touch-action:none;cursor:crosshair;display:block; }
+</style>
 <?php
 require_once '../includes/config.php';
 requireAuth();
@@ -334,6 +303,7 @@ function truncate($str, $len = 60) {
                 <h3 class="font-semibold text-gray-900 text-sm"><?= htmlspecialchars($o['customer_name'] ?? '') ?></h3>
                 <?= priorityBadge($o['priority'] ?? 'normal') ?>
               </div>
+              <?php if (!empty($o['service_for'])): ?><p class="text-xs text-brand font-medium mt-0.5"><?= htmlspecialchars($o['service_for']) ?></p><?php endif; ?>
               <p class="text-sm text-gray-500 mt-1"><?= $problemShort ?></p>
               <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-400">
                 <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> <?= $o['scheduled_date'] ? fmtDate($o['scheduled_date']) : 'Not scheduled' ?></span>
@@ -385,7 +355,7 @@ function truncate($str, $len = 60) {
       <div class="space-y-4">
         <!-- Customer Selection -->
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
+          <label class="form-label">Customer <span class="text-danger">*</span></label>
           <div class="flex gap-2 items-start">
             <select id="order-customer" name="customer_id" class="form-select flex-1">
               <option value="">Select customer</option>
@@ -407,21 +377,21 @@ function truncate($str, $len = 60) {
           </div>
           <div class="form-row">
             <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">Name <span class="text-danger">*</span></label>
+              <label class="form-label text-xs">Name <span class="text-danger">*</span></label>
                <input type="text" id="inline-cust-name" name="inline_cust_name" class="form-input" placeholder="Customer name" maxlength="100">
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">Phone</label>
+              <label class="form-label text-xs">Phone</label>
                <input type="text" id="inline-cust-phone" name="inline_cust_phone" class="form-input" value="+977-" placeholder="+977-98XXXXXXXX" maxlength="20">
             </div>
           </div>
           <div class="form-row" style="margin-top:12px">
             <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">Address</label>
+              <label class="form-label text-xs">Address</label>
                <input type="text" id="inline-cust-address" name="inline_cust_address" class="form-input" placeholder="e.g. Adarsh Nagar, Birgunj" maxlength="1000">
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-500 mb-1">Area / Locality</label>
+              <label class="form-label text-xs">Area / Locality</label>
               <div class="location-picker">
                 <select id="inline-cust-area" name="inline_cust_area" class="form-select location-select">
                   <option value="">Select locality</option>
@@ -443,7 +413,7 @@ function truncate($str, $len = 60) {
             </div>
           </div>
           <div style="margin-top:12px">
-            <label class="block text-xs font-medium text-gray-500 mb-1">Service For</label>
+            <label class="form-label text-xs">Service For</label>
             <select id="inline-cust-service" name="inline_cust_service" class="form-select">
               <option value="">Select service type</option>
               <?php foreach ($service_types as $st): ?>
@@ -454,11 +424,33 @@ function truncate($str, $len = 60) {
         </div>
 
         <div>
-          <label for="order-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Description <span class="text-danger">*</span></label>
+          <label for="order-service-for" class="form-label">Order For <span class="text-danger">*</span></label>
+          <select id="order-service-for" name="service_for" class="form-select">
+            <option value="">Select service type</option>
+            <?php foreach ($service_types as $st): ?>
+            <option value="<?= htmlspecialchars($st['name']) ?>"><?= htmlspecialchars($st['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div>
+          <label for="order-problem" class="form-label">Order Description <span class="text-danger">*</span></label>
            <textarea id="order-problem" name="problem" rows="4" class="form-textarea" placeholder="Describe the order / work to be done..." maxlength="1000"></textarea>
         </div>
         <div>
-          <label for="order-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Assign To</label>
+          <label class="form-label">Priority</label>
+          <div class="flex gap-2" id="priority-toggle">
+            <label class="flex-1 cursor-pointer">
+              <input type="radio" name="priority" value="normal" class="hidden peer" checked>
+              <div class="text-center px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium peer-checked:bg-brand peer-checked:text-white peer-checked:border-brand transition-colors">Normal</div>
+            </label>
+            <label class="flex-1 cursor-pointer">
+              <input type="radio" name="priority" value="urgent" class="hidden peer">
+              <div class="text-center px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium peer-checked:bg-danger peer-checked:text-white peer-checked:border-danger transition-colors">Urgent</div>
+            </label>
+          </div>
+        </div>
+        <div>
+          <label for="order-staff" class="form-label">Order Assign To</label>
           <select id="order-staff" name="assigned_to" class="form-select">
             <option value="">Select Staff</option>
             <?php foreach ($staff_list as $s): ?>
@@ -467,12 +459,16 @@ function truncate($str, $len = 60) {
           </select>
         </div>
         <div>
-          <label for="order-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Schedule Task</label>
+          <label for="order-date" class="form-label">Schedule Task</label>
           <input type="date" id="order-date" name="scheduled_date" class="form-input max-w-xs">
+        </div>
+        <div>
+          <label for="order-notes" class="form-label">Notes</label>
+          <textarea id="order-notes" name="notes" rows="2" class="form-textarea" placeholder="Additional notes..." maxlength="1000"></textarea>
         </div>
         <div class="flex gap-3 pt-2">
           <button type="button" onclick="closeModal('new-order-modal')" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
-          <button type="submit" class="flex-1 px-4 py-2.5 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow">Save Order</button>
+          <button type="submit" class="btn btn-md btn-primary flex-1 brand-glow">Save Order</button>
         </div>
       </div>
     </div>
@@ -493,7 +489,7 @@ function truncate($str, $len = 60) {
       <div class="space-y-4">
         <input type="hidden" id="assign-order-id" name="order_id" value="">
         <div>
-          <label for="assign-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Staff Member <span class="text-danger">*</span></label>
+          <label for="assign-staff" class="form-label">Staff Member <span class="text-danger">*</span></label>
           <select id="assign-staff" name="staff_id" class="form-select">
             <?php foreach ($staff_list as $s): ?>
             <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['name']) ?></option>
@@ -501,7 +497,7 @@ function truncate($str, $len = 60) {
           </select>
         </div>
         <div>
-          <label for="assign-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Scheduled Date <span class="text-danger">*</span></label>
+          <label for="assign-date" class="form-label">Scheduled Date <span class="text-danger">*</span></label>
           <input type="date" id="assign-date" name="scheduled_date" class="form-input max-w-xs">
         </div>
         <div class="flex gap-3 pt-2">
@@ -531,11 +527,11 @@ function truncate($str, $len = 60) {
         <p class="text-sm font-bold text-navy">Order Report</p>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label for="dispatch-date" class="block text-xs font-medium text-gray-500 mb-1">Dispatch Date</label>
+            <label for="dispatch-date" class="form-label text-xs">Dispatch Date</label>
             <input type="date" id="dispatch-date" name="dispatch_date" class="form-input">
           </div>
           <div>
-            <label for="dispatch-by" class="block text-xs font-medium text-gray-500 mb-1">Dispatch By</label>
+            <label for="dispatch-by" class="form-label text-xs">Dispatch By</label>
              <input type="text" id="dispatch-by" name="dispatch_by" class="form-input" placeholder="Staff / person name" maxlength="100">
           </div>
         </div>
@@ -544,11 +540,11 @@ function truncate($str, $len = 60) {
           <p class="text-sm font-bold text-navy mb-2">Received By</p>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label for="received-name" class="block text-xs font-medium text-gray-500 mb-1">Name</label>
+              <label for="received-name" class="form-label text-xs">Name</label>
                <input type="text" id="received-name" name="received_name" class="form-input" placeholder="Receiver name" maxlength="100">
             </div>
             <div>
-              <label for="received-contact" class="block text-xs font-medium text-gray-500 mb-1">Contact</label>
+              <label for="received-contact" class="form-label text-xs">Contact</label>
                <input type="text" id="received-contact" name="received_contact" class="form-input" placeholder="Phone" maxlength="20">
             </div>
           </div>
@@ -563,7 +559,7 @@ function truncate($str, $len = 60) {
         </div>
 
         <div>
-          <label for="complete-notes" class="block text-sm font-semibold text-gray-700 mb-1.5">Completion Notes</label>
+          <label for="complete-notes" class="form-label">Completion Notes</label>
            <textarea id="complete-notes" name="notes" rows="2" class="form-textarea" placeholder="Notes about the completed work..." maxlength="1000"></textarea>
         </div>
         <div class="flex items-center gap-2">
@@ -572,7 +568,7 @@ function truncate($str, $len = 60) {
         </div>
         <div class="flex gap-3 pt-2">
           <button type="button" onclick="closeModal('complete-order-modal')" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
-          <button type="submit" class="flex-1 px-4 py-2.5 bg-brand text-white text-sm font-semibold rounded-lg hover:bg-brand/90 transition-colors brand-glow">Confirm Complete</button>
+          <button type="submit" class="btn btn-md btn-primary flex-1 brand-glow">Confirm Complete</button>
         </div>
       </div>
     </div>
@@ -614,6 +610,11 @@ function truncate($str, $len = 60) {
             <p id="detail-customer" class="font-semibold text-navy"></p>
           </div>
           <div id="detail-status-badge"></div>
+        </div>
+        <hr class="border-gray-100">
+        <div>
+          <p class="text-sm text-gray-500">Service</p>
+          <p id="detail-service-for" class="font-semibold text-brand mt-1"></p>
         </div>
         <hr class="border-gray-100">
         <div>
@@ -924,7 +925,10 @@ function truncate($str, $len = 60) {
     // ========== NEW ORDER MODAL ==========
     function openNewOrderModal() {
       document.getElementById('order-problem').value = '';
+      document.getElementById('order-service-for').value = '';
+      document.getElementById('order-notes').value = '';
       document.getElementById('order-staff').value = '';
+      document.querySelector('#priority-toggle input[value="normal"]').checked = true;
 
       var inlineSection = document.getElementById('inline-customer-section');
       inlineSection.classList.add('hidden');
@@ -950,6 +954,7 @@ function truncate($str, $len = 60) {
       }
 
       document.getElementById('detail-customer').textContent = order.customerName;
+      document.getElementById('detail-service-for').textContent = order.serviceFor || '\u2014';
       document.getElementById('detail-problem').textContent = order.problem || 'No description';
 
       document.getElementById('detail-priority').innerHTML = order.priority === 'urgent'
@@ -983,7 +988,7 @@ function truncate($str, $len = 60) {
         document.getElementById('detail-dispatch-date').textContent = order.dispatchDate ? formatDate(order.dispatchDate) : '\u2013';
         document.getElementById('detail-dispatch-by').textContent = order.dispatchBy || '\u2013';
         document.getElementById('detail-received-name').textContent = order.receivedName || '\u2013';
-        document.getElementById('detail-received-contact').textContent = order.receivedContact || '\u2013';
+        document.getElementById('detail-received-contact').innerHTML = order.receivedContact ? '<a href="tel:' + escapeHtml(order.receivedContact) + '" class="text-brand hover:underline">' + escapeHtml(order.receivedContact) + '</a>' : '\u2013';
         var sigWrap = document.getElementById('detail-sig-wrap');
         if (order.signature) {
           document.getElementById('detail-signature').src = order.signature;

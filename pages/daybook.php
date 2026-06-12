@@ -67,29 +67,7 @@ function statusPill($status) {
 }
 
 $pageTitle = 'Daybook';
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Daybook - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
-<?php require_once '../includes/header.php'; ?>
+?><?php require_once '../includes/header.php'; ?>
 <div class="page-content">
     <header class="page-header">
       <div class="page-header-inner">
@@ -189,7 +167,7 @@ $pageTitle = 'Daybook';
     }
 
     function emptyRow(msg) {
-      return '<div class="p-5 text-center text-sm text-gray-400">' + msg + '</div>';
+      return '<div class="empty-state" style="padding:32px 16px"><i data-lucide="info" class="w-8 h-8"></i><p>' + msg + '</p></div>';
     }
 
     function statusPill(status) {
@@ -260,8 +238,14 @@ $pageTitle = 'Daybook';
       document.getElementById('orders-list').innerHTML = orderHtml || emptyRow('No order activity.');
 
       var d = new Date(dateStr + 'T00:00:00');
-      document.getElementById('day-label').textContent =
-        d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      var today = new Date(todayISO() + 'T00:00:00');
+      var diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+      var dayLabel = '';
+      if (diff === 0) dayLabel = 'Today';
+      else if (diff === -1) dayLabel = 'Yesterday';
+      else if (diff === 1) dayLabel = 'Tomorrow';
+      else dayLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      document.getElementById('day-label').textContent = dayLabel;
 
       try { lucide.createIcons(); } catch (e) {}
     }

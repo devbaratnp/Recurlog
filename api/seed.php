@@ -113,7 +113,7 @@ foreach ($staff as $s) {
 
 // --- Categories ---
 $categories = [
-    [1, 'Annual Maintenance', '#1DB954'],
+    [1, 'Annual Maintenance', '#22C55E'],
     [2, 'Filter Change', '#0EA5E9'],
     [3, 'Repair', '#F59E0B'],
     [4, 'Deep Cleaning', '#8B5CF6'],

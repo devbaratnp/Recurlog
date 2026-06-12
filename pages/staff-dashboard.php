@@ -64,7 +64,7 @@ $stats = $db->query("SELECT
 FROM fscrm_tasks WHERE assigned_to = $staffId")->fetch_assoc();
 
 $pageTitle = 'Staff Dashboard';
-$avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($staff['name']) . '&background=1DB954&color=fff&size=200';
+$avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($staff['name']) . '&background=22C55E&color=fff&size=200';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,14 +80,14 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
     tailwind.config = {
       theme: {
         extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
+          colors: { brand: '#22C55E', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
           fontFamily: { sans: ['Poppins', 'sans-serif'] }
         }
       }
     }
   </script>
 </head>
-<body class="bg-gray-50 font-sans min-h-screen pb-20">
+<body class="bg-[#F2F2F7] font-sans min-h-screen pb-20">
   <!-- Header -->
   <header class="bg-navy text-white sticky top-0 z-30 shadow-lg">
     <div class="flex items-center justify-between px-4 py-3 max-w-4xl mx-auto">
@@ -119,6 +119,40 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
         <p class="text-2xl font-bold text-danger"><?= (int)$stats['missed'] ?></p>
         <p class="text-xs text-gray-500 mt-1">Missed</p>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <?php $totalCount = (int)$stats['completed_today'] + (int)$stats['pending'] + (int)$stats['missed']; ?>
+    <?php if ($totalCount > 0): ?>
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-xs font-medium text-gray-500">Progress</span>
+        <span class="text-xs font-semibold text-navy"><?= (int)$stats['completed_today'] ?>/<?= $totalCount ?></span>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2.5">
+        <div class="bg-brand h-2.5 rounded-full transition-all" style="width:<?= $totalCount > 0 ? round(((int)$stats['completed_today'] / $totalCount) * 100) : 0 ?>%"></div>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Quick Actions -->
+    <div class="flex gap-2 flex-wrap">
+      <a href="orders.php" class="quick-action-btn flex-1 min-w-0"><i data-lucide="clipboard-list"></i> Orders</a>
+      <a href="customers.php" class="quick-action-btn flex-1 min-w-0"><i data-lucide="users"></i> Customers</a>
+      <a href="daybook.php" class="quick-action-btn flex-1 min-w-0"><i data-lucide="calendar"></i> Daybook</a>
+    </div>
+
+    <!-- Create Task -->
+    <div>
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Create Task</p>
+      <div class="flex gap-2">
+        <a href="onetime-task.php" class="flex flex-1 items-center justify-center gap-1.5 py-3.5 rounded-xl font-semibold text-sm text-white" style="background:#F59E0B">
+          <i data-lucide="clock" class="w-4.5 h-4.5" style="width:18px;height:18px"></i> One Time
+        </a>
+        <a href="recurring-task.php" class="flex flex-1 items-center justify-center gap-1.5 py-3.5 rounded-xl font-semibold text-sm text-white" style="background:#22C55E">
+          <i data-lucide="refresh-cw" class="w-4.5 h-4.5" style="width:18px;height:18px"></i> Recurring
+        </a>
       </div>
     </div>
 
@@ -205,7 +239,7 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
             <p class="text-sm font-medium text-navy"><?= htmlspecialchars($o['problem']) ?></p>
             <p class="text-xs text-gray-500 mt-0.5"><?= htmlspecialchars($o['customer_name'] ?: 'Customer #' . $o['customer_id']) ?></p>
           </div>
-          <span class="shrink-0"><?= renderStatusPill($o['status']) ?></span>
+          <span class="shrink-0"><span class="badge badge-order-<?= $o['status'] === 'assigned' ? 'assigned' : ($o['status'] === 'completed' ? 'completed' : 'pending') ?>"><?= ucfirst($o['status']) ?></span></span>
         </div>
       </div>
       <?php endforeach; ?>
@@ -385,5 +419,30 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
       if (typeof lucide !== 'undefined') lucide.createIcons();
     });
   </script>
+
+<!-- Staff Bottom Nav (mobile) -->
+<nav class="bottom-nav md:hidden" style="background:white;position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;align-items:center;padding:4px 0 8px;border-top:1px solid #E2E8F0">
+  <a href="staff-dashboard.php" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 active"><i data-lucide="layout-dashboard" class="w-5 h-5" style="color:#22C55E"></i><span class="text-[10px] font-medium truncate w-full text-center" style="color:#22C55E">Dashboard</span></a>
+  <a href="tasks.php" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 text-gray-500"><i data-lucide="calendar" class="w-5 h-5" style="color:#94A3B8"></i><span class="text-[10px] font-medium truncate w-full text-center" style="color:#64748B">Tasks</span></a>
+  <a href="orders.php" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 text-gray-500"><i data-lucide="briefcase" class="w-5 h-5" style="color:#94A3B8"></i><span class="text-[10px] font-medium truncate w-full text-center" style="color:#64748B">Orders</span></a>
+  <a href="daybook.php" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 text-gray-500"><i data-lucide="book-open" class="w-5 h-5" style="color:#94A3B8"></i><span class="text-[10px] font-medium truncate w-full text-center" style="color:#64748B">Daybook</span></a>
+  <button onclick="document.getElementById('staff-more-modal').classList.toggle('hidden')" class="flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-lg min-w-0 flex-1 text-gray-500"><i data-lucide="menu" class="w-5 h-5" style="color:#94A3B8"></i><span class="text-[10px] font-medium truncate w-full text-center" style="color:#64748B">More</span></button>
+</nav>
+
+<!-- Staff More Modal -->
+<div id="staff-more-modal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="modal-content" onclick="event.stopPropagation()" style="max-width:320px">
+    <h3 class="font-semibold text-navy text-lg mb-4">More</h3>
+    <div class="space-y-1">
+      <a href="customers.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="users" class="w-5 h-5 text-gray-400"></i> Customers</a>
+      <a href="customer-add.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="user-plus" class="w-5 h-5 text-gray-400"></i> Add Customer</a>
+      <a href="onetime-task.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="calendar-check" class="w-5 h-5 text-gray-400"></i> One-Time Tasks</a>
+      <a href="order-add.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="plus" class="w-5 h-5 text-gray-400"></i> Add Order</a>
+      <a href="notifications.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="bell" class="w-5 h-5 text-gray-400"></i> Notifications</a>
+      <hr class="my-2 border-gray-100">
+      <a href="logout.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-danger hover:bg-red-50 transition-colors w-full min-h-[44px]"><i data-lucide="log-out" class="w-5 h-5"></i> Logout</a>
+    </div>
+  </div>
+</div>
 </body>
 </html>

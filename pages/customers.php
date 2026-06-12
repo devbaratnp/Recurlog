@@ -17,31 +17,8 @@ while ($row = $result->fetch_assoc()) {
     $customers[] = $row;
 }
 $customerJson = json_encode($customers);
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Customers - Field Service CRM</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' }
-        }
-      }
-    }
-  </script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>" />
-  </head>
-<body class="bg-gray-50 min-h-screen">
-<?php $pageTitle = 'Customers'; require_once '../includes/header.php'; ?>
+$pageTitle = 'Customers'; ?>
+<?php require_once '../includes/header.php'; ?>
   <div class="page-content" id="page-content">
     <header class="page-header">
       <div class="page-header-inner">
@@ -58,36 +35,32 @@ $customerJson = json_encode($customers);
     </header>
 
     <main class="p-4 md:p-6 max-w-6xl">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <div>
-          <p class="text-gray-500 text-sm">Manage your customer accounts and service history</p>
-        </div>
-        <a href="customer-add.php" class="btn btn-md btn-primary md:hidden">
-          <i data-lucide="plus" class="w-4 h-4"></i> Add Customer
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm text-gray-500">Manage your customer accounts and service history</p>
+        <a href="customer-add.php" class="btn btn-sm btn-primary md:hidden">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add
         </a>
       </div>
 
       <div class="relative mb-4">
-        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"></i>
-        <input type="text" id="customer-search" placeholder="Search customers by name&hellip;" class="form-input pl-12" />
+        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"></i>
+        <input type="text" id="customer-search" placeholder="Search customers&hellip;" class="form-input pl-10" />
       </div>
 
-      <div class="card overflow-hidden">
-        <div class="p-0">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Address</th>
-                <th>Area</th>
-                <th>Contact</th>
-                <th>Services</th>
-                <th class="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="customer-table-body"></tbody>
-          </table>
-        </div>
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Area</th>
+              <th>Contact</th>
+              <th>Services</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="customer-table-body"></tbody>
+        </table>
         <div id="customer-empty-state" class="empty-state hidden">
           <i data-lucide="users"></i>
           <p>No customers found</p>
@@ -98,7 +71,7 @@ $customerJson = json_encode($customers);
   </div>
 
   <?php if ($totalPages > 1): ?>
-  <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-100">
+  <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-100 ml-0 md:ml-[240px]">
     <p class="text-sm text-gray-500">Page <?= $page ?> of <?= $totalPages ?> (<?= $totalRecords ?> records)</p>
     <div class="flex gap-2">
       <?php if ($page > 1): ?>
@@ -113,9 +86,7 @@ $customerJson = json_encode($customers);
 
   <script>
     window.__CUSTOMERS = <?= $customerJson ?>;
-  </script>
-  <script>
-    // ========== DELETE CUSTOMER ==========
+
     var deleteCustId = null;
 
     function attachCustDeleteHandlers() {
@@ -123,8 +94,8 @@ $customerJson = json_encode($customers);
         btn.addEventListener('click', function () {
           deleteCustId = parseInt(this.dataset.custId, 10);
           document.getElementById('del-cust-name').textContent = this.dataset.custName;
-          document.getElementById('del-cust-phone').textContent = this.dataset.custPhone || '—';
-          document.getElementById('del-cust-address').textContent = this.dataset.custAddress || '—';
+          document.getElementById('del-cust-phone').textContent = this.dataset.custPhone || '\u2014';
+          document.getElementById('del-cust-address').textContent = this.dataset.custAddress || '\u2014';
           document.getElementById('delete-cust-modal').style.display = 'flex';
         });
       });
@@ -139,21 +110,9 @@ $customerJson = json_encode($customers);
       var emptyState = document.getElementById('customer-empty-state');
       var allCustomers = window.__CUSTOMERS || [];
 
-      function getCategoryColor(service) {
-        var map = {
-          'RO': 'bg-emerald-100 text-emerald-700',
-          'TV': 'bg-blue-100 text-blue-700',
-          'Refrigerator': 'bg-cyan-100 text-cyan-700',
-          'AC': 'bg-orange-100 text-orange-700',
-          'Washing Machine': 'bg-purple-100 text-purple-700',
-          'Other': 'bg-gray-100 text-gray-700'
-        };
-        return map[service] || 'bg-gray-100 text-gray-700';
-      }
-
       var origRender = function(filter) {
         var q = (filter || '').toLowerCase().trim();
-        var filtered = q ? allCustomers.filter(function(c) { return c.name.toLowerCase().includes(q); }) : allCustomers;
+        var filtered = q ? allCustomers.filter(function(c) { return c.name.toLowerCase().includes(q) || c.phone.includes(q); }) : allCustomers;
 
         if (filtered.length === 0) {
           tbody.innerHTML = '';
@@ -166,14 +125,22 @@ $customerJson = json_encode($customers);
           var svc = c.services_for || '';
           var services = svc ? svc.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s; }) : [];
           var chips = services.map(function(s) {
-            return '<span class="badge ' + getCategoryColor(s).replace('bg-', 'bg-').replace('text-', 'text-') + '">' + s + '</span>';
+            var colors = {
+              'RO': 'bg-emerald-100 text-emerald-700',
+              'TV': 'bg-blue-100 text-blue-700',
+              'Refrigerator': 'bg-cyan-100 text-cyan-700',
+              'AC': 'bg-orange-100 text-orange-700',
+              'Washing Machine': 'bg-purple-100 text-purple-700'
+            };
+            var cls = colors[s] || 'bg-gray-100 text-gray-700';
+            return '<span class="badge ' + cls + '">' + s + '</span>';
           }).join(' ');
 
           return '<tr>' +
             '<td data-label="Name" class="font-medium text-gray-900">' + c.name + '</td>' +
             '<td data-label="Address" class="text-gray-600">' + c.address + '</td>' +
             '<td data-label="Area" class="text-gray-600">' + (c.area || '\u2014') + '</td>' +
-            '<td data-label="Contact" class="text-gray-600">' + c.phone + '</td>' +
+            '<td data-label="Contact" class="text-gray-600"><a href="tel:' + c.phone + '" class="text-brand hover:text-green-700 transition-colors">' + c.phone + '</a></td>' +
             '<td data-label="Services"><div class="flex flex-wrap gap-1.5">' + chips + '</div></td>' +
             '<td data-label="" class="text-right">' +
               '<div class="flex items-center justify-end gap-1.5">' +
@@ -183,10 +150,8 @@ $customerJson = json_encode($customers);
               '<a href="customer-add.php?id=' + c.id + '" class="btn btn-sm btn-ghost p-1.5" title="Edit">' +
                 '<i data-lucide="pencil" class="w-3.5 h-3.5"></i>' +
               '</a>' +
-              '<button onclick="goToCustomer(' + c.id + ')" class="btn btn-sm btn-primary">' +
-                '<i data-lucide="eye" class="w-3.5 h-3.5"></i> View' +
-              '</button>' +
               '</div>' +
+              '<div class="mt-1.5"><a href="customer-detail.php?id=' + c.id + '" class="text-brand text-xs font-medium hover:text-green-700 transition-colors">View Details &rarr;</a></div>' +
             '</td>' +
           '</tr>';
         }).join('');

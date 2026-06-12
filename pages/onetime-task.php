@@ -6,13 +6,10 @@ requireAuth();
 $db = getDB();
 
 function statusPill($status) {
-  $configs = [
-    'pending' => ['bg' => '#FEF3C7', 'text' => '#92400E', 'icon' => 'clock', 'label' => 'Pending'],
-    'completed' => ['bg' => '#D1FAE5', 'text' => '#065F46', 'icon' => 'check-circle', 'label' => 'Completed'],
-    'missed' => ['bg' => '#FEE2E2', 'text' => '#991B1B', 'icon' => 'alert-circle', 'label' => 'Missed']
-  ];
-  $cfg = $configs[$status] ?? $configs['pending'];
-  return '<span class="status-pill" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:500;background:' . $cfg['bg'] . ';color:' . $cfg['text'] . '"><i data-lucide="' . $cfg['icon'] . '" class="w-3 h-3"></i> ' . $cfg['label'] . '</span>';
+  $icons = ['pending'=>'clock','completed'=>'check-circle','missed'=>'alert-circle'];
+  $labels = ['pending'=>'Pending','completed'=>'Completed','missed'=>'Missed'];
+  $s = $status ?: 'pending';
+  return '<span class="badge badge-' . $s . '"><i data-lucide="' . $icons[$s] . '" class="w-3 h-3"></i> ' . $labels[$s] . '</span>';
 }
 
 // Handle POST
@@ -101,39 +98,14 @@ $otResult = $db->query("
 $oneTimeTasks = $otResult ? $otResult->fetch_all(MYSQLI_ASSOC) : [];
 
 function statusPillShort($status) {
-  $map = ['pending'=>'#FEF3C7:#92400E','completed'=>'#D1FAE5:#065F46','missed'=>'#FEE2E2:#991B1B'];
-  $cfg = explode(':', $map[$status] ?? $map['pending']);
-  return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background:'.$cfg[0].';color:'.$cfg[1].'">'.ucfirst($status).'</span>';
+  $s = $status ?: 'pending';
+  return '<span class="badge badge-' . $s . '">' . ucfirst($s) . '</span>';
 }
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>One-Time Tasks - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-  <style>
-    .signature-pad {
-      width: 100%; height: 160px; border: 1px dashed #cbd5e1; border-radius: 10px;
-      background: #fff; touch-action: none; cursor: crosshair; display: block;
-    }
-  </style>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
+?>
 <?php require_once __DIR__ . '/../includes/header.php'; ?>
+<style>
+.signature-pad { width:100%;height:160px;border:1px dashed #cbd5e1;border-radius:10px;background:#fff;touch-action:none;cursor:crosshair;display:block; }
+</style>
 <div class="page-content">
       <header class="page-header">
         <div class="page-header-inner">
@@ -160,36 +132,36 @@ function statusPillShort($status) {
       <!-- Task List -->
       <div id="task-list-section">
         <?php if (empty($oneTimeTasks)): ?>
-          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center mb-4">
-            <i data-lucide="calendar-check" class="w-10 h-10 text-gray-300 mx-auto mb-3"></i>
-            <p class="text-gray-500 mb-3">No one-time tasks yet.</p>
-            <button onclick="document.getElementById('show-add-form').click()" class="btn btn-sm btn-primary">Create First Task</button>
+          <div class="empty-state">
+            <i data-lucide="calendar-check"></i>
+            <p>No one-time tasks yet.</p>
+            <button onclick="document.getElementById('show-add-form').click()" class="btn btn-sm btn-primary mt-3">Create First Task</button>
           </div>
         <?php else: ?>
           <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
             <div class="overflow-x-auto">
-              <table id="task-table" class="w-full text-sm">
+              <table id="task-table" class="data-table">
                 <thead>
-                  <tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Task</th>
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Customer</th>
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Staff</th>
-                    <th class="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Date</th>
-                    <th class="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Status</th>
-                    <th class="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Action</th>
+                  <tr>
+                    <th>Task</th>
+                    <th>Customer</th>
+                    <th>Staff</th>
+                    <th>Date</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   <?php foreach ($oneTimeTasks as $t): ?>
-                  <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td class="px-4 py-3">
+                  <tr>
+                    <td data-label="Task">
                       <a href="task-detail.php?id=<?= $t['id'] ?>" class="font-medium text-navy hover:text-brand transition-colors"><?= htmlspecialchars($t['title']) ?></a>
                     </td>
-                    <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['customer_name'] ?: '—') ?></td>
-                    <td class="px-4 py-3 text-gray-600"><?= htmlspecialchars($t['staff_name'] ?: '—') ?></td>
-                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap"><?= htmlspecialchars($t['scheduled_date']) ?></td>
-                    <td class="px-4 py-3 text-center"><?= statusPillShort($t['status']) ?></td>
-                    <td class="px-4 py-3 text-right">
+                    <td data-label="Customer"><?= htmlspecialchars($t['customer_name'] ?: '—') ?></td>
+                    <td data-label="Staff"><?= htmlspecialchars($t['staff_name'] ?: '—') ?></td>
+                    <td data-label="Date"><?= htmlspecialchars($t['scheduled_date']) ?></td>
+                    <td data-label="Status" class="text-center"><?= statusPillShort($t['status']) ?></td>
+                    <td data-label="" class="text-right">
                       <div class="flex items-center justify-end gap-1">
                         <button class="reassign-ot-btn btn btn-sm btn-ghost p-1.5 text-purple-500 hover:text-purple-700" title="Reassign" data-ot-id="<?= $t['id'] ?>" data-current-staff="<?= $t['assigned_to'] ?? '' ?>">
                           <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
@@ -230,7 +202,7 @@ function statusPillShort($status) {
 
           <!-- Customer -->
           <div>
-            <label for="ot-customer" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-danger">*</span></label>
+            <label for="ot-customer" class="form-label">Customer <span class="text-danger">*</span></label>
             <div class="flex gap-2 items-center">
               <select id="ot-customer" name="customer_id" class="form-select flex-1">
                 <option value="">Select Customer</option>
@@ -246,7 +218,7 @@ function statusPillShort($status) {
 
           <!-- Service For -->
           <div>
-            <label for="ot-service" class="block text-sm font-semibold text-gray-700 mb-1.5">Service For <span class="text-danger">*</span></label>
+            <label for="ot-service" class="form-label">Service For <span class="text-danger">*</span></label>
             <div class="flex gap-2 items-center">
               <select id="ot-service" name="service_for" class="form-select flex-1">
                 <option value="">Select Service</option>
@@ -269,13 +241,13 @@ function statusPillShort($status) {
 
           <!-- Problem Description -->
           <div>
-            <label for="ot-problem" class="block text-sm font-semibold text-gray-700 mb-1.5">Problem Description <span class="text-danger">*</span></label>
+            <label for="ot-problem" class="form-label">Problem Description <span class="text-danger">*</span></label>
              <textarea id="ot-problem" name="problem" rows="3" class="form-textarea" placeholder="Describe the problem or work to be done..." maxlength="1000"><?= htmlspecialchars($_POST['problem'] ?? '') ?></textarea>
           </div>
 
           <!-- Assign To -->
           <div>
-            <label for="ot-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Order Assign To</label>
+            <label for="ot-staff" class="form-label">Order Assign To</label>
             <select id="ot-staff" name="assigned_to" class="form-select">
               <option value="">Select Staff</option>
               <?php foreach ($staffList as $s): ?>
@@ -286,7 +258,7 @@ function statusPillShort($status) {
 
           <!-- Schedule -->
           <div>
-            <label for="ot-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Schedule Task</label>
+            <label for="ot-date" class="form-label">Schedule Task</label>
             <input type="date" id="ot-date" name="first_scheduled_date" class="form-input max-w-xs">
           </div>
 
@@ -299,11 +271,11 @@ function statusPillShort($status) {
 
             <div class="space-y-4">
               <div>
-                <label for="ot-completed-by" class="block text-sm font-medium text-gray-600 mb-1">Task Completed By</label>
+                <label for="ot-completed-by" class="form-label">Task Completed By</label>
                  <input type="text" id="ot-completed-by" name="completed_by" class="form-input" placeholder="Staff / person name" maxlength="100">
               </div>
               <div>
-                <label for="ot-completed-date" class="block text-sm font-medium text-gray-600 mb-1">Task Completed Date</label>
+                <label for="ot-completed-date" class="form-label">Task Completed Date</label>
                 <input type="date" id="ot-completed-date" name="completed_date" class="form-input max-w-xs">
               </div>
 
@@ -311,11 +283,11 @@ function statusPillShort($status) {
                 <p class="text-sm font-bold text-navy mb-2">Received By</p>
                 <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label for="ot-rec-name" class="block text-xs font-medium text-gray-500 mb-1">Name</label>
+                    <label for="ot-rec-name" class="form-label text-xs">Name</label>
                      <input type="text" id="ot-rec-name" name="rec_name" class="form-input" placeholder="Receiver name" maxlength="100">
                   </div>
                   <div>
-                    <label for="ot-rec-contact" class="block text-xs font-medium text-gray-500 mb-1">Contact</label>
+                    <label for="ot-rec-contact" class="form-label text-xs">Contact</label>
                      <input type="text" id="ot-rec-contact" name="rec_contact" class="form-input" placeholder="Phone" maxlength="20">
                   </div>
                 </div>
@@ -533,6 +505,5 @@ function statusPillShort($status) {
     </div>
   </div>
 
+</main>
 <?php require_once '../includes/footer.php'; ?>
-</body>
-</html>

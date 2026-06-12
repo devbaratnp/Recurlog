@@ -63,33 +63,11 @@ $categoriesJson = json_encode($categories);
 $customersJson = json_encode($customers);
 
 $pageTitle = 'Reports';
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Reports - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-  <style>
-    .filter-tab { cursor: pointer; }
-  </style>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen">
+?>
 <?php require_once '../includes/header.php'; ?>
+<style>
+.filter-tab { cursor: pointer; }
+</style>
   <div class="page-content">
     <header class="page-header">
       <div class="page-header-inner">
@@ -440,7 +418,7 @@ $pageTitle = 'Reports';
           datasets: [{
             label: 'Completed',
             data: completedData,
-            backgroundColor: '#1DB954',
+            backgroundColor: '#22C55E',
             borderRadius: 4
           }]
         },

@@ -65,29 +65,7 @@ foreach ($serviceTypes as $st) {
 $serviceTypesText = rtrim($serviceTypesText);
 
 $pageTitle = 'Settings';
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Settings - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-</head>
-<body class="bg-gray-50 font-sans min-h-screen">
-<?php require_once '../includes/header.php'; ?>
+?><?php require_once '../includes/header.php'; ?>
   <div class="page-content" id="page-content">
     <header class="page-header">
       <div class="page-header-inner">
@@ -103,7 +81,7 @@ $pageTitle = 'Settings';
     <div class="max-w-2xl mx-auto p-4 md:p-6 space-y-6">
       <section class="card p-6">
         <div class="flex flex-col items-center text-center">
-          <img src="https://ui-avatars.com/api/?name=Admin+User&background=1DB954&color=fff&size=200" alt="Admin User" class="w-20 h-20 rounded-full object-cover border-4 border-brand/20 shadow-lg mb-3">
+          <img src="https://ui-avatars.com/api/?name=Admin+User&background=22C55E&color=fff&size=200" alt="Admin User" class="w-20 h-20 rounded-full object-cover border-4 border-brand/20 shadow-lg mb-3">
           <h2 class="text-lg font-bold text-navy">Admin User</h2>
           <p class="text-sm text-gray-500">admin@demo.com</p>
           <button onclick="window.showToast('Edit profile is coming soon.', 'info')" class="btn btn-md btn-primary mt-4">
@@ -270,5 +248,3 @@ $pageTitle = 'Settings';
     }
   </script>
   <?php require_once '../includes/footer.php'; ?>
-</body>
-</html>

@@ -51,27 +51,8 @@ function fmtDate($d) {
     if (!$d) return '—';
     return date('M j, Y', strtotime($d));
 }
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Customer Report - Recurlog</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' },
-          fontFamily: { sans: ['Poppins', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
-  <style>
+?><?php $pageTitle = 'Customer Report'; require_once '../includes/header.php'; ?>
+<style>
     @media print {
       .sidebar, .sidebar-backdrop, .page-header, .bottom-nav, .no-print { display: none !important; }
       .page-content { margin: 0 !important; }
@@ -79,10 +60,7 @@ function fmtDate($d) {
       .report-sheet { box-shadow: none !important; border: none !important; }
     }
   </style>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans">
-<?php $pageTitle = 'Customer Report'; require_once '../includes/header.php'; ?>
-<div class="page-content">
+<div class="page-content" id="page-content">
     <header class="page-header no-print">
       <div class="page-header-inner">
         <div class="flex items-center gap-2">
@@ -111,7 +89,8 @@ function fmtDate($d) {
         </div>
 
 <?php if (empty($entries)): ?>
-        <div class="text-center text-gray-400 py-10">
+        <div class="empty-state">
+          <i data-lucide="file-text"></i>
           <p>No completed work recorded yet for this customer.</p>
         </div>
 <?php else: ?>
@@ -138,6 +117,5 @@ function fmtDate($d) {
       }
     })();
   </script>
+</main>
 <?php require_once '../includes/footer.php'; ?>
-</body>
-</html>

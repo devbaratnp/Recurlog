@@ -17,6 +17,7 @@ $staffList = $db->query("SELECT id, name FROM fscrm_staff ORDER BY name")->fetch
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   requireCsrfToken();
   $title = trim($_POST['title'] ?? '');
+  $problem = trim($_POST['problem'] ?? '');
   $assignedTo = !empty($_POST['assigned_to']) ? intval($_POST['assigned_to']) : null;
   $scheduledDate = $_POST['scheduled_date'] ?? '';
   $status = $_POST['status'] ?? 'pending';
@@ -31,6 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $db->prepare("UPDATE fscrm_tasks SET title=?, assigned_to=?, scheduled_date=?, status=?, notes=? WHERE id=?");
       $stmt->bind_param('sisssi', $title, $assignedTo, $scheduledDate, $status, $notes, $editId);
       $stmt->execute();
+      // Also update problem on the linked service if it exists
+      if ($task['service_id'] && $problem) {
+        $pStmt = $db->prepare("UPDATE fscrm_services SET problem=? WHERE id=?");
+        $pStmt->bind_param('si', $problem, $task['service_id']);
+        $pStmt->execute();
+      }
+      $stmt->execute();
       $db->commit();
       setFlash('Task "' . $title . '" updated successfully');
       header('Location: task-detail.php?id=' . $editId);
@@ -43,31 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $pageTitle = 'Edit Task';
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Edit Task - Recurlog</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: { brand: '#1DB954', navy: '#0B1E3D', amber: '#F59E0B', danger: '#EF4444' }
-        }
-      }
-    }
-  </script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link rel="stylesheet" href="../assets/css/custom.css?v=<?= cacheBust() ?>">
-</head>
-<body class="bg-gray-50 min-h-screen">
-<?php require_once __DIR__ . '/../includes/header.php'; ?>
+?><?php require_once __DIR__ . '/../includes/header.php'; ?>
 <div class="page-content">
   <header class="page-header">
     <div class="page-header-inner">
@@ -95,17 +79,22 @@ $pageTitle = 'Edit Task';
     <div class="card p-5 sm:p-8 space-y-6">
 
       <div>
-        <label for="task-customer" class="block text-sm font-semibold text-gray-700 mb-1.5">Customer</label>
+        <label for="task-customer" class="form-label">Customer</label>
         <input type="text" id="task-customer" readonly value="<?= htmlspecialchars($task['customer_name'] ?: '—') ?>" class="form-input bg-gray-50 cursor-not-allowed">
       </div>
 
       <div>
-        <label for="task-title" class="block text-sm font-semibold text-gray-700 mb-1.5">Title <span class="text-danger">*</span></label>
+        <label for="task-title" class="form-label">Title <span class="text-danger">*</span></label>
         <input type="text" id="task-title" name="title" value="<?= htmlspecialchars($task['title']) ?>" class="form-input" maxlength="255">
       </div>
 
       <div>
-        <label for="task-status" class="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
+        <label for="task-problem" class="form-label">Problem Description</label>
+        <textarea id="task-problem" name="problem" rows="3" class="form-textarea" placeholder="Describe the issue..." maxlength="1000"><?= htmlspecialchars($task['service_problem'] ?? '') ?></textarea>
+      </div>
+
+      <div>
+        <label for="task-status" class="form-label">Status</label>
         <select id="task-status" name="status" class="form-select">
           <option value="pending" <?= $task['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
           <option value="completed" <?= $task['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
@@ -114,12 +103,12 @@ $pageTitle = 'Edit Task';
       </div>
 
       <div>
-        <label for="task-date" class="block text-sm font-semibold text-gray-700 mb-1.5">Scheduled Date</label>
+        <label for="task-date" class="form-label">Scheduled Date</label>
         <input type="date" id="task-date" name="scheduled_date" value="<?= htmlspecialchars($task['scheduled_date']) ?>" class="form-input max-w-xs">
       </div>
 
       <div>
-        <label for="task-staff" class="block text-sm font-semibold text-gray-700 mb-1.5">Assign To</label>
+        <label for="task-staff" class="form-label">Assign To</label>
         <select id="task-staff" name="assigned_to" class="form-select">
           <option value="">Unassigned</option>
           <?php foreach ($staffList as $s): ?>
@@ -129,7 +118,7 @@ $pageTitle = 'Edit Task';
       </div>
 
       <div>
-        <label for="task-notes" class="block text-sm font-semibold text-gray-700 mb-1.5">Notes</label>
+        <label for="task-notes" class="form-label">Notes</label>
         <textarea id="task-notes" name="notes" rows="3" class="form-textarea" maxlength="1000"><?= htmlspecialchars($task['notes'] ?? '') ?></textarea>
       </div>
 
@@ -141,11 +130,73 @@ $pageTitle = 'Edit Task';
         <i data-lucide="save" class="w-4 h-4"></i> Update Task
       </button>
     </div>
+
+    <div class="mt-6 pt-6 border-t border-gray-200">
+      <button type="button" id="edit-delete-btn" class="w-full md:w-auto px-6 py-3 border border-danger text-danger text-sm font-semibold rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-2" data-task-id="<?= $editId ?>" data-task-title="<?= htmlspecialchars($task['title']) ?>" data-task-customer="<?= htmlspecialchars($task['customer_name'] ?? 'Unknown') ?>" data-task-status="<?= $task['status'] ?>" data-task-date="<?= $task['scheduled_date'] ?>">
+        <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Task
+      </button>
+    </div>
     </form>
 
   </div>
 </div>
-<script>lucide.createIcons();</script>
+<script>
+  // ========== DELETE MODAL ==========
+  document.addEventListener('DOMContentLoaded', function () {
+    var deleteBtn = document.getElementById('edit-delete-btn');
+    if (!deleteBtn) return;
+    deleteBtn.addEventListener('click', function () {
+      var id = parseInt(this.dataset.taskId, 10);
+      if (!id) return;
+      document.getElementById('del-edit-title').textContent = this.dataset.taskTitle;
+      document.getElementById('del-edit-customer').textContent = this.dataset.taskCustomer;
+      document.getElementById('del-edit-status').textContent = this.dataset.taskStatus;
+      document.getElementById('del-edit-date').textContent = this.dataset.taskDate;
+      document.getElementById('edit-delete-modal').style.display = 'flex';
+    });
+
+    document.getElementById('edit-del-confirm-btn').addEventListener('click', async function () {
+      var id = parseInt(deleteBtn.dataset.taskId, 10);
+      if (!id) return;
+      var btn = this;
+      btn.disabled = true; btn.textContent = 'Deleting...';
+      try {
+        var res = await fetch('../api/tasks.php?id=' + id, { method: 'DELETE' });
+        var data = await res.json();
+        if (!res.ok) { showToast(data.error || 'Delete failed', 'error'); btn.disabled = false; btn.textContent = 'Delete'; return; }
+        showToast('Task deleted successfully', 'success');
+        window.location.href = 'onetime-task.php';
+      } catch (e) { showToast('Network error', 'error'); btn.disabled = false; btn.textContent = 'Delete'; }
+    });
+  });
+
+  function closeEditDeleteModal() {
+    document.getElementById('edit-delete-modal').style.display = 'none';
+  }
+</script>
+
+<!-- DELETE CONFIRM MODAL -->
+<div id="edit-delete-modal" class="modal-overlay" style="display:none">
+  <div class="modal-content" style="max-width:420px" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold text-gray-900">Delete Task?</h3>
+      <button type="button" onclick="closeEditDeleteModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div class="text-sm text-gray-600 mb-1 space-y-1">
+      <p><span class="font-medium">Task:</span> <span id="del-edit-title"></span></p>
+      <p><span class="font-medium">Customer:</span> <span id="del-edit-customer"></span></p>
+      <p><span class="font-medium">Status:</span> <span id="del-edit-status"></span></p>
+      <p><span class="font-medium">Date:</span> <span id="del-edit-date"></span></p>
+    </div>
+    <p class="text-sm text-red-600 font-semibold mt-3 mb-5">This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <button type="button" onclick="closeEditDeleteModal()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+      <button type="button" id="edit-del-confirm-btn" class="flex-1 px-4 py-2.5 bg-danger text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors">Delete</button>
+    </div>
+  </div>
+</div>
+
+</main>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-</body>
-</html>
