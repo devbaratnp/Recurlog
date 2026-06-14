@@ -114,7 +114,7 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
       </div>
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
         <p class="text-2xl font-bold text-amber"><?= (int)$stats['pending'] ?></p>
-        <p class="text-xs text-gray-500 mt-1">Pending</p>
+        <p class="text-xs text-gray-500 mt-1">Upcoming</p>
       </div>
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
         <p class="text-2xl font-bold text-danger"><?= (int)$stats['missed'] ?></p>
@@ -139,7 +139,6 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
     <!-- Quick Actions -->
     <div class="flex gap-2 flex-wrap">
       <a href="orders.php" class="quick-action-btn flex-1 min-w-0"><i data-lucide="clipboard-list"></i> Orders</a>
-      <a href="customers.php" class="quick-action-btn flex-1 min-w-0"><i data-lucide="users"></i> Customers</a>
       <a href="daybook.php" class="quick-action-btn flex-1 min-w-0"><i data-lucide="calendar"></i> Daybook</a>
     </div>
 
@@ -434,7 +433,6 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
   <div class="modal-content" onclick="event.stopPropagation()" style="max-width:320px">
     <h3 class="font-semibold text-navy text-lg mb-4">More</h3>
     <div class="space-y-1">
-      <a href="customers.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="users" class="w-5 h-5 text-gray-400"></i> Customers</a>
       <a href="customer-add.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="user-plus" class="w-5 h-5 text-gray-400"></i> Add Customer</a>
       <a href="onetime-task.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="calendar-check" class="w-5 h-5 text-gray-400"></i> One-Time Tasks</a>
       <a href="order-add.php" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px]"><i data-lucide="plus" class="w-5 h-5 text-gray-400"></i> Add Order</a>

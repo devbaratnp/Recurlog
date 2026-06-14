@@ -140,7 +140,7 @@ function requireRole($role) {
 
 function getPageParams() {
     $page = max(1, intval($_GET['page'] ?? 1));
-    $perPage = min(200, max(1, intval($_GET['per_page'] ?? 50)));
+    $perPage = min(1000, max(1, intval($_GET['per_page'] ?? 50)));
     $offset = ($page - 1) * $perPage;
     return [$page, $perPage, $offset];
 }
