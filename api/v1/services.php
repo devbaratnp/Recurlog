@@ -49,24 +49,42 @@ switch ($method) {
     case 'POST':
         $input = getJsonInput();
         $data = toSnake($input);
-        $row = insertAndFetch('fscrm_services',
-            ['customer_id', 'category_id', 'service_for', 'title', 'problem', 'is_recurring', 'first_scheduled_date', 'assigned_to', 'notes', 'rec_value', 'rec_unit', 'repeat_from'],
-            'iisssisississ',
-            [
-                $data['customer_id'] ?? null,
-                $data['category_id'] ?? null,
-                $data['service_for'] ?? '',
-                $data['title'] ?? '',
-                $data['problem'] ?? '',
-                $data['is_recurring'] ?? 0,
-                $data['first_scheduled_date'] ?? null,
-                $data['assigned_to'] ?? null,
-                $data['notes'] ?? '',
-                $data['rec_value'] ?? null,
-                $data['rec_unit'] ?? '',
-                $data['repeat_from'] ?? ''
-            ]
-        );
+        $svcCustomerId = $data['customer_id'] ?? null;
+        $svcCategoryId = $data['category_id'] ?? null;
+        $svcServiceFor = $data['service_for'] ?? '';
+        $svcTitle = $data['title'] ?? '';
+        $svcProblem = $data['problem'] ?? '';
+        $svcIsRecurring = $data['is_recurring'] ?? 0;
+        $svcFirstDate = $data['first_scheduled_date'] ?? null;
+        $svcAssignedTo = $data['assigned_to'] ?? null;
+        $svcNotes = $data['notes'] ?? '';
+        $svcRecValue = $data['rec_value'] ?? null;
+        $svcRecUnit = $data['rec_unit'] ?? '';
+        $svcRepeatFrom = $data['repeat_from'] ?? '';
+
+        $fields = ['customer_id', 'category_id', 'service_for', 'title', 'problem', 'is_recurring', 'first_scheduled_date', 'assigned_to', 'notes', 'rec_value', 'rec_unit', 'repeat_from'];
+        $types = '';
+        $vals = [];
+        $colTypes = ['i', 'i', 's', 's', 's', 'i', 's', 'i', 's', 'i', 's', 's'];
+        $rawVals = [$svcCustomerId, $svcCategoryId, $svcServiceFor, $svcTitle, $svcProblem, $svcIsRecurring, $svcFirstDate, $svcAssignedTo, $svcNotes, $svcRecValue, $svcRecUnit, $svcRepeatFrom];
+        $usedFields = [];
+        foreach ($fields as $i => $f) {
+            $v = $rawVals[$i];
+            if ($v === null) continue;
+            $usedFields[] = $f;
+            $types .= $colTypes[$i];
+            $vals[] = $v;
+        }
+        if (empty($usedFields)) jsonError('No fields to insert', 400, 'VALIDATION_ERROR');
+        $placeholders = implode(', ', array_fill(0, count($usedFields), '?'));
+        $colNames = implode(', ', $usedFields);
+        $stmt = $db->prepare("INSERT INTO fscrm_services ($colNames) VALUES ($placeholders)");
+        $stmt->bind_param($types, ...$vals);
+        if (!$stmt->execute()) {
+            jsonError('Database error: ' . $stmt->error, 500, 'DB_ERROR');
+        }
+        $newId = $db->insert_id;
+        $row = fetchSingle('fscrm_services', $newId);
         jsonResponse(toCamel($row), 201);
         break;
 
