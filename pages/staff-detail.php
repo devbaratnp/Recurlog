@@ -24,6 +24,11 @@ $stmt->bind_param('i', $id);
 $stmt->execute();
 $tasks = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
+$orderStmt = $db->prepare("SELECT o.*, c.name as customer_name FROM fscrm_orders o LEFT JOIN fscrm_customers c ON o.customer_id = c.id WHERE o.assigned_to = ? ORDER BY o.scheduled_date DESC");
+$orderStmt->bind_param('i', $id);
+$orderStmt->execute();
+$assignedOrders = $orderStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
 $total = count($tasks);
 $completed = 0;
 $missed = 0;
@@ -35,6 +40,14 @@ foreach ($tasks as $t) {
 }
 $pending = $total - $completed - $missed;
 $rate = $total > 0 ? round(($completed / $total) * 100) : 0;
+
+$orderTotal = count($assignedOrders);
+$orderPending = 0; $orderAssigned = 0; $orderCompleted = 0;
+foreach ($assignedOrders as $o) {
+  if ($o['status'] === 'pending') $orderPending++;
+  elseif ($o['status'] === 'assigned') $orderAssigned++;
+  elseif ($o['status'] === 'completed') $orderCompleted++;
+}
 
 $groupedMissed = []; $groupedPending = []; $groupedCompleted = [];
 foreach ($tasks as $t) {
@@ -86,6 +99,38 @@ function fmtDate($date) {
           </div>
         </div>
       </div>
+
+      <?php if (!empty($assignedOrders)): ?>
+      <div class="card overflow-hidden fade-in">
+        <div class="card-header">
+          <h2 class="font-semibold text-navy text-base flex items-center gap-2"><i data-lucide="briefcase" class="w-5 h-5 text-purple-500"></i> Assigned Orders <span class="text-xs font-normal text-gray-400">(<?= count($assignedOrders) ?>)</span></h2>
+        </div>
+        <div class="p-3">
+          <?php foreach ($assignedOrders as $o): ?>
+          <div class="bg-white rounded-xl border border-gray-100 p-3 mb-2 hover:shadow-md transition-all">
+            <div class="flex items-start gap-2">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-navy truncate"><?= htmlspecialchars($o['problem']) ?></p>
+                <p class="text-xs text-gray-500 mt-0.5 truncate"><?= htmlspecialchars($o['customer_name'] ?? 'Customer #' . $o['customer_id']) ?></p>
+              </div>
+              <?php
+                $orderBadge = match($o['status']) {
+                  'assigned' => '<span class="badge badge-order-assigned"><i data-lucide="user-check" class="w-3 h-3"></i> Assigned</span>',
+                  'completed' => '<span class="badge badge-order-completed"><i data-lucide="check-circle" class="w-3 h-3"></i> Completed</span>',
+                  'cancelled' => '<span class="badge badge-order-cancelled"><i data-lucide="x-circle" class="w-3 h-3"></i> Cancelled</span>',
+                  default => '<span class="badge badge-order-pending"><i data-lucide="clock" class="w-3 h-3"></i> Pending</span>'
+                };
+              ?>
+              <?= $orderBadge ?>
+            </div>
+            <div class="flex items-center gap-1 mt-1.5 text-[11px] text-gray-400">
+              <i data-lucide="calendar" class="w-3 h-3"></i> <?= htmlspecialchars($o['scheduled_date'] ?: 'Not scheduled') ?>
+            </div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <?php endif; ?>
 
       <div class="card overflow-hidden fade-in">
         <div class="card-header">

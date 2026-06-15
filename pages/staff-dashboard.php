@@ -63,6 +63,10 @@ $stats = $db->query("SELECT
     SUM(CASE WHEN status = 'missed' THEN 1 ELSE 0 END) as missed
 FROM fscrm_tasks WHERE assigned_to = $staffId")->fetch_assoc();
 
+$orderStats = $db->query("SELECT
+    SUM(CASE WHEN status IN ('pending','assigned') THEN 1 ELSE 0 END) as active_orders
+FROM fscrm_orders WHERE assigned_to = $staffId")->fetch_assoc();
+
 $pageTitle = 'Staff Dashboard';
 $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($staff['name']) . '&background=22C55E&color=fff&size=200';
 ?>
@@ -133,6 +137,22 @@ $avatar = $staff['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($s
       <div class="w-full bg-gray-100 rounded-full h-2.5">
         <div class="bg-brand h-2.5 rounded-full transition-all" style="width:<?= $totalCount > 0 ? round(((int)$stats['completed_today'] / $totalCount) * 100) : 0 ?>%"></div>
       </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Order Stats -->
+    <?php if ((int)$orderStats['active_orders'] > 0): ?>
+    <div class="bg-purple-50 rounded-xl border border-purple-200 shadow-sm p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+          <i data-lucide="briefcase" class="w-5 h-5 text-purple-600"></i>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-purple-900">Assigned Orders</p>
+          <p class="text-xs text-purple-600">You have <?= (int)$orderStats['active_orders'] ?> active order(s)</p>
+        </div>
+      </div>
+      <a href="orders.php" class="text-sm font-semibold text-purple-600 hover:underline">View</a>
     </div>
     <?php endif; ?>
 

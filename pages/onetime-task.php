@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       $db->commit();
       setFlash('Task "' . $title . '" created successfully for ' . ($custRow ? $custRow['name'] : 'customer'));
-      header('Location: customer-detail.php');
+      header('Location: onetime-task.php');
       exit;
     } catch (Exception $e) {
       $db->rollback();
@@ -92,6 +92,7 @@ $otResult = $db->query("
   LEFT JOIN fscrm_staff s ON t.assigned_to = s.id
   LEFT JOIN fscrm_services sv ON t.service_id = sv.id
   WHERE (sv.is_recurring = 0 OR sv.is_recurring IS NULL)
+  AND t.recurring_task_id IS NULL
   ORDER BY t.scheduled_date DESC
   LIMIT 100
 ");
