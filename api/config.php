@@ -52,7 +52,7 @@ function getDB() {
 
 function jsonResponse($data, $code = 200) {
     http_response_code($code);
-    echo json_encode(['success' => true, 'data' => $data]);
+    echo json_encode(['success' => true, 'data' => $data, 'server_date' => date('Y-m-d')]);
     exit;
 }
 
