@@ -76,8 +76,8 @@ switch ($method) {
     case 'POST':
         $input = getJsonInput();
         $data = toSnake($input);
-        $stmt = $db->prepare("INSERT INTO fscrm_tasks (service_id, recurring_task_id, customer_id, title, problem, status, scheduled_date, completed_date, assigned_to, notes, category_id, completed_by, received_name, received_contact, signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param('iiissssissssss',
+        $stmt = $db->prepare("INSERT INTO fscrm_tasks (service_id, recurring_task_id, customer_id, title, problem, status, scheduled_date, completed_date, assigned_to, notes, category_id, completed_by, received_name, received_contact, signature, is_recurring, rec_value, rec_unit, repeat_from) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param('iiissssissssssiiss',
             $data['service_id'],
             $data['recurring_task_id'],
             $data['customer_id'],
@@ -92,7 +92,11 @@ switch ($method) {
             $data['completed_by'],
             $data['received_name'],
             $data['received_contact'],
-            $data['signature']
+            $data['signature'],
+            $data['is_recurring'] ?? 0,
+            $data['rec_value'] ?? null,
+            $data['rec_unit'] ?? null,
+            $data['repeat_from'] ?? null
         );
         $stmt->execute();
         $newId = $db->insert_id;
@@ -110,7 +114,7 @@ switch ($method) {
         $fields = [];
         $types = '';
         $vals = [];
-        $colMap = ['service_id', 'recurring_task_id', 'customer_id', 'title', 'problem', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature'];
+        $colMap = ['service_id', 'recurring_task_id', 'customer_id', 'title', 'problem', 'status', 'scheduled_date', 'completed_date', 'assigned_to', 'notes', 'category_id', 'completed_by', 'received_name', 'received_contact', 'signature', 'is_recurring', 'rec_value', 'rec_unit', 'repeat_from'];
         foreach ($colMap as $f) {
             if (array_key_exists($f, $data)) {
                 $fields[] = "$f = ?";

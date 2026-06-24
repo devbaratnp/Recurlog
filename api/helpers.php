@@ -4,7 +4,7 @@ function toCamel($row) {
     $result = [];
 
     foreach ($row as $key => $value) {
-        if (in_array($key, ['location_lat', 'location_lng', 'rec_value', 'rec_unit', 'repeat_from'])) {
+        if (in_array($key, ['location_lat', 'location_lng'])) {
             continue;
         }
         if ($key === 'services_for') {
